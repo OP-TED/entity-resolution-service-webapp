@@ -1,0 +1,188 @@
+import {
+  curationDecisionsAlternativeCanonicalEntitiesRetrieveInfiniteOptions,
+  curationDecisionsAssignCreateMutation,
+  curationDecisionsRetrieveInfiniteQueryKey,
+  curationStatsRetrieveQueryKey
+} from '@api/@tanstack/react-query.gen'
+
+import { ProposedCard, Text } from '@components'
+import { useDecisionsLoadingState } from '@hooks/useDecisionsLoadingState'
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient
+} from '@tanstack/react-query'
+import { getConfidenceStatus, showApiErrors } from '@utils'
+import { App, Button, Collapse, Flex, Popconfirm, Tag, Tooltip } from 'antd'
+import { useMemo, useState } from 'react'
+import Skeleton from 'react-loading-skeleton'
+
+import type { Decision } from '@api/types.gen'
+
+type Props = {
+  currentDecision?: Decision
+}
+
+export const AlternativeClusters = ({ currentDecision }: Props) => {
+  const queryClient = useQueryClient()
+  const isDecisionsMenuLoading = useDecisionsLoadingState()
+  const { notification } = App.useApp()
+
+  const currentDecisionId = currentDecision?.id
+
+  const [currentEntityIndices, setCurrentEntityIndices] = useState<
+    Record<number, number>
+  >({})
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteQuery({
+      ...curationDecisionsAlternativeCanonicalEntitiesRetrieveInfiniteOptions({
+        path: { id: String(currentDecisionId) },
+        query: {
+          per_page: 1
+        }
+      }),
+      getNextPageParam: (lastPage) => lastPage?.next ?? undefined,
+      initialPageParam: 1,
+      enabled: !!currentDecisionId
+    })
+
+  const allClusters = useMemo(
+    () => data?.pages.flatMap((page) => page.results) ?? [],
+    [data]
+  )
+
+  const { mutate } = useMutation({
+    ...curationDecisionsAssignCreateMutation(),
+    onError: (e) =>
+      showApiErrors(e, (message) => notification.error({ message })),
+    onSuccess: () => {
+      notification.success({
+        message: 'Cluster assigned successfully'
+      })
+      queryClient.invalidateQueries({
+        queryKey: curationDecisionsRetrieveInfiniteQueryKey()
+      })
+      queryClient.invalidateQueries({
+        queryKey: curationStatsRetrieveQueryKey()
+      })
+    }
+  })
+
+  const isPendingReview =
+    currentDecision?.decision_status === 'PENDING_MANUAL_REVIEW'
+
+  const isLoadingContent =
+    isFetchingNextPage || isDecisionsMenuLoading || isLoading
+
+  const onConfirmSwitchCluster = (clusterIdentifier: string) => {
+    if (!clusterIdentifier || !currentDecisionId) return
+
+    mutate({
+      path: {
+        id: String(currentDecisionId)
+      },
+      body: {
+        canonical_entity_id: clusterIdentifier
+      }
+    })
+  }
+
+  const onClickPreviousEntity = (clusterIndex: number) => {
+    setCurrentEntityIndices((prev) => ({
+      ...prev,
+      [clusterIndex]: Math.max(1, (prev[clusterIndex] || 1) - 1)
+    }))
+  }
+
+  const onClickNextEntity = (clusterIndex: number, maxEntities: number) => {
+    setCurrentEntityIndices((prev) => ({
+      ...prev,
+      [clusterIndex]: Math.min(maxEntities, (prev[clusterIndex] || 1) + 1)
+    }))
+  }
+
+  return (
+    <Flex vertical gap={16}>
+      {allClusters?.map((cluster, index) => (
+        <Collapse
+          size="large"
+          key={index}
+          items={[
+            {
+              key: cluster?.identifier,
+              label: (
+                <Flex gap={8} align="center" justify="space-between">
+                  <Text size={16} weight={500}>
+                    Compare with {index === 0 ? '2nd' : `${index + 2}nd`} best
+                    cluster
+                  </Text>
+                  <Tag
+                    variant="solid"
+                    color={getConfidenceStatus(cluster.confidence_score)}
+                  >
+                    Conf: {cluster.confidence_score?.toFixed(2)}
+                  </Tag>
+                </Flex>
+              ),
+              children: (
+                <Flex vertical gap={8}>
+                  <ProposedCard
+                    currentEntity={currentEntityIndices[index] || 1}
+                    data={cluster}
+                    isLoading={isLoading}
+                    onPrevious={() => onClickPreviousEntity(index)}
+                    onNext={() =>
+                      onClickNextEntity(
+                        index,
+                        cluster.top_alignment_links?.length || 1
+                      )
+                    }
+                    title="Alternative Match"
+                    isAlternative={true}
+                  />
+
+                  <Flex>
+                    <Popconfirm
+                      trigger="click"
+                      title="This will assign the current entity to the alternative cluster instead of the proposed match. The system will learn from this decision to improve future matching."
+                      onConfirm={() =>
+                        onConfirmSwitchCluster(cluster.identifier)
+                      }
+                      placement="topRight"
+                    >
+                      <Tooltip
+                        title="You can assign only decisions that are pending manual review."
+                        trigger={!isPendingReview ? 'hover' : 'contextMenu'}
+                      >
+                        <Button
+                          variant="solid"
+                          color="orange"
+                          disabled={!isPendingReview}
+                        >
+                          Use this cluster instead
+                        </Button>
+                      </Tooltip>
+                    </Popconfirm>
+                  </Flex>
+                </Flex>
+              )
+            }
+          ]}
+        />
+      ))}
+
+      {isLoadingContent && <Skeleton count={1} height={60} width="100%" />}
+
+      <Button
+        variant="solid"
+        color="primary"
+        onClick={() => fetchNextPage()}
+        loading={isLoadingContent}
+        disabled={!hasNextPage}
+      >
+        Load More
+      </Button>
+    </Flex>
+  )
+}

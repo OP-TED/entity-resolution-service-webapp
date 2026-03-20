@@ -1,0 +1,92 @@
+include:
+  - project: 'devops/ebs-ops'
+    ref: main
+    file: /ci/common.yml
+  # - project: "devops/ebs-ops"
+  #   ref: main
+  #   file: /ci/tests-python.yml
+#  - local: 'infra/ci/tests-additional.yml' #add here additional tests
+
+stages:
+  - build
+  - helm-validate
+  - deploy
+
+########### Jobs for development environment ###########
+
+build_development:
+  extends: .build
+  environment:
+    name: development
+  rules:
+    - !reference [.rules, development]
+
+helm_validate_development:
+  extends: .helm_validate
+  environment:
+    name: development
+  rules:
+    - !reference [.rules, development]
+  variables:
+    KUBE_NAMESPACE: 'meaningfy-dev'
+
+deploy_development:
+  extends: .deploy
+  environment:
+    name: development
+  rules:
+    - !reference [.rules, development]
+  variables:
+    KUBE_NAMESPACE: 'meaningfy-dev'
+
+########### Jobs for staging environment ###########
+build_staging:
+  extends: .build
+  environment:
+    name: staging
+  rules:
+    - !reference [.rules, staging]
+
+helm_validate_staging:
+  extends: .helm_validate
+  environment:
+    name: staging
+  rules:
+    - !reference [.rules, staging]
+  variables:
+    KUBE_NAMESPACE: 'meaningfy-stage'
+
+deploy_staging:
+  extends: .deploy
+  environment:
+    name: staging
+  rules:
+    - !reference [.rules, staging]
+  variables:
+    KUBE_NAMESPACE: 'meaningfy-stage'
+
+########### Jobs for production environment ###########
+build_production:
+  extends: .build
+  environment:
+    name: production
+  rules:
+    - !reference [.rules, production]
+
+helm_validate_production:
+  extends: .helm_validate
+  environment:
+    name: production
+  rules:
+    - !reference [.rules, production]
+  variables:
+    KUBE_NAMESPACE: 'meaningfy-prod'
+
+deploy_production:
+  extends: .deploy
+  environment:
+    name: production
+  rules:
+    - !reference [.rules, production]
+  variables:
+    KUBE_NAMESPACE: 'meaningfy-prod'
