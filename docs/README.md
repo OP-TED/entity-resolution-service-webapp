@@ -146,7 +146,6 @@ entity-resolution-service-webapp/
 ├── infra/
 │   ├── ci/             # Additional CI job definitions
 │   ├── docker/         # Dockerfile and nginx config
-│   └── helm/           # Helm chart for Kubernetes deployment
 ├── src/                # Application source code
 │   ├── api/            # Auto-generated API client (do not edit *.gen.ts)
 │   ├── components/     # React components

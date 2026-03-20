@@ -23,9 +23,6 @@ env
 *.njsproj
 *.sln
 *.sw?
-deployment/helm/charts
-deployment/helm/Chart.lock
-deployment/helm/env
 
 #tests
 playwright-report

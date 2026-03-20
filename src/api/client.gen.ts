@@ -22,6 +22,6 @@ export type CreateClientConfig<T extends ClientOptions = ClientOptions2> = (
 
 export const client = createClient(
   createConfig<ClientOptions2>({
-    baseURL: 'https://api.ers.meaningfy.dev.devebs.net'
+    baseURL: ''
   })
 )
