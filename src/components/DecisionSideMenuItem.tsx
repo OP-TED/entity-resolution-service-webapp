@@ -2,16 +2,22 @@ import { Text } from '@components'
 import { formatTimeAgo, getConfidenceStatus } from '@utils'
 import { type MenuItemProps, Flex, Tag } from 'antd'
 
-import type { Decision } from '@api/types.gen'
+import type { DecisionSummary } from '@api/types.gen'
 
 type Props = {
-  decision: Decision
+  decision: DecisionSummary
 } & MenuItemProps
 
 export const DecisionSideMenuItem = ({ decision }: Props) => {
-  const confidenceScore =
-    decision?.decision_context?.alignment_options?.[0]?.confidence_score
+  const confidenceScore = decision?.current_placement?.confidence_score
   const confidenceClass = getConfidenceStatus(confidenceScore)
+
+  const entityName =
+    (
+      decision?.about_entity_mention?.parsed_representation as {
+        name?: string
+      } | null
+    )?.name ?? decision?.about_entity_mention?.identified_by?.request_id
 
   return (
     <Flex vertical gap={8}>
@@ -26,7 +32,7 @@ export const DecisionSideMenuItem = ({ decision }: Props) => {
       </Flex>
 
       <Text isEllipsis size={14} weight={600} color="colorTextSecondary">
-        {decision?.decision_context?.subject_entity_display_name}
+        {entityName}
       </Text>
     </Flex>
   )

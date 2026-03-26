@@ -13,7 +13,7 @@ export default defineConfig({
     filters: {
       deprecated: false
     },
-    path: `${apiBase}/schema?format=json`
+    path: `${apiBase}/openapi.json`
   },
   output: {
     format: 'prettier',

@@ -3,30 +3,59 @@
 import type { Client, Options as Options2, TDataShape } from './client'
 import { client } from './client.gen'
 import type {
-  CurationDecisionsAcceptCreateData,
-  CurationDecisionsAcceptCreateErrors,
-  CurationDecisionsAcceptCreateResponses,
-  CurationDecisionsAlternativeCanonicalEntitiesRetrieveData,
-  CurationDecisionsAlternativeCanonicalEntitiesRetrieveErrors,
-  CurationDecisionsAlternativeCanonicalEntitiesRetrieveResponses,
-  CurationDecisionsAssignCreateData,
-  CurationDecisionsAssignCreateErrors,
-  CurationDecisionsAssignCreateResponses,
-  CurationDecisionsProposedCanonicalEntityRetrieveData,
-  CurationDecisionsProposedCanonicalEntityRetrieveErrors,
-  CurationDecisionsProposedCanonicalEntityRetrieveResponses,
-  CurationDecisionsRejectCreateData,
-  CurationDecisionsRejectCreateErrors,
-  CurationDecisionsRejectCreateResponses,
-  CurationDecisionsRetrieveData,
-  CurationDecisionsRetrieveResponses,
-  CurationEntitiesRetrieveData,
-  CurationEntitiesRetrieveErrors,
-  CurationEntitiesRetrieveResponses,
-  CurationStatsRetrieveData,
-  CurationStatsRetrieveResponses,
-  HealthRetrieveData,
-  HealthRetrieveResponses
+  AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostData,
+  AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostErrors,
+  AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostResponses,
+  AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostData,
+  AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostErrors,
+  AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostResponses,
+  BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostData,
+  BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostErrors,
+  BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostResponses,
+  BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostData,
+  BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostErrors,
+  BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostResponses,
+  CreateUserApiV1UsersPostData,
+  CreateUserApiV1UsersPostErrors,
+  CreateUserApiV1UsersPostResponses,
+  GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetData,
+  GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetErrors,
+  GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetResponses,
+  GetCurrentUserApiV1UsersMeGetData,
+  GetCurrentUserApiV1UsersMeGetErrors,
+  GetCurrentUserApiV1UsersMeGetResponses,
+  GetProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetData,
+  GetProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetErrors,
+  GetProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetResponses,
+  GetStatisticsApiV1CurationStatsGetData,
+  GetStatisticsApiV1CurationStatsGetErrors,
+  GetStatisticsApiV1CurationStatsGetResponses,
+  HealthHealthGetData,
+  HealthHealthGetResponses,
+  ListDecisionsApiV1CurationDecisionsGetData,
+  ListDecisionsApiV1CurationDecisionsGetErrors,
+  ListDecisionsApiV1CurationDecisionsGetResponses,
+  ListUserActionsApiV1UserActionsGetData,
+  ListUserActionsApiV1UserActionsGetErrors,
+  ListUserActionsApiV1UserActionsGetResponses,
+  ListUsersApiV1UsersGetData,
+  ListUsersApiV1UsersGetErrors,
+  ListUsersApiV1UsersGetResponses,
+  LoginApiV1AuthLoginPostData,
+  LoginApiV1AuthLoginPostErrors,
+  LoginApiV1AuthLoginPostResponses,
+  PatchUserApiV1UsersUserIdPatchData,
+  PatchUserApiV1UsersUserIdPatchErrors,
+  PatchUserApiV1UsersUserIdPatchResponses,
+  RefreshApiV1AuthRefreshPostData,
+  RefreshApiV1AuthRefreshPostErrors,
+  RefreshApiV1AuthRefreshPostResponses,
+  RegisterApiV1AuthRegisterPostData,
+  RegisterApiV1AuthRegisterPostErrors,
+  RegisterApiV1AuthRegisterPostResponses,
+  RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostData,
+  RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostErrors,
+  RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostResponses
 } from './types.gen'
 
 export type Options<
@@ -47,115 +76,40 @@ export type Options<
 }
 
 /**
- * List decisions
+ * Health
  *
- * Retrieve paginated list of decisions with optional filtering. By default returns only PENDING_MANUAL_REVIEW decisions.
+ * Health check endpoint to verify the service is running.
  */
-export const curationDecisionsRetrieve = <ThrowOnError extends boolean = false>(
-  options?: Options<CurationDecisionsRetrieveData, ThrowOnError>
+export const healthHealthGet = <ThrowOnError extends boolean = false>(
+  options?: Options<HealthHealthGetData, ThrowOnError>
 ) =>
   (options?.client ?? client).get<
-    CurationDecisionsRetrieveResponses,
+    HealthHealthGetResponses,
     unknown,
     ThrowOnError
   >({
     responseType: 'json',
-    security: [
-      {
-        in: 'cookie',
-        name: 'sessionid',
-        type: 'apiKey'
-      },
-      { scheme: 'basic', type: 'http' }
-    ],
-    url: '/api/v1/curation/decisions',
+    url: '/health',
     ...options
   })
 
 /**
- * Accept proposed match
+ * Register
  *
- * Accept the proposed canonical entity match. Sets alignment confidence to 1.
+ * Register a new user account.
  */
-export const curationDecisionsAcceptCreate = <
+export const registerApiV1AuthRegisterPost = <
   ThrowOnError extends boolean = false
 >(
-  options: Options<CurationDecisionsAcceptCreateData, ThrowOnError>
+  options: Options<RegisterApiV1AuthRegisterPostData, ThrowOnError>
 ) =>
   (options.client ?? client).post<
-    CurationDecisionsAcceptCreateResponses,
-    CurationDecisionsAcceptCreateErrors,
+    RegisterApiV1AuthRegisterPostResponses,
+    RegisterApiV1AuthRegisterPostErrors,
     ThrowOnError
   >({
     responseType: 'json',
-    security: [
-      {
-        in: 'cookie',
-        name: 'sessionid',
-        type: 'apiKey'
-      },
-      { scheme: 'basic', type: 'http' }
-    ],
-    url: '/api/v1/curation/decisions/{id}/accept',
-    ...options
-  })
-
-/**
- * Get alternative matches
- *
- * Retrieve alternative match clusters for a decision (paginated). Returns all canonical entity clusters except the proposed match, with top 5 alignment links including full entity mention data.
- */
-export const curationDecisionsAlternativeCanonicalEntitiesRetrieve = <
-  ThrowOnError extends boolean = false
->(
-  options: Options<
-    CurationDecisionsAlternativeCanonicalEntitiesRetrieveData,
-    ThrowOnError
-  >
-) =>
-  (options.client ?? client).get<
-    CurationDecisionsAlternativeCanonicalEntitiesRetrieveResponses,
-    CurationDecisionsAlternativeCanonicalEntitiesRetrieveErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [
-      {
-        in: 'cookie',
-        name: 'sessionid',
-        type: 'apiKey'
-      },
-      { scheme: 'basic', type: 'http' }
-    ],
-    url: '/api/v1/curation/decisions/{id}/alternative-canonical-entities',
-    ...options
-  })
-
-/**
- * Assign to alternative canonical entity
- *
- * Assign the entity mention to a different canonical entity. Creates new alignment link with confidence 1. Existing alignment link receives confidence -1.
- */
-export const curationDecisionsAssignCreate = <
-  ThrowOnError extends boolean = false
->(
-  options: Options<CurationDecisionsAssignCreateData, ThrowOnError>
-) =>
-  (options.client ?? client).post<
-    CurationDecisionsAssignCreateResponses,
-    CurationDecisionsAssignCreateErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    security: [
-      {
-        in: 'cookie',
-        name: 'sessionid',
-        type: 'apiKey'
-      },
-      { scheme: 'basic', type: 'http' }
-    ],
-    url: '/api/v1/curation/decisions/{id}/assign',
+    url: '/api/v1/auth/register',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -164,132 +118,373 @@ export const curationDecisionsAssignCreate = <
   })
 
 /**
- * Get proposed match
+ * Login
  *
- * Retrieve the proposed match cluster for a decision. Returns the highest confidence canonical entity with top 5 alignment links including full entity mention data.
+ * Authenticate and receive access + refresh tokens.
  */
-export const curationDecisionsProposedCanonicalEntityRetrieve = <
+export const loginApiV1AuthLoginPost = <ThrowOnError extends boolean = false>(
+  options: Options<LoginApiV1AuthLoginPostData, ThrowOnError>
+) =>
+  (options.client ?? client).post<
+    LoginApiV1AuthLoginPostResponses,
+    LoginApiV1AuthLoginPostErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v1/auth/login',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    }
+  })
+
+/**
+ * Refresh
+ *
+ * Exchange a refresh token for a new token pair.
+ */
+export const refreshApiV1AuthRefreshPost = <
+  ThrowOnError extends boolean = false
+>(
+  options: Options<RefreshApiV1AuthRefreshPostData, ThrowOnError>
+) =>
+  (options.client ?? client).post<
+    RefreshApiV1AuthRefreshPostResponses,
+    RefreshApiV1AuthRefreshPostErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v1/auth/refresh',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    }
+  })
+
+/**
+ * List Decisions
+ *
+ * Retrieve cursor-paginated list of decisions with optional filtering.
+ */
+export const listDecisionsApiV1CurationDecisionsGet = <
+  ThrowOnError extends boolean = false
+>(
+  options?: Options<ListDecisionsApiV1CurationDecisionsGetData, ThrowOnError>
+) =>
+  (options?.client ?? client).get<
+    ListDecisionsApiV1CurationDecisionsGetResponses,
+    ListDecisionsApiV1CurationDecisionsGetErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/curation/decisions',
+    ...options
+  })
+
+/**
+ * Get Proposed Canonical Entity
+ *
+ * Get the proposed canonical entity for a given decision.
+ */
+export const getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGet =
+  <ThrowOnError extends boolean = false>(
+    options: Options<
+      GetProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetData,
+      ThrowOnError
+    >
+  ) =>
+    (options.client ?? client).get<
+      GetProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetResponses,
+      GetProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetErrors,
+      ThrowOnError
+    >({
+      responseType: 'json',
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/api/v1/curation/decisions/{decision_id}/proposed-canonical-entity',
+      ...options
+    })
+
+/**
+ * Get Alternative Canonical Entities
+ *
+ * Get alternative canonical entities for a given decision.
+ */
+export const getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGet =
+  <ThrowOnError extends boolean = false>(
+    options: Options<
+      GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetData,
+      ThrowOnError
+    >
+  ) =>
+    (options.client ?? client).get<
+      GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetResponses,
+      GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetErrors,
+      ThrowOnError
+    >({
+      responseType: 'json',
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/api/v1/curation/decisions/{decision_id}/alternative-canonical-entities',
+      ...options
+    })
+
+/**
+ * Accept Decision
+ *
+ * Accept the proposed canonical entity match.
+ */
+export const acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPost = <
   ThrowOnError extends boolean = false
 >(
   options: Options<
-    CurationDecisionsProposedCanonicalEntityRetrieveData,
+    AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostData,
     ThrowOnError
   >
 ) =>
-  (options.client ?? client).get<
-    CurationDecisionsProposedCanonicalEntityRetrieveResponses,
-    CurationDecisionsProposedCanonicalEntityRetrieveErrors,
+  (options.client ?? client).post<
+    AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostResponses,
+    AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostErrors,
     ThrowOnError
   >({
-    responseType: 'json',
-    security: [
-      {
-        in: 'cookie',
-        name: 'sessionid',
-        type: 'apiKey'
-      },
-      { scheme: 'basic', type: 'http' }
-    ],
-    url: '/api/v1/curation/decisions/{id}/proposed-canonical-entity',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/curation/decisions/{decision_id}/accept',
     ...options
   })
 
 /**
- * Reject proposed match
+ * Reject Decision
  *
- * Reject the proposed match. Sets alignment confidence to -1.
+ * Reject the proposed canonical entity match.
  */
-export const curationDecisionsRejectCreate = <
+export const rejectDecisionApiV1CurationDecisionsDecisionIdRejectPost = <
   ThrowOnError extends boolean = false
 >(
-  options: Options<CurationDecisionsRejectCreateData, ThrowOnError>
+  options: Options<
+    RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostData,
+    ThrowOnError
+  >
 ) =>
   (options.client ?? client).post<
-    CurationDecisionsRejectCreateResponses,
-    CurationDecisionsRejectCreateErrors,
+    RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostResponses,
+    RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostErrors,
     ThrowOnError
   >({
-    responseType: 'json',
-    security: [
-      {
-        in: 'cookie',
-        name: 'sessionid',
-        type: 'apiKey'
-      },
-      { scheme: 'basic', type: 'http' }
-    ],
-    url: '/api/v1/curation/decisions/{id}/reject',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/curation/decisions/{decision_id}/reject',
     ...options
   })
 
 /**
- * Get entity mention
+ * Assign Decision
  *
- * Retrieve entity mention by identifier with parsed data for UI display (excludes raw payload)
+ * Assign the subject entity mention to a specific cluster.
  */
-export const curationEntitiesRetrieve = <ThrowOnError extends boolean = false>(
-  options: Options<CurationEntitiesRetrieveData, ThrowOnError>
+export const assignDecisionApiV1CurationDecisionsDecisionIdAssignPost = <
+  ThrowOnError extends boolean = false
+>(
+  options: Options<
+    AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostData,
+    ThrowOnError
+  >
 ) =>
-  (options.client ?? client).get<
-    CurationEntitiesRetrieveResponses,
-    CurationEntitiesRetrieveErrors,
+  (options.client ?? client).post<
+    AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostResponses,
+    AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostErrors,
     ThrowOnError
   >({
-    responseType: 'json',
-    security: [
-      {
-        in: 'cookie',
-        name: 'sessionid',
-        type: 'apiKey'
-      },
-      { scheme: 'basic', type: 'http' }
-    ],
-    url: '/api/v1/curation/entities/{id}',
-    ...options
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/curation/decisions/{decision_id}/assign',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    }
   })
 
 /**
- * Get statistics
+ * Bulk Accept Decisions
  *
- * Retrieve curation and registry statistics with optional timeframe filtering
+ * Accept multiple decisions in a single request.
  */
-export const curationStatsRetrieve = <ThrowOnError extends boolean = false>(
-  options?: Options<CurationStatsRetrieveData, ThrowOnError>
+export const bulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPost = <
+  ThrowOnError extends boolean = false
+>(
+  options: Options<
+    BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostData,
+    ThrowOnError
+  >
+) =>
+  (options.client ?? client).post<
+    BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostResponses,
+    BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/curation/decisions/bulk-accept',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    }
+  })
+
+/**
+ * Bulk Reject Decisions
+ *
+ * Reject multiple decisions in a single request.
+ */
+export const bulkRejectDecisionsApiV1CurationDecisionsBulkRejectPost = <
+  ThrowOnError extends boolean = false
+>(
+  options: Options<
+    BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostData,
+    ThrowOnError
+  >
+) =>
+  (options.client ?? client).post<
+    BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostResponses,
+    BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/curation/decisions/bulk-reject',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    }
+  })
+
+/**
+ * Get Statistics
+ *
+ * Retrieve registry statistics and curation statistics with optional filtering.
+ */
+export const getStatisticsApiV1CurationStatsGet = <
+  ThrowOnError extends boolean = false
+>(
+  options?: Options<GetStatisticsApiV1CurationStatsGetData, ThrowOnError>
 ) =>
   (options?.client ?? client).get<
-    CurationStatsRetrieveResponses,
-    unknown,
+    GetStatisticsApiV1CurationStatsGetResponses,
+    GetStatisticsApiV1CurationStatsGetErrors,
     ThrowOnError
   >({
     responseType: 'json',
-    security: [
-      {
-        in: 'cookie',
-        name: 'sessionid',
-        type: 'apiKey'
-      },
-      { scheme: 'basic', type: 'http' }
-    ],
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/curation/stats',
     ...options
   })
 
-export const healthRetrieve = <ThrowOnError extends boolean = false>(
-  options?: Options<HealthRetrieveData, ThrowOnError>
+/**
+ * List User Actions
+ *
+ * List paginated user actions ordered by latest first (admin only).
+ */
+export const listUserActionsApiV1UserActionsGet = <
+  ThrowOnError extends boolean = false
+>(
+  options?: Options<ListUserActionsApiV1UserActionsGetData, ThrowOnError>
 ) =>
   (options?.client ?? client).get<
-    HealthRetrieveResponses,
-    unknown,
+    ListUserActionsApiV1UserActionsGetResponses,
+    ListUserActionsApiV1UserActionsGetErrors,
     ThrowOnError
   >({
-    security: [
-      {
-        in: 'cookie',
-        name: 'sessionid',
-        type: 'apiKey'
-      },
-      { scheme: 'basic', type: 'http' }
-    ],
-    url: '/health',
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/user-actions',
+    ...options
+  })
+
+/**
+ * List Users
+ *
+ * List all users (admin only).
+ */
+export const listUsersApiV1UsersGet = <ThrowOnError extends boolean = false>(
+  options?: Options<ListUsersApiV1UsersGetData, ThrowOnError>
+) =>
+  (options?.client ?? client).get<
+    ListUsersApiV1UsersGetResponses,
+    ListUsersApiV1UsersGetErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/users',
+    ...options
+  })
+
+/**
+ * Create User
+ *
+ * Create a new user (admin only).
+ */
+export const createUserApiV1UsersPost = <ThrowOnError extends boolean = false>(
+  options: Options<CreateUserApiV1UsersPostData, ThrowOnError>
+) =>
+  (options.client ?? client).post<
+    CreateUserApiV1UsersPostResponses,
+    CreateUserApiV1UsersPostErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/users',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    }
+  })
+
+/**
+ * Patch User
+ *
+ * Update user flags (admin only).
+ */
+export const patchUserApiV1UsersUserIdPatch = <
+  ThrowOnError extends boolean = false
+>(
+  options: Options<PatchUserApiV1UsersUserIdPatchData, ThrowOnError>
+) =>
+  (options.client ?? client).patch<
+    PatchUserApiV1UsersUserIdPatchResponses,
+    PatchUserApiV1UsersUserIdPatchErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/users/{user_id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    }
+  })
+
+/**
+ * Get Current User
+ *
+ * Get current authenticated user.
+ */
+export const getCurrentUserApiV1UsersMeGet = <
+  ThrowOnError extends boolean = false
+>(
+  options?: Options<GetCurrentUserApiV1UsersMeGetData, ThrowOnError>
+) =>
+  (options?.client ?? client).get<
+    GetCurrentUserApiV1UsersMeGetResponses,
+    GetCurrentUserApiV1UsersMeGetErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/users/me',
     ...options
   })

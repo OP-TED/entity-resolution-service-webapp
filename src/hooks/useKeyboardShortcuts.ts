@@ -1,18 +1,14 @@
-import {
-  curationDecisionsAcceptCreateMutation,
-  curationDecisionsRejectCreateMutation,
-  curationDecisionsRetrieveInfiniteQueryKey,
-  curationStatsRetrieveQueryKey
-} from '@api/index'
+
+import { acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation, getStatisticsApiV1CurationStatsGetQueryKey, listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey, rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation } from '@api/index'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { showApiErrors } from '@utils'
 import { App } from 'antd'
 import { useEffect } from 'react'
 
-import type { Decision } from '@api/types.gen'
+import type { DecisionSummary } from '@api/types.gen'
 
 type UseKeyboardShortcutsProps = {
-  activeDecision?: Decision
+  activeDecision?: DecisionSummary
 }
 
 export const useKeyboardShortcuts = ({
@@ -22,7 +18,7 @@ export const useKeyboardShortcuts = ({
   const { notification, modal } = App.useApp()
 
   const { mutate: acceptDecision } = useMutation({
-    ...curationDecisionsAcceptCreateMutation(),
+    ...acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation(),
     onError: (e) =>
       showApiErrors(e, (message) => notification.error({ message })),
     onSuccess: () => {
@@ -34,7 +30,7 @@ export const useKeyboardShortcuts = ({
   })
 
   const { mutate: rejectDecision } = useMutation({
-    ...curationDecisionsRejectCreateMutation(),
+    ...rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation(),
     onError: (e) =>
       showApiErrors(e, (message) => notification.error({ message })),
     onSuccess: () => {
@@ -46,12 +42,11 @@ export const useKeyboardShortcuts = ({
   })
 
   const onSuccessMutate = async () => {
-    await queryClient.invalidateQueries({
-      queryKey: curationDecisionsRetrieveInfiniteQueryKey()
+    queryClient.invalidateQueries({
+      queryKey: listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey()
     })
-
-    await queryClient.invalidateQueries({
-      queryKey: curationStatsRetrieveQueryKey()
+    queryClient.invalidateQueries({
+      queryKey: getStatisticsApiV1CurationStatsGetQueryKey()
     })
   }
 
@@ -67,20 +62,16 @@ export const useKeyboardShortcuts = ({
         return
       }
 
-      const isPendingReview =
-        activeDecision?.decision_status === 'PENDING_MANUAL_REVIEW'
-
       switch (event.code) {
         case 'KeyA':
           event.preventDefault()
-          if (isPendingReview) {
             modal.confirm({
               title: 'Accept Decision',
               content: 'Are you sure you want to accept this decision?',
               onOk: () => {
                 acceptDecision({
                   path: {
-                    id: String(activeDecision?.id)
+                    decision_id: String(activeDecision?.id)
                   }
                 })
               },
@@ -88,18 +79,16 @@ export const useKeyboardShortcuts = ({
                 return
               }
             })
-          }
           break
         case 'KeyR':
           event.preventDefault()
-          if (isPendingReview) {
             modal.confirm({
               title: 'Reject Decision',
               content: 'Are you sure you want to reject this decision?',
               onOk: () => {
                 rejectDecision({
                   path: {
-                    id: String(activeDecision?.id)
+                    decision_id: String(activeDecision?.id)
                   }
                 })
               },
@@ -107,7 +96,6 @@ export const useKeyboardShortcuts = ({
                 return
               }
             })
-          }
           break
         case 'ArrowUp':
           event.preventDefault()

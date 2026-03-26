@@ -1,4 +1,4 @@
-import { curationStatsRetrieveOptions } from '@api/@tanstack/react-query.gen'
+import { getStatisticsApiV1CurationStatsGetOptions } from '@api/@tanstack/react-query.gen'
 import { SkeletonWrapper, Text } from '@components'
 import { useQuery } from '@tanstack/react-query'
 
@@ -9,12 +9,13 @@ import { useStyles } from './styles'
 const { Title } = Typography
 
 export const Header = () => {
-  const { data, isLoading } = useQuery(curationStatsRetrieveOptions())
+  const { data, isLoading } = useQuery(getStatisticsApiV1CurationStatsGetOptions())
   const { styles } = useStyles()
 
-  const reviewed = data?.curation_statistics?.reviewed_decisions ?? 0
-  const remaining = data?.curation_statistics?.pending_decisions ?? 0
-  const today = (data?.curation_statistics?.automatic_decisions ?? 0) + reviewed
+  const selectedTopCount = data?.curation?.selected_top ?? 0
+  const selectedAlternativeCount = data?.curation?.selected_alternative ?? 0
+  const rejectedCount = data?.curation?.rejected_all  ?? 0
+  const totalCount = data?.curation?.total_decisions ?? 0
 
   return (
     <header className={styles.header}>
@@ -33,14 +34,14 @@ export const Header = () => {
             </Text>
 
             <Text color="colorWhite">
-              {reviewed} reviewed, {remaining} remaining |
+              {selectedTopCount} Selected Top | {selectedAlternativeCount} Selected Alternative, {rejectedCount} Rejected
             </Text>
 
             <Text weight={600} color="colorWhite">
-              Today:
+              Total:
             </Text>
 
-            <Text color="colorWhite">{today} decisions</Text>
+            <Text color="colorWhite">{totalCount} decisions</Text>
           </Flex>
         </SkeletonWrapper>
       </Flex>

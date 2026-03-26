@@ -1,4 +1,4 @@
-import { curationDecisionsRetrieveInfiniteOptions } from '@api/@tanstack/react-query.gen'
+import { listDecisionsApiV1CurationDecisionsGetInfiniteOptions } from '@api/index'
 import {
   DecisionSideMenuItem,
   DecisionsSideMenuTitle,
@@ -6,17 +6,16 @@ import {
 } from '@components'
 import { useInfiniteScroll, useQueryParams } from '@hooks'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { defaultFilters, defaultFiltersMenu } from '@utils'
 import { Menu } from 'antd'
 import { useEffect, useMemo } from 'react'
 
 import { useStyles } from './styles'
 
-import type { Decision } from '@api/types.gen'
+import type { DecisionSummary } from '@api/types.gen'
 
 type Props = {
-  activeDecision?: Decision
-  onSelect: (decision: Decision) => void
+  activeDecision?: DecisionSummary
+  onSelect: (decision: DecisionSummary) => void
 }
 
 export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
@@ -25,14 +24,14 @@ export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
-      ...curationDecisionsRetrieveInfiniteOptions({
+      ...listDecisionsApiV1CurationDecisionsGetInfiniteOptions({
         query: {
           ...params,
-          per_page: defaultFiltersMenu.page_size
+          limit: 20
         }
       }),
-      getNextPageParam: (lastPage) => lastPage?.next ?? undefined,
-      initialPageParam: defaultFilters.page
+      getNextPageParam: (lastPage) => lastPage?.next_cursor ?? undefined,
+      initialPageParam: null
     })
 
   const allDecisions = useMemo(
@@ -47,10 +46,20 @@ export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
   })
 
   useEffect(() => {
-    if (allDecisions?.[0]) {
+    if (!activeDecision && allDecisions[0]) {
       onSelect(allDecisions[0])
+      return
     }
-  }, [allDecisions, onSelect])
+
+    if (
+      activeDecision &&
+      allDecisions.length > 0 &&
+      !allDecisions.find((d) => d.id === activeDecision.id)
+    ) {
+      const next = allDecisions[0]
+      if (next) onSelect(next)
+    }
+  }, [allDecisions, activeDecision, onSelect])
 
   const selectedKeys = activeDecision?.id ? [activeDecision.id] : []
 

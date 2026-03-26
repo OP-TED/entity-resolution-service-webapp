@@ -1,10 +1,4 @@
-import {
-  curationDecisionsAlternativeCanonicalEntitiesRetrieveInfiniteOptions,
-  curationDecisionsAssignCreateMutation,
-  curationDecisionsRetrieveInfiniteQueryKey,
-  curationStatsRetrieveQueryKey
-} from '@api/@tanstack/react-query.gen'
-
+import { assignDecisionApiV1CurationDecisionsDecisionIdAssignPostMutation, getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetInfiniteOptions, getStatisticsApiV1CurationStatsGetQueryKey, listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey } from '@api/index'
 import { ProposedCard, Text } from '@components'
 import { useDecisionsLoadingState } from '@hooks/useDecisionsLoadingState'
 import {
@@ -17,10 +11,10 @@ import { App, Button, Collapse, Flex, Popconfirm, Tag, Tooltip } from 'antd'
 import { useMemo, useState } from 'react'
 import Skeleton from 'react-loading-skeleton'
 
-import type { Decision } from '@api/types.gen'
+import type { DecisionSummary } from '@api/types.gen'
 
 type Props = {
-  currentDecision?: Decision
+  currentDecision?: DecisionSummary
 }
 
 export const AlternativeClusters = ({ currentDecision }: Props) => {
@@ -36,12 +30,14 @@ export const AlternativeClusters = ({ currentDecision }: Props) => {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
-      ...curationDecisionsAlternativeCanonicalEntitiesRetrieveInfiniteOptions({
-        path: { id: String(currentDecisionId) },
-        query: {
-          per_page: 1
+      ...getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetInfiniteOptions(
+        {
+          path: { decision_id: String(currentDecisionId) },
+          query: {
+            per_page: 1
+          }
         }
-      }),
+      ),
       getNextPageParam: (lastPage) => lastPage?.next ?? undefined,
       initialPageParam: 1,
       enabled: !!currentDecisionId
@@ -53,7 +49,7 @@ export const AlternativeClusters = ({ currentDecision }: Props) => {
   )
 
   const { mutate } = useMutation({
-    ...curationDecisionsAssignCreateMutation(),
+    ...assignDecisionApiV1CurationDecisionsDecisionIdAssignPostMutation(),
     onError: (e) =>
       showApiErrors(e, (message) => notification.error({ message })),
     onSuccess: () => {
@@ -61,16 +57,13 @@ export const AlternativeClusters = ({ currentDecision }: Props) => {
         message: 'Cluster assigned successfully'
       })
       queryClient.invalidateQueries({
-        queryKey: curationDecisionsRetrieveInfiniteQueryKey()
+        queryKey: listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey()
       })
       queryClient.invalidateQueries({
-        queryKey: curationStatsRetrieveQueryKey()
+        queryKey: getStatisticsApiV1CurationStatsGetQueryKey() 
       })
     }
   })
-
-  const isPendingReview =
-    currentDecision?.decision_status === 'PENDING_MANUAL_REVIEW'
 
   const isLoadingContent =
     isFetchingNextPage || isDecisionsMenuLoading || isLoading
@@ -80,10 +73,10 @@ export const AlternativeClusters = ({ currentDecision }: Props) => {
 
     mutate({
       path: {
-        id: String(currentDecisionId)
+        decision_id: String(currentDecisionId)
       },
       body: {
-        canonical_entity_id: clusterIdentifier
+        cluster_id: clusterIdentifier
       }
     })
   }
@@ -110,7 +103,7 @@ export const AlternativeClusters = ({ currentDecision }: Props) => {
           key={index}
           items={[
             {
-              key: cluster?.identifier,
+              key: cluster?.cluster_id,
               label: (
                 <Flex gap={8} align="center" justify="space-between">
                   <Text size={16} weight={500}>
@@ -135,7 +128,7 @@ export const AlternativeClusters = ({ currentDecision }: Props) => {
                     onNext={() =>
                       onClickNextEntity(
                         index,
-                        cluster.top_alignment_links?.length || 1
+                        cluster.top_entities?.length || 1
                       )
                     }
                     title="Alternative Match"
@@ -147,18 +140,17 @@ export const AlternativeClusters = ({ currentDecision }: Props) => {
                       trigger="click"
                       title="This will assign the current entity to the alternative cluster instead of the proposed match. The system will learn from this decision to improve future matching."
                       onConfirm={() =>
-                        onConfirmSwitchCluster(cluster.identifier)
+                        onConfirmSwitchCluster(cluster.cluster_id)
                       }
                       placement="topRight"
                     >
                       <Tooltip
                         title="You can assign only decisions that are pending manual review."
-                        trigger={!isPendingReview ? 'hover' : 'contextMenu'}
+                        trigger='contextMenu'
                       >
                         <Button
                           variant="solid"
                           color="orange"
-                          disabled={!isPendingReview}
                         >
                           Use this cluster instead
                         </Button>

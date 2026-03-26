@@ -5,10 +5,10 @@ import { Card } from 'antd'
 
 import { useStyles } from './styles'
 
-import type { Decision } from '@api/types.gen'
+import type { DecisionSummary } from '@api/types.gen'
 
 type Props = {
-  activeDecision?: Decision
+  activeDecision?: DecisionSummary
 }
 
 export const KeyboardShortcuts = ({ activeDecision }: Props) => {

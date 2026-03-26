@@ -11,41 +11,80 @@ import type { AxiosError } from 'axios'
 
 import { client } from '../client.gen'
 import {
-  curationDecisionsAcceptCreate,
-  curationDecisionsAlternativeCanonicalEntitiesRetrieve,
-  curationDecisionsAssignCreate,
-  curationDecisionsProposedCanonicalEntityRetrieve,
-  curationDecisionsRejectCreate,
-  curationDecisionsRetrieve,
-  curationEntitiesRetrieve,
-  curationStatsRetrieve,
-  healthRetrieve,
-  type Options
+  acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPost,
+  assignDecisionApiV1CurationDecisionsDecisionIdAssignPost,
+  bulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPost,
+  bulkRejectDecisionsApiV1CurationDecisionsBulkRejectPost,
+  createUserApiV1UsersPost,
+  getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGet,
+  getCurrentUserApiV1UsersMeGet,
+  getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGet,
+  getStatisticsApiV1CurationStatsGet,
+  healthHealthGet,
+  listDecisionsApiV1CurationDecisionsGet,
+  listUserActionsApiV1UserActionsGet,
+  listUsersApiV1UsersGet,
+  loginApiV1AuthLoginPost,
+  type Options,
+  patchUserApiV1UsersUserIdPatch,
+  refreshApiV1AuthRefreshPost,
+  registerApiV1AuthRegisterPost,
+  rejectDecisionApiV1CurationDecisionsDecisionIdRejectPost
 } from '../sdk.gen'
 import type {
-  CurationDecisionsAcceptCreateData,
-  CurationDecisionsAcceptCreateError,
-  CurationDecisionsAcceptCreateResponse,
-  CurationDecisionsAlternativeCanonicalEntitiesRetrieveData,
-  CurationDecisionsAlternativeCanonicalEntitiesRetrieveError,
-  CurationDecisionsAlternativeCanonicalEntitiesRetrieveResponse,
-  CurationDecisionsAssignCreateData,
-  CurationDecisionsAssignCreateError,
-  CurationDecisionsAssignCreateResponse,
-  CurationDecisionsProposedCanonicalEntityRetrieveData,
-  CurationDecisionsProposedCanonicalEntityRetrieveError,
-  CurationDecisionsProposedCanonicalEntityRetrieveResponse,
-  CurationDecisionsRejectCreateData,
-  CurationDecisionsRejectCreateError,
-  CurationDecisionsRejectCreateResponse,
-  CurationDecisionsRetrieveData,
-  CurationDecisionsRetrieveResponse,
-  CurationEntitiesRetrieveData,
-  CurationEntitiesRetrieveError,
-  CurationEntitiesRetrieveResponse,
-  CurationStatsRetrieveData,
-  CurationStatsRetrieveResponse,
-  HealthRetrieveData
+  AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostData,
+  AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostError,
+  AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostResponse,
+  AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostData,
+  AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostError,
+  AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostResponse,
+  BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostData,
+  BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostError,
+  BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostResponse,
+  BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostData,
+  BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostError,
+  BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostResponse,
+  CreateUserApiV1UsersPostData,
+  CreateUserApiV1UsersPostError,
+  CreateUserApiV1UsersPostResponse,
+  GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetData,
+  GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetError,
+  GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetResponse,
+  GetCurrentUserApiV1UsersMeGetData,
+  GetCurrentUserApiV1UsersMeGetError,
+  GetCurrentUserApiV1UsersMeGetResponse,
+  GetProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetData,
+  GetProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetError,
+  GetProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetResponse,
+  GetStatisticsApiV1CurationStatsGetData,
+  GetStatisticsApiV1CurationStatsGetError,
+  GetStatisticsApiV1CurationStatsGetResponse,
+  HealthHealthGetData,
+  HealthHealthGetResponse,
+  ListDecisionsApiV1CurationDecisionsGetData,
+  ListDecisionsApiV1CurationDecisionsGetError,
+  ListDecisionsApiV1CurationDecisionsGetResponse,
+  ListUserActionsApiV1UserActionsGetData,
+  ListUserActionsApiV1UserActionsGetError,
+  ListUserActionsApiV1UserActionsGetResponse,
+  ListUsersApiV1UsersGetData,
+  ListUsersApiV1UsersGetError,
+  ListUsersApiV1UsersGetResponse,
+  LoginApiV1AuthLoginPostData,
+  LoginApiV1AuthLoginPostError,
+  LoginApiV1AuthLoginPostResponse,
+  PatchUserApiV1UsersUserIdPatchData,
+  PatchUserApiV1UsersUserIdPatchError,
+  PatchUserApiV1UsersUserIdPatchResponse,
+  RefreshApiV1AuthRefreshPostData,
+  RefreshApiV1AuthRefreshPostError,
+  RefreshApiV1AuthRefreshPostResponse,
+  RegisterApiV1AuthRegisterPostData,
+  RegisterApiV1AuthRegisterPostError,
+  RegisterApiV1AuthRegisterPostResponse,
+  RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostData,
+  RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostError,
+  RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostResponse
 } from '../types.gen'
 
 export type QueryKey<TOptions extends Options> = [
@@ -87,26 +126,26 @@ const createQueryKey = <TOptions extends Options>(
   return [params]
 }
 
-export const curationDecisionsRetrieveQueryKey = (
-  options?: Options<CurationDecisionsRetrieveData>
-) => createQueryKey('curationDecisionsRetrieve', options)
+export const healthHealthGetQueryKey = (
+  options?: Options<HealthHealthGetData>
+) => createQueryKey('healthHealthGet', options)
 
 /**
- * List decisions
+ * Health
  *
- * Retrieve paginated list of decisions with optional filtering. By default returns only PENDING_MANUAL_REVIEW decisions.
+ * Health check endpoint to verify the service is running.
  */
-export const curationDecisionsRetrieveOptions = (
-  options?: Options<CurationDecisionsRetrieveData>
+export const healthHealthGetOptions = (
+  options?: Options<HealthHealthGetData>
 ) =>
   queryOptions<
-    CurationDecisionsRetrieveResponse,
+    HealthHealthGetResponse,
     AxiosError<DefaultError>,
-    CurationDecisionsRetrieveResponse,
-    ReturnType<typeof curationDecisionsRetrieveQueryKey>
+    HealthHealthGetResponse,
+    ReturnType<typeof healthHealthGetQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await curationDecisionsRetrieve({
+      const { data } = await healthHealthGet({
         ...options,
         ...queryKey[0],
         signal,
@@ -114,7 +153,124 @@ export const curationDecisionsRetrieveOptions = (
       })
       return data
     },
-    queryKey: curationDecisionsRetrieveQueryKey(options)
+    queryKey: healthHealthGetQueryKey(options)
+  })
+
+/**
+ * Register
+ *
+ * Register a new user account.
+ */
+export const registerApiV1AuthRegisterPostMutation = (
+  options?: Partial<Options<RegisterApiV1AuthRegisterPostData>>
+): UseMutationOptions<
+  RegisterApiV1AuthRegisterPostResponse,
+  AxiosError<RegisterApiV1AuthRegisterPostError>,
+  Options<RegisterApiV1AuthRegisterPostData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RegisterApiV1AuthRegisterPostResponse,
+    AxiosError<RegisterApiV1AuthRegisterPostError>,
+    Options<RegisterApiV1AuthRegisterPostData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await registerApiV1AuthRegisterPost({
+        ...options,
+        ...fnOptions,
+        throwOnError: true
+      })
+      return data
+    }
+  }
+  return mutationOptions
+}
+
+/**
+ * Login
+ *
+ * Authenticate and receive access + refresh tokens.
+ */
+export const loginApiV1AuthLoginPostMutation = (
+  options?: Partial<Options<LoginApiV1AuthLoginPostData>>
+): UseMutationOptions<
+  LoginApiV1AuthLoginPostResponse,
+  AxiosError<LoginApiV1AuthLoginPostError>,
+  Options<LoginApiV1AuthLoginPostData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    LoginApiV1AuthLoginPostResponse,
+    AxiosError<LoginApiV1AuthLoginPostError>,
+    Options<LoginApiV1AuthLoginPostData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await loginApiV1AuthLoginPost({
+        ...options,
+        ...fnOptions,
+        throwOnError: true
+      })
+      return data
+    }
+  }
+  return mutationOptions
+}
+
+/**
+ * Refresh
+ *
+ * Exchange a refresh token for a new token pair.
+ */
+export const refreshApiV1AuthRefreshPostMutation = (
+  options?: Partial<Options<RefreshApiV1AuthRefreshPostData>>
+): UseMutationOptions<
+  RefreshApiV1AuthRefreshPostResponse,
+  AxiosError<RefreshApiV1AuthRefreshPostError>,
+  Options<RefreshApiV1AuthRefreshPostData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RefreshApiV1AuthRefreshPostResponse,
+    AxiosError<RefreshApiV1AuthRefreshPostError>,
+    Options<RefreshApiV1AuthRefreshPostData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await refreshApiV1AuthRefreshPost({
+        ...options,
+        ...fnOptions,
+        throwOnError: true
+      })
+      return data
+    }
+  }
+  return mutationOptions
+}
+
+export const listDecisionsApiV1CurationDecisionsGetQueryKey = (
+  options?: Options<ListDecisionsApiV1CurationDecisionsGetData>
+) => createQueryKey('listDecisionsApiV1CurationDecisionsGet', options)
+
+/**
+ * List Decisions
+ *
+ * Retrieve cursor-paginated list of decisions with optional filtering.
+ */
+export const listDecisionsApiV1CurationDecisionsGetOptions = (
+  options?: Options<ListDecisionsApiV1CurationDecisionsGetData>
+) =>
+  queryOptions<
+    ListDecisionsApiV1CurationDecisionsGetResponse,
+    AxiosError<ListDecisionsApiV1CurationDecisionsGetError>,
+    ListDecisionsApiV1CurationDecisionsGetResponse,
+    ReturnType<typeof listDecisionsApiV1CurationDecisionsGetQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listDecisionsApiV1CurationDecisionsGet({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true
+      })
+      return data
+    },
+    queryKey: listDecisionsApiV1CurationDecisionsGetQueryKey(options)
   })
 
 const createInfiniteParams = <
@@ -151,27 +307,28 @@ const createInfiniteParams = <
   return params as unknown as typeof page
 }
 
-export const curationDecisionsRetrieveInfiniteQueryKey = (
-  options?: Options<CurationDecisionsRetrieveData>
-): QueryKey<Options<CurationDecisionsRetrieveData>> =>
-  createQueryKey('curationDecisionsRetrieve', options, true)
+export const listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey = (
+  options?: Options<ListDecisionsApiV1CurationDecisionsGetData>
+): QueryKey<Options<ListDecisionsApiV1CurationDecisionsGetData>> =>
+  createQueryKey('listDecisionsApiV1CurationDecisionsGet', options, true)
 
 /**
- * List decisions
+ * List Decisions
  *
- * Retrieve paginated list of decisions with optional filtering. By default returns only PENDING_MANUAL_REVIEW decisions.
+ * Retrieve cursor-paginated list of decisions with optional filtering.
  */
-export const curationDecisionsRetrieveInfiniteOptions = (
-  options?: Options<CurationDecisionsRetrieveData>
+export const listDecisionsApiV1CurationDecisionsGetInfiniteOptions = (
+  options?: Options<ListDecisionsApiV1CurationDecisionsGetData>
 ) =>
   infiniteQueryOptions<
-    CurationDecisionsRetrieveResponse,
-    AxiosError<DefaultError>,
-    InfiniteData<CurationDecisionsRetrieveResponse>,
-    QueryKey<Options<CurationDecisionsRetrieveData>>,
-    | number
+    ListDecisionsApiV1CurationDecisionsGetResponse,
+    AxiosError<ListDecisionsApiV1CurationDecisionsGetError>,
+    InfiniteData<ListDecisionsApiV1CurationDecisionsGetResponse>,
+    QueryKey<Options<ListDecisionsApiV1CurationDecisionsGetData>>,
+    | string
+    | null
     | Pick<
-        QueryKey<Options<CurationDecisionsRetrieveData>>[0],
+        QueryKey<Options<ListDecisionsApiV1CurationDecisionsGetData>>[0],
         'body' | 'headers' | 'path' | 'query'
       >
   >(
@@ -180,18 +337,18 @@ export const curationDecisionsRetrieveInfiniteOptions = (
       queryFn: async ({ pageParam, queryKey, signal }) => {
         // @ts-ignore
         const page: Pick<
-          QueryKey<Options<CurationDecisionsRetrieveData>>[0],
+          QueryKey<Options<ListDecisionsApiV1CurationDecisionsGetData>>[0],
           'body' | 'headers' | 'path' | 'query'
         > =
           typeof pageParam === 'object'
             ? pageParam
             : {
                 query: {
-                  page: pageParam
+                  cursor: pageParam
                 }
               }
         const params = createInfiniteParams(queryKey, page)
-        const { data } = await curationDecisionsRetrieve({
+        const { data } = await listDecisionsApiV1CurationDecisionsGet({
           ...options,
           ...params,
           signal,
@@ -199,109 +356,130 @@ export const curationDecisionsRetrieveInfiniteOptions = (
         })
         return data
       },
-      queryKey: curationDecisionsRetrieveInfiniteQueryKey(options)
+      queryKey: listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey(options)
     }
   )
 
-/**
- * Accept proposed match
- *
- * Accept the proposed canonical entity match. Sets alignment confidence to 1.
- */
-export const curationDecisionsAcceptCreateMutation = (
-  options?: Partial<Options<CurationDecisionsAcceptCreateData>>
-): UseMutationOptions<
-  CurationDecisionsAcceptCreateResponse,
-  AxiosError<CurationDecisionsAcceptCreateError>,
-  Options<CurationDecisionsAcceptCreateData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    CurationDecisionsAcceptCreateResponse,
-    AxiosError<CurationDecisionsAcceptCreateError>,
-    Options<CurationDecisionsAcceptCreateData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await curationDecisionsAcceptCreate({
-        ...options,
-        ...fnOptions,
-        throwOnError: true
-      })
-      return data
-    }
-  }
-  return mutationOptions
-}
-
-export const curationDecisionsAlternativeCanonicalEntitiesRetrieveQueryKey = (
-  options: Options<CurationDecisionsAlternativeCanonicalEntitiesRetrieveData>
-) =>
-  createQueryKey(
-    'curationDecisionsAlternativeCanonicalEntitiesRetrieve',
-    options
-  )
-
-/**
- * Get alternative matches
- *
- * Retrieve alternative match clusters for a decision (paginated). Returns all canonical entity clusters except the proposed match, with top 5 alignment links including full entity mention data.
- */
-export const curationDecisionsAlternativeCanonicalEntitiesRetrieveOptions = (
-  options: Options<CurationDecisionsAlternativeCanonicalEntitiesRetrieveData>
-) =>
-  queryOptions<
-    CurationDecisionsAlternativeCanonicalEntitiesRetrieveResponse,
-    AxiosError<CurationDecisionsAlternativeCanonicalEntitiesRetrieveError>,
-    CurationDecisionsAlternativeCanonicalEntitiesRetrieveResponse,
-    ReturnType<
-      typeof curationDecisionsAlternativeCanonicalEntitiesRetrieveQueryKey
-    >
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } =
-        await curationDecisionsAlternativeCanonicalEntitiesRetrieve({
-          ...options,
-          ...queryKey[0],
-          signal,
-          throwOnError: true
-        })
-      return data
-    },
-    queryKey:
-      curationDecisionsAlternativeCanonicalEntitiesRetrieveQueryKey(options)
-  })
-
-export const curationDecisionsAlternativeCanonicalEntitiesRetrieveInfiniteQueryKey =
+export const getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetQueryKey =
   (
-    options: Options<CurationDecisionsAlternativeCanonicalEntitiesRetrieveData>
+    options: Options<GetProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetData>
+  ) =>
+    createQueryKey(
+      'getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGet',
+      options
+    )
+
+/**
+ * Get Proposed Canonical Entity
+ *
+ * Get the proposed canonical entity for a given decision.
+ */
+export const getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetOptions =
+  (
+    options: Options<GetProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetData>
+  ) =>
+    queryOptions<
+      GetProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetResponse,
+      AxiosError<GetProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetError>,
+      GetProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetResponse,
+      ReturnType<
+        typeof getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetQueryKey
+      >
+    >({
+      queryFn: async ({ queryKey, signal }) => {
+        const { data } =
+          await getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGet(
+            {
+              ...options,
+              ...queryKey[0],
+              signal,
+              throwOnError: true
+            }
+          )
+        return data
+      },
+      queryKey:
+        getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetQueryKey(
+          options
+        )
+    })
+
+export const getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetQueryKey =
+  (
+    options: Options<GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetData>
+  ) =>
+    createQueryKey(
+      'getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGet',
+      options
+    )
+
+/**
+ * Get Alternative Canonical Entities
+ *
+ * Get alternative canonical entities for a given decision.
+ */
+export const getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetOptions =
+  (
+    options: Options<GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetData>
+  ) =>
+    queryOptions<
+      GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetResponse,
+      AxiosError<GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetError>,
+      GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetResponse,
+      ReturnType<
+        typeof getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetQueryKey
+      >
+    >({
+      queryFn: async ({ queryKey, signal }) => {
+        const { data } =
+          await getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGet(
+            {
+              ...options,
+              ...queryKey[0],
+              signal,
+              throwOnError: true
+            }
+          )
+        return data
+      },
+      queryKey:
+        getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetQueryKey(
+          options
+        )
+    })
+
+export const getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetInfiniteQueryKey =
+  (
+    options: Options<GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetData>
   ): QueryKey<
-    Options<CurationDecisionsAlternativeCanonicalEntitiesRetrieveData>
+    Options<GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetData>
   > =>
     createQueryKey(
-      'curationDecisionsAlternativeCanonicalEntitiesRetrieve',
+      'getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGet',
       options,
       true
     )
 
 /**
- * Get alternative matches
+ * Get Alternative Canonical Entities
  *
- * Retrieve alternative match clusters for a decision (paginated). Returns all canonical entity clusters except the proposed match, with top 5 alignment links including full entity mention data.
+ * Get alternative canonical entities for a given decision.
  */
-export const curationDecisionsAlternativeCanonicalEntitiesRetrieveInfiniteOptions =
+export const getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetInfiniteOptions =
   (
-    options: Options<CurationDecisionsAlternativeCanonicalEntitiesRetrieveData>
+    options: Options<GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetData>
   ) =>
     infiniteQueryOptions<
-      CurationDecisionsAlternativeCanonicalEntitiesRetrieveResponse,
-      AxiosError<CurationDecisionsAlternativeCanonicalEntitiesRetrieveError>,
-      InfiniteData<CurationDecisionsAlternativeCanonicalEntitiesRetrieveResponse>,
+      GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetResponse,
+      AxiosError<GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetError>,
+      InfiniteData<GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetResponse>,
       QueryKey<
-        Options<CurationDecisionsAlternativeCanonicalEntitiesRetrieveData>
+        Options<GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetData>
       >,
       | number
       | Pick<
           QueryKey<
-            Options<CurationDecisionsAlternativeCanonicalEntitiesRetrieveData>
+            Options<GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetData>
           >[0],
           'body' | 'headers' | 'path' | 'query'
         >
@@ -312,7 +490,7 @@ export const curationDecisionsAlternativeCanonicalEntitiesRetrieveInfiniteOption
           // @ts-ignore
           const page: Pick<
             QueryKey<
-              Options<CurationDecisionsAlternativeCanonicalEntitiesRetrieveData>
+              Options<GetAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetData>
             >[0],
             'body' | 'headers' | 'path' | 'query'
           > =
@@ -325,40 +503,399 @@ export const curationDecisionsAlternativeCanonicalEntitiesRetrieveInfiniteOption
                 }
           const params = createInfiniteParams(queryKey, page)
           const { data } =
-            await curationDecisionsAlternativeCanonicalEntitiesRetrieve({
-              ...options,
-              ...params,
-              signal,
-              throwOnError: true
-            })
+            await getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGet(
+              {
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+              }
+            )
           return data
         },
         queryKey:
-          curationDecisionsAlternativeCanonicalEntitiesRetrieveInfiniteQueryKey(
+          getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetInfiniteQueryKey(
             options
           )
       }
     )
 
 /**
- * Assign to alternative canonical entity
+ * Accept Decision
  *
- * Assign the entity mention to a different canonical entity. Creates new alignment link with confidence 1. Existing alignment link receives confidence -1.
+ * Accept the proposed canonical entity match.
  */
-export const curationDecisionsAssignCreateMutation = (
-  options?: Partial<Options<CurationDecisionsAssignCreateData>>
+export const acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation =
+  (
+    options?: Partial<
+      Options<AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostData>
+    >
+  ): UseMutationOptions<
+    AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostResponse,
+    AxiosError<AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostError>,
+    Options<AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostData>
+  > => {
+    const mutationOptions: UseMutationOptions<
+      AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostResponse,
+      AxiosError<AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostError>,
+      Options<AcceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostData>
+    > = {
+      mutationFn: async (fnOptions) => {
+        const { data } =
+          await acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPost({
+            ...options,
+            ...fnOptions,
+            throwOnError: true
+          })
+        return data
+      }
+    }
+    return mutationOptions
+  }
+
+/**
+ * Reject Decision
+ *
+ * Reject the proposed canonical entity match.
+ */
+export const rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation =
+  (
+    options?: Partial<
+      Options<RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostData>
+    >
+  ): UseMutationOptions<
+    RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostResponse,
+    AxiosError<RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostError>,
+    Options<RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostData>
+  > => {
+    const mutationOptions: UseMutationOptions<
+      RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostResponse,
+      AxiosError<RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostError>,
+      Options<RejectDecisionApiV1CurationDecisionsDecisionIdRejectPostData>
+    > = {
+      mutationFn: async (fnOptions) => {
+        const { data } =
+          await rejectDecisionApiV1CurationDecisionsDecisionIdRejectPost({
+            ...options,
+            ...fnOptions,
+            throwOnError: true
+          })
+        return data
+      }
+    }
+    return mutationOptions
+  }
+
+/**
+ * Assign Decision
+ *
+ * Assign the subject entity mention to a specific cluster.
+ */
+export const assignDecisionApiV1CurationDecisionsDecisionIdAssignPostMutation =
+  (
+    options?: Partial<
+      Options<AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostData>
+    >
+  ): UseMutationOptions<
+    AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostResponse,
+    AxiosError<AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostError>,
+    Options<AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostData>
+  > => {
+    const mutationOptions: UseMutationOptions<
+      AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostResponse,
+      AxiosError<AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostError>,
+      Options<AssignDecisionApiV1CurationDecisionsDecisionIdAssignPostData>
+    > = {
+      mutationFn: async (fnOptions) => {
+        const { data } =
+          await assignDecisionApiV1CurationDecisionsDecisionIdAssignPost({
+            ...options,
+            ...fnOptions,
+            throwOnError: true
+          })
+        return data
+      }
+    }
+    return mutationOptions
+  }
+
+/**
+ * Bulk Accept Decisions
+ *
+ * Accept multiple decisions in a single request.
+ */
+export const bulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostMutation = (
+  options?: Partial<
+    Options<BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostData>
+  >
 ): UseMutationOptions<
-  CurationDecisionsAssignCreateResponse,
-  AxiosError<CurationDecisionsAssignCreateError>,
-  Options<CurationDecisionsAssignCreateData>
+  BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostResponse,
+  AxiosError<BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostError>,
+  Options<BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostData>
 > => {
   const mutationOptions: UseMutationOptions<
-    CurationDecisionsAssignCreateResponse,
-    AxiosError<CurationDecisionsAssignCreateError>,
-    Options<CurationDecisionsAssignCreateData>
+    BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostResponse,
+    AxiosError<BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostError>,
+    Options<BulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostData>
   > = {
     mutationFn: async (fnOptions) => {
-      const { data } = await curationDecisionsAssignCreate({
+      const { data } =
+        await bulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPost({
+          ...options,
+          ...fnOptions,
+          throwOnError: true
+        })
+      return data
+    }
+  }
+  return mutationOptions
+}
+
+/**
+ * Bulk Reject Decisions
+ *
+ * Reject multiple decisions in a single request.
+ */
+export const bulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostMutation = (
+  options?: Partial<
+    Options<BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostData>
+  >
+): UseMutationOptions<
+  BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostResponse,
+  AxiosError<BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostError>,
+  Options<BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostResponse,
+    AxiosError<BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostError>,
+    Options<BulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } =
+        await bulkRejectDecisionsApiV1CurationDecisionsBulkRejectPost({
+          ...options,
+          ...fnOptions,
+          throwOnError: true
+        })
+      return data
+    }
+  }
+  return mutationOptions
+}
+
+export const getStatisticsApiV1CurationStatsGetQueryKey = (
+  options?: Options<GetStatisticsApiV1CurationStatsGetData>
+) => createQueryKey('getStatisticsApiV1CurationStatsGet', options)
+
+/**
+ * Get Statistics
+ *
+ * Retrieve registry statistics and curation statistics with optional filtering.
+ */
+export const getStatisticsApiV1CurationStatsGetOptions = (
+  options?: Options<GetStatisticsApiV1CurationStatsGetData>
+) =>
+  queryOptions<
+    GetStatisticsApiV1CurationStatsGetResponse,
+    AxiosError<GetStatisticsApiV1CurationStatsGetError>,
+    GetStatisticsApiV1CurationStatsGetResponse,
+    ReturnType<typeof getStatisticsApiV1CurationStatsGetQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getStatisticsApiV1CurationStatsGet({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true
+      })
+      return data
+    },
+    queryKey: getStatisticsApiV1CurationStatsGetQueryKey(options)
+  })
+
+export const listUserActionsApiV1UserActionsGetQueryKey = (
+  options?: Options<ListUserActionsApiV1UserActionsGetData>
+) => createQueryKey('listUserActionsApiV1UserActionsGet', options)
+
+/**
+ * List User Actions
+ *
+ * List paginated user actions ordered by latest first (admin only).
+ */
+export const listUserActionsApiV1UserActionsGetOptions = (
+  options?: Options<ListUserActionsApiV1UserActionsGetData>
+) =>
+  queryOptions<
+    ListUserActionsApiV1UserActionsGetResponse,
+    AxiosError<ListUserActionsApiV1UserActionsGetError>,
+    ListUserActionsApiV1UserActionsGetResponse,
+    ReturnType<typeof listUserActionsApiV1UserActionsGetQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listUserActionsApiV1UserActionsGet({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true
+      })
+      return data
+    },
+    queryKey: listUserActionsApiV1UserActionsGetQueryKey(options)
+  })
+
+export const listUserActionsApiV1UserActionsGetInfiniteQueryKey = (
+  options?: Options<ListUserActionsApiV1UserActionsGetData>
+): QueryKey<Options<ListUserActionsApiV1UserActionsGetData>> =>
+  createQueryKey('listUserActionsApiV1UserActionsGet', options, true)
+
+/**
+ * List User Actions
+ *
+ * List paginated user actions ordered by latest first (admin only).
+ */
+export const listUserActionsApiV1UserActionsGetInfiniteOptions = (
+  options?: Options<ListUserActionsApiV1UserActionsGetData>
+) =>
+  infiniteQueryOptions<
+    ListUserActionsApiV1UserActionsGetResponse,
+    AxiosError<ListUserActionsApiV1UserActionsGetError>,
+    InfiniteData<ListUserActionsApiV1UserActionsGetResponse>,
+    QueryKey<Options<ListUserActionsApiV1UserActionsGetData>>,
+    | number
+    | Pick<
+        QueryKey<Options<ListUserActionsApiV1UserActionsGetData>>[0],
+        'body' | 'headers' | 'path' | 'query'
+      >
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<ListUserActionsApiV1UserActionsGetData>>[0],
+          'body' | 'headers' | 'path' | 'query'
+        > =
+          typeof pageParam === 'object'
+            ? pageParam
+            : {
+                query: {
+                  page: pageParam
+                }
+              }
+        const params = createInfiniteParams(queryKey, page)
+        const { data } = await listUserActionsApiV1UserActionsGet({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true
+        })
+        return data
+      },
+      queryKey: listUserActionsApiV1UserActionsGetInfiniteQueryKey(options)
+    }
+  )
+
+export const listUsersApiV1UsersGetQueryKey = (
+  options?: Options<ListUsersApiV1UsersGetData>
+) => createQueryKey('listUsersApiV1UsersGet', options)
+
+/**
+ * List Users
+ *
+ * List all users (admin only).
+ */
+export const listUsersApiV1UsersGetOptions = (
+  options?: Options<ListUsersApiV1UsersGetData>
+) =>
+  queryOptions<
+    ListUsersApiV1UsersGetResponse,
+    AxiosError<ListUsersApiV1UsersGetError>,
+    ListUsersApiV1UsersGetResponse,
+    ReturnType<typeof listUsersApiV1UsersGetQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listUsersApiV1UsersGet({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true
+      })
+      return data
+    },
+    queryKey: listUsersApiV1UsersGetQueryKey(options)
+  })
+
+export const listUsersApiV1UsersGetInfiniteQueryKey = (
+  options?: Options<ListUsersApiV1UsersGetData>
+): QueryKey<Options<ListUsersApiV1UsersGetData>> =>
+  createQueryKey('listUsersApiV1UsersGet', options, true)
+
+/**
+ * List Users
+ *
+ * List all users (admin only).
+ */
+export const listUsersApiV1UsersGetInfiniteOptions = (
+  options?: Options<ListUsersApiV1UsersGetData>
+) =>
+  infiniteQueryOptions<
+    ListUsersApiV1UsersGetResponse,
+    AxiosError<ListUsersApiV1UsersGetError>,
+    InfiniteData<ListUsersApiV1UsersGetResponse>,
+    QueryKey<Options<ListUsersApiV1UsersGetData>>,
+    | number
+    | Pick<
+        QueryKey<Options<ListUsersApiV1UsersGetData>>[0],
+        'body' | 'headers' | 'path' | 'query'
+      >
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<ListUsersApiV1UsersGetData>>[0],
+          'body' | 'headers' | 'path' | 'query'
+        > =
+          typeof pageParam === 'object'
+            ? pageParam
+            : {
+                query: {
+                  page: pageParam
+                }
+              }
+        const params = createInfiniteParams(queryKey, page)
+        const { data } = await listUsersApiV1UsersGet({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true
+        })
+        return data
+      },
+      queryKey: listUsersApiV1UsersGetInfiniteQueryKey(options)
+    }
+  )
+
+/**
+ * Create User
+ *
+ * Create a new user (admin only).
+ */
+export const createUserApiV1UsersPostMutation = (
+  options?: Partial<Options<CreateUserApiV1UsersPostData>>
+): UseMutationOptions<
+  CreateUserApiV1UsersPostResponse,
+  AxiosError<CreateUserApiV1UsersPostError>,
+  Options<CreateUserApiV1UsersPostData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CreateUserApiV1UsersPostResponse,
+    AxiosError<CreateUserApiV1UsersPostError>,
+    Options<CreateUserApiV1UsersPostData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await createUserApiV1UsersPost({
         ...options,
         ...fnOptions,
         throwOnError: true
@@ -369,55 +906,25 @@ export const curationDecisionsAssignCreateMutation = (
   return mutationOptions
 }
 
-export const curationDecisionsProposedCanonicalEntityRetrieveQueryKey = (
-  options: Options<CurationDecisionsProposedCanonicalEntityRetrieveData>
-) => createQueryKey('curationDecisionsProposedCanonicalEntityRetrieve', options)
-
 /**
- * Get proposed match
+ * Patch User
  *
- * Retrieve the proposed match cluster for a decision. Returns the highest confidence canonical entity with top 5 alignment links including full entity mention data.
+ * Update user flags (admin only).
  */
-export const curationDecisionsProposedCanonicalEntityRetrieveOptions = (
-  options: Options<CurationDecisionsProposedCanonicalEntityRetrieveData>
-) =>
-  queryOptions<
-    CurationDecisionsProposedCanonicalEntityRetrieveResponse,
-    AxiosError<CurationDecisionsProposedCanonicalEntityRetrieveError>,
-    CurationDecisionsProposedCanonicalEntityRetrieveResponse,
-    ReturnType<typeof curationDecisionsProposedCanonicalEntityRetrieveQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await curationDecisionsProposedCanonicalEntityRetrieve({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true
-      })
-      return data
-    },
-    queryKey: curationDecisionsProposedCanonicalEntityRetrieveQueryKey(options)
-  })
-
-/**
- * Reject proposed match
- *
- * Reject the proposed match. Sets alignment confidence to -1.
- */
-export const curationDecisionsRejectCreateMutation = (
-  options?: Partial<Options<CurationDecisionsRejectCreateData>>
+export const patchUserApiV1UsersUserIdPatchMutation = (
+  options?: Partial<Options<PatchUserApiV1UsersUserIdPatchData>>
 ): UseMutationOptions<
-  CurationDecisionsRejectCreateResponse,
-  AxiosError<CurationDecisionsRejectCreateError>,
-  Options<CurationDecisionsRejectCreateData>
+  PatchUserApiV1UsersUserIdPatchResponse,
+  AxiosError<PatchUserApiV1UsersUserIdPatchError>,
+  Options<PatchUserApiV1UsersUserIdPatchData>
 > => {
   const mutationOptions: UseMutationOptions<
-    CurationDecisionsRejectCreateResponse,
-    AxiosError<CurationDecisionsRejectCreateError>,
-    Options<CurationDecisionsRejectCreateData>
+    PatchUserApiV1UsersUserIdPatchResponse,
+    AxiosError<PatchUserApiV1UsersUserIdPatchError>,
+    Options<PatchUserApiV1UsersUserIdPatchData>
   > = {
     mutationFn: async (fnOptions) => {
-      const { data } = await curationDecisionsRejectCreate({
+      const { data } = await patchUserApiV1UsersUserIdPatch({
         ...options,
         ...fnOptions,
         throwOnError: true
@@ -428,26 +935,26 @@ export const curationDecisionsRejectCreateMutation = (
   return mutationOptions
 }
 
-export const curationEntitiesRetrieveQueryKey = (
-  options: Options<CurationEntitiesRetrieveData>
-) => createQueryKey('curationEntitiesRetrieve', options)
+export const getCurrentUserApiV1UsersMeGetQueryKey = (
+  options?: Options<GetCurrentUserApiV1UsersMeGetData>
+) => createQueryKey('getCurrentUserApiV1UsersMeGet', options)
 
 /**
- * Get entity mention
+ * Get Current User
  *
- * Retrieve entity mention by identifier with parsed data for UI display (excludes raw payload)
+ * Get current authenticated user.
  */
-export const curationEntitiesRetrieveOptions = (
-  options: Options<CurationEntitiesRetrieveData>
+export const getCurrentUserApiV1UsersMeGetOptions = (
+  options?: Options<GetCurrentUserApiV1UsersMeGetData>
 ) =>
   queryOptions<
-    CurationEntitiesRetrieveResponse,
-    AxiosError<CurationEntitiesRetrieveError>,
-    CurationEntitiesRetrieveResponse,
-    ReturnType<typeof curationEntitiesRetrieveQueryKey>
+    GetCurrentUserApiV1UsersMeGetResponse,
+    AxiosError<GetCurrentUserApiV1UsersMeGetError>,
+    GetCurrentUserApiV1UsersMeGetResponse,
+    ReturnType<typeof getCurrentUserApiV1UsersMeGetQueryKey>
   >({
     queryFn: async ({ queryKey, signal }) => {
-      const { data } = await curationEntitiesRetrieve({
+      const { data } = await getCurrentUserApiV1UsersMeGet({
         ...options,
         ...queryKey[0],
         signal,
@@ -455,57 +962,5 @@ export const curationEntitiesRetrieveOptions = (
       })
       return data
     },
-    queryKey: curationEntitiesRetrieveQueryKey(options)
-  })
-
-export const curationStatsRetrieveQueryKey = (
-  options?: Options<CurationStatsRetrieveData>
-) => createQueryKey('curationStatsRetrieve', options)
-
-/**
- * Get statistics
- *
- * Retrieve curation and registry statistics with optional timeframe filtering
- */
-export const curationStatsRetrieveOptions = (
-  options?: Options<CurationStatsRetrieveData>
-) =>
-  queryOptions<
-    CurationStatsRetrieveResponse,
-    AxiosError<DefaultError>,
-    CurationStatsRetrieveResponse,
-    ReturnType<typeof curationStatsRetrieveQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await curationStatsRetrieve({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true
-      })
-      return data
-    },
-    queryKey: curationStatsRetrieveQueryKey(options)
-  })
-
-export const healthRetrieveQueryKey = (options?: Options<HealthRetrieveData>) =>
-  createQueryKey('healthRetrieve', options)
-
-export const healthRetrieveOptions = (options?: Options<HealthRetrieveData>) =>
-  queryOptions<
-    unknown,
-    AxiosError<DefaultError>,
-    unknown,
-    ReturnType<typeof healthRetrieveQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await healthRetrieve({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true
-      })
-      return data
-    },
-    queryKey: healthRetrieveQueryKey(options)
+    queryKey: getCurrentUserApiV1UsersMeGetQueryKey(options)
   })

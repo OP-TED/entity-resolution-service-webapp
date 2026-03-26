@@ -29,7 +29,7 @@ export const ProposedCard = ({
   const { styles } = useStyles({ alternative: isAlternative })
   const isDecisionsMenuLoading = useDecisionsLoadingState()
 
-  const currentEntityLength = data?.top_alignment_links?.length
+  const currentEntityLength = data?.top_entities?.length ?? 0
 
   const isLoadingContent = isLoading || isDecisionsMenuLoading
 
@@ -88,8 +88,7 @@ export const ProposedCard = ({
       >
         <EntityAttributes
           parsedData={
-            data?.top_alignment_links?.[currentEntity - 1]?.entity_mention
-              ?.parsed_data
+            data?.top_entities?.[currentEntity - 1]?.parsed_representation
           }
         />
       </SkeletonWrapper>
