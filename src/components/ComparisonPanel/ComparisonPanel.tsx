@@ -3,8 +3,6 @@ import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
 import {
   acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation,
   getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetOptions,
-  getStatisticsApiV1CurationStatsGetQueryKey,
-  listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey,
   rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation
 } from '@api/index'
 import {
@@ -14,8 +12,8 @@ import {
   SkeletonWrapper,
   Text
 } from '@components'
-import { useDecisionsLoadingState } from '@hooks/useDecisionsLoadingState'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDecisionsLoadingState, useRemoveDecisionFromCache } from '@hooks'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { formatTimeAgo, getConfidenceStatus, showApiErrors } from '@utils'
 
 import {
@@ -43,7 +41,7 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
   const [currentEntity, setCurrentEntity] = useState<number>(1)
   const isDecisionsMenuLoading = useDecisionsLoadingState()
   const { notification } = App.useApp()
-  const queryClient = useQueryClient()
+  const removeDecisionFromCache = useRemoveDecisionFromCache()
 
   const currentDecisionId = currentDecision?.id
 
@@ -61,27 +59,6 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
       setCurrentEntity(1)
     }
   }, [currentDecisionId])
-
-  const removeDecisionFromCache = (decisionId: string) => {
-    queryClient.setQueriesData<
-      { pages: Array<{ results: Array<{ id: string }> }> }
-    >(
-      { queryKey: listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey() },
-      (old) => {
-        if (!old) return old
-        return {
-          ...old,
-          pages: old.pages.map((page) => ({
-            ...page,
-            results: page.results.filter((d) => d.id !== decisionId)
-          }))
-        }
-      }
-    )
-    queryClient.invalidateQueries({
-      queryKey: getStatisticsApiV1CurationStatsGetQueryKey()
-    })
-  }
 
   const { mutate: acceptDecision } = useMutation({
     ...acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation(),

@@ -4,7 +4,7 @@ import { useDecisionsLoadingState } from '../../src/hooks/useDecisionsLoadingSta
 import { createTestQueryClient, renderHook } from '../test-utils'
 
 vi.mock('../../src/api/index', () => ({
-  curationDecisionsRetrieveInfiniteQueryKey: vi.fn(() => ['decisions-infinite'])
+  listDecisionsApiV1CurationDecisionsGetQueryKey: vi.fn(() => ['decisions'])
 }))
 
 describe('useDecisionsLoadingState', () => {
@@ -16,7 +16,7 @@ describe('useDecisionsLoadingState', () => {
   it('returns false when the query state is not pending', () => {
     const queryClient = createTestQueryClient()
     // Set query data (non-pending state)
-    queryClient.setQueryData(['decisions-infinite'], { pages: [], pageParams: [] })
+    queryClient.setQueryData(['decisions'], { pages: [], pageParams: [] })
 
     const { result } = renderHook(() => useDecisionsLoadingState(), { queryClient })
     expect(result.current).toBe(false)

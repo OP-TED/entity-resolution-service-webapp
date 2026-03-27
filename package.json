@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run openapi:meaningfy && vite",
+    "dev": "vite",
     "build": "npm run openapi:meaningfy && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",

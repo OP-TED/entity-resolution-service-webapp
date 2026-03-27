@@ -4,13 +4,6 @@ import { useMemo } from 'react'
 
 import { useStyles } from './styles'
 
-const statusLabels: Record<string, string> = {
-  ALL_STATUSES: 'All Statuses',
-  AUTOMATIC_CONFIDENT: 'Automatic Confident',
-  PENDING_MANUAL_REVIEW: 'Pending Review',
-  MANUALLY_REVIEWED: 'Reviewed'
-}
-
 const orderingLabels: Record<string, string> = {
   '+created_at': 'created at newest',
   '-created_at': 'created at oldest',
@@ -24,14 +17,6 @@ export const DecisionsSideMenuTitle = () => {
   const params = useQueryParams()
   const { styles } = useStyles()
 
-  const statusLabel = useMemo(() => {
-    const status = params?.status as string | undefined
-    if (!status) {
-      return statusLabels.ALL_STATUSES
-    }
-    return statusLabels[status] || status
-  }, [params?.status])
-
   const orderingLabel = useMemo(() => {
     const ordering = params?.ordering as string | undefined
     if (!ordering) {
@@ -43,7 +28,7 @@ export const DecisionsSideMenuTitle = () => {
   return (
     <div className={styles.header}>
       <Text color="colorTextSecondary" isEllipsis weight={600} size={16}>
-        {statusLabel} (sorted by {orderingLabel})
+        (sorted by {orderingLabel})
       </Text>
     </div>
   )

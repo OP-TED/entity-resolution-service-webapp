@@ -1,10 +1,10 @@
-import { assignDecisionApiV1CurationDecisionsDecisionIdAssignPostMutation, getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetInfiniteOptions, getStatisticsApiV1CurationStatsGetQueryKey, listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey } from '@api/index'
+import { assignDecisionApiV1CurationDecisionsDecisionIdAssignPostMutation, getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetInfiniteOptions } from '@api/index'
 import { ProposedCard, Text } from '@components'
 import { useDecisionsLoadingState } from '@hooks/useDecisionsLoadingState'
+import { useRemoveDecisionFromCache } from '@hooks/useRemoveDecisionFromCache'
 import {
   useInfiniteQuery,
-  useMutation,
-  useQueryClient
+  useMutation
 } from '@tanstack/react-query'
 import { getConfidenceStatus, showApiErrors } from '@utils'
 import { App, Button, Collapse, Flex, Popconfirm, Tag, Tooltip } from 'antd'
@@ -18,9 +18,9 @@ type Props = {
 }
 
 export const AlternativeClusters = ({ currentDecision }: Props) => {
-  const queryClient = useQueryClient()
   const isDecisionsMenuLoading = useDecisionsLoadingState()
   const { notification } = App.useApp()
+  const removeDecisionFromCache = useRemoveDecisionFromCache()
 
   const currentDecisionId = currentDecision?.id
 
@@ -52,16 +52,9 @@ export const AlternativeClusters = ({ currentDecision }: Props) => {
     ...assignDecisionApiV1CurationDecisionsDecisionIdAssignPostMutation(),
     onError: (e) =>
       showApiErrors(e, (message) => notification.error({ message })),
-    onSuccess: () => {
-      notification.success({
-        message: 'Cluster assigned successfully'
-      })
-      queryClient.invalidateQueries({
-        queryKey: listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey()
-      })
-      queryClient.invalidateQueries({
-        queryKey: getStatisticsApiV1CurationStatsGetQueryKey() 
-      })
+    onSuccess: (_, variables) => {
+      removeDecisionFromCache(variables.path.decision_id)
+      notification.success({ message: 'Cluster assigned successfully' })
     }
   })
 

@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { DecisionsSideMenu } from '../../src/components/DecisionsSideMenu'
-import { render, screen } from '../test-utils'
+import { createTestQueryClient, fireEvent, render, screen, waitFor } from '../test-utils'
 
 vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
-  curationDecisionsRetrieveInfiniteOptions: vi.fn(() => ({
+  listDecisionsApiV1CurationDecisionsGetInfiniteOptions: vi.fn(() => ({
     queryKey: ['decisions-infinite'],
-    queryFn: vi.fn().mockResolvedValue({ results: [], next: null, count: 0 })
+    queryFn: vi.fn().mockResolvedValue({ results: [], next_cursor: null })
   }))
 }))
 
@@ -14,23 +14,107 @@ vi.mock('../../src/hooks/useInfiniteScroll', () => ({
   useInfiniteScroll: vi.fn(() => ({ current: null }))
 }))
 
+const makeDecision = (id: string) => ({
+  id,
+  about_entity_mention: {
+    identified_by: { source_id: 's1', request_id: id, entity_type: 'Person' },
+    parsed_representation: { name: `Entity ${id}` }
+  },
+  current_placement: { cluster_id: 'c1', confidence_score: 0.8, similarity_score: 0.7 },
+  created_at: new Date().toISOString()
+})
+
 describe('DecisionsSideMenu', () => {
   it('renders without crashing', () => {
     render(<DecisionsSideMenu onSelect={vi.fn()} />)
-    // The component always renders the title
     expect(document.querySelector('aside')).toBeInTheDocument()
   })
 
   it('renders the side menu title', () => {
     render(<DecisionsSideMenu onSelect={vi.fn()} />)
-    // DecisionsSideMenuTitle renders some text
-    expect(screen.getByText(/Statuses/i)).toBeInTheDocument()
+    expect(screen.getByText(/sorted by/i)).toBeInTheDocument()
   })
 
-  it('shows a skeleton while loading', () => {
+  it('renders an <aside> element as the scroll container', () => {
     render(<DecisionsSideMenu onSelect={vi.fn()} />)
-    // When the query has no data yet (loading), Skeleton renders
-    const aside = document.querySelector('aside')
-    expect(aside).toBeInTheDocument()
+    expect(document.querySelector('aside')).toBeInTheDocument()
+  })
+
+  it('auto-selects the first decision when none is active and data loads', async () => {
+    const queryClient = createTestQueryClient()
+    const decision = makeDecision('d1')
+    queryClient.setQueryData(['decisions-infinite'], {
+      pages: [{ results: [decision], next_cursor: null }],
+      pageParams: [undefined]
+    })
+
+    const onSelect = vi.fn()
+    render(<DecisionsSideMenu onSelect={onSelect} />, { queryClient })
+
+    await waitFor(() => {
+      expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'd1' }))
+    })
+  })
+
+  it('calls onSelect(undefined) when the decisions list becomes empty with an active decision', async () => {
+    const queryClient = createTestQueryClient()
+    queryClient.setQueryData(['decisions-infinite'], {
+      pages: [{ results: [], next_cursor: null }],
+      pageParams: [undefined]
+    })
+
+    const onSelect = vi.fn()
+    render(
+      <DecisionsSideMenu
+        activeDecision={makeDecision('d1') as never}
+        onSelect={onSelect}
+      />,
+      { queryClient }
+    )
+
+    await waitFor(() => {
+      expect(onSelect).toHaveBeenCalledWith(undefined)
+    })
+  })
+
+  it('renders menu items for each cached decision', async () => {
+    const queryClient = createTestQueryClient()
+    queryClient.setQueryData(['decisions-infinite'], {
+      pages: [
+        {
+          results: [makeDecision('d1'), makeDecision('d2')],
+          next_cursor: null
+        }
+      ],
+      pageParams: [undefined]
+    })
+
+    render(<DecisionsSideMenu onSelect={vi.fn()} />, { queryClient })
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('menuitem').length).toBeGreaterThanOrEqual(2)
+    })
+  })
+
+  it('calls onSelect with the clicked decision when a menu item is clicked', async () => {
+    const queryClient = createTestQueryClient()
+    const decision = makeDecision('d1')
+    queryClient.setQueryData(['decisions-infinite'], {
+      pages: [{ results: [decision], next_cursor: null }],
+      pageParams: [undefined]
+    })
+
+    const onSelect = vi.fn()
+    render(<DecisionsSideMenu onSelect={onSelect} />, { queryClient })
+
+    await waitFor(() =>
+      expect(screen.getAllByRole('menuitem').length).toBeGreaterThanOrEqual(1)
+    )
+
+    fireEvent.click(screen.getAllByRole('menuitem')[0])
+
+    await waitFor(() => {
+      expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'd1' }))
+    })
   })
 })

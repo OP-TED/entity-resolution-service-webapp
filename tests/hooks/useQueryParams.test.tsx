@@ -19,13 +19,6 @@ describe('useQueryParams', () => {
     expect(result.current).toEqual({})
   })
 
-  it('parses a single query parameter', () => {
-    const { result } = renderHook(() => useQueryParams(), {
-      wrapper: wrapper('/?status=PENDING_MANUAL_REVIEW')
-    })
-    expect(result.current.status).toBe('PENDING_MANUAL_REVIEW')
-  })
-
   it('parses multiple query parameters', () => {
     const { result } = renderHook(() => useQueryParams(), {
       wrapper: wrapper('/?status=PENDING&page=2&entity_type=PERSON')

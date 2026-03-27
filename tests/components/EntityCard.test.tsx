@@ -3,13 +3,6 @@ import { describe, expect, it, vi } from 'vitest'
 import { EntityCard } from '../../src/components/EntityCard'
 import { render, screen } from '../test-utils'
 
-vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
-  curationEntitiesRetrieveOptions: vi.fn(() => ({
-    queryKey: ['entity', 'test-id'],
-    queryFn: vi.fn().mockResolvedValue({ parsed_data: { name: 'Alice' } })
-  }))
-}))
-
 vi.mock('../../src/hooks/useDecisionsLoadingState', () => ({
   useDecisionsLoadingState: () => false
 }))
@@ -20,19 +13,42 @@ describe('EntityCard', () => {
     expect(screen.getByText('Current Entity')).toBeInTheDocument()
   })
 
-  it('renders without crashing when entityId is undefined', () => {
+  it('renders without crashing when no props are provided', () => {
     render(<EntityCard />)
     expect(screen.getByText('Current Entity')).toBeInTheDocument()
   })
 
-  it('renders with entityId prop without crashing', () => {
-    render(<EntityCard entityId="test-123" />)
-    expect(screen.getByText('Current Entity')).toBeInTheDocument()
+  it('renders entity attributes from entityData', () => {
+    render(<EntityCard entityData={{ name: 'Alice', city: 'Paris' }} />)
+    expect(screen.getByText('Name:')).toBeInTheDocument()
+    expect(screen.getByText('Alice')).toBeInTheDocument()
+    expect(screen.getByText('City:')).toBeInTheDocument()
+    expect(screen.getByText('Paris')).toBeInTheDocument()
   })
 
-  it('renders a loading skeleton while loading', () => {
-    // Re-mock to simulate loading state via useDecisionsLoadingState
-    render(<EntityCard entityId="test-id" />)
-    expect(screen.getByText('Current Entity')).toBeInTheDocument()
+  it('shows "No attributes available" when entityData is empty', () => {
+    render(<EntityCard entityData={{}} />)
+    expect(screen.getByText('No attributes available')).toBeInTheDocument()
+  })
+
+  it('renders diff summary when showDiffSummary is true and data differs', () => {
+    render(
+      <EntityCard
+        entityData={{ name: 'Alice' }}
+        compareWith={{ name: 'Bob' }}
+        showDiffSummary
+      />
+    )
+    expect(screen.getByText(/1 Modified/)).toBeInTheDocument()
+  })
+
+  it('renders in comparison mode when compareWith is provided', () => {
+    render(
+      <EntityCard
+        entityData={{ name: 'Alice', email: 'a@example.com' }}
+        compareWith={{ name: 'Alice', phone: '123' }}
+      />
+    )
+    expect(screen.getByText('Name:')).toBeInTheDocument()
   })
 })

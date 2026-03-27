@@ -1,6 +1,7 @@
 
-import { acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation, getStatisticsApiV1CurationStatsGetQueryKey, listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey, rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation } from '@api/index'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation, rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation } from '@api/index'
+import { useRemoveDecisionFromCache } from '@hooks/useRemoveDecisionFromCache'
+import { useMutation } from '@tanstack/react-query'
 import { showApiErrors } from '@utils'
 import { App } from 'antd'
 import { useEffect } from 'react'
@@ -14,18 +15,16 @@ type UseKeyboardShortcutsProps = {
 export const useKeyboardShortcuts = ({
   activeDecision
 }: UseKeyboardShortcutsProps) => {
-  const queryClient = useQueryClient()
   const { notification, modal } = App.useApp()
+  const removeDecisionFromCache = useRemoveDecisionFromCache()
 
   const { mutate: acceptDecision } = useMutation({
     ...acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation(),
     onError: (e) =>
       showApiErrors(e, (message) => notification.error({ message })),
-    onSuccess: () => {
-      onSuccessMutate()
-      notification.success({
-        message: 'Decision accepted'
-      })
+    onSuccess: (_, variables) => {
+      removeDecisionFromCache(variables.path.decision_id)
+      notification.success({ message: 'Decision accepted' })
     }
   })
 
@@ -33,22 +32,11 @@ export const useKeyboardShortcuts = ({
     ...rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation(),
     onError: (e) =>
       showApiErrors(e, (message) => notification.error({ message })),
-    onSuccess: () => {
-      onSuccessMutate()
-      notification.success({
-        message: 'Decision rejected'
-      })
+    onSuccess: (_, variables) => {
+      removeDecisionFromCache(variables.path.decision_id)
+      notification.success({ message: 'Decision rejected' })
     }
   })
-
-  const onSuccessMutate = async () => {
-    queryClient.invalidateQueries({
-      queryKey: listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey()
-    })
-    queryClient.invalidateQueries({
-      queryKey: getStatisticsApiV1CurationStatsGetQueryKey()
-    })
-  }
 
   useEffect(() => {
     const onKeyPress = (event: KeyboardEvent) => {
