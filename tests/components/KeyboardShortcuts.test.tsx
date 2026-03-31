@@ -32,7 +32,7 @@ describe('KeyboardShortcuts', () => {
   it('renders without crashing when activeDecision is provided', () => {
     render(
       <KeyboardShortcuts
-        activeDecision={{ id: 1, decision_status: 'PENDING_MANUAL_REVIEW' } as never}
+        activeDecision={{ id: 1 } as never}
       />
     )
     expect(screen.getByText(/Keyboard shortcuts:/)).toBeInTheDocument()

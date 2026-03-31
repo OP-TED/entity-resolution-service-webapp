@@ -1,29 +1,33 @@
 import { expect, test } from '@playwright/test'
 
-import { API_BASE } from './helpers'
+import { API_BASE, mockAuthRoutes } from './helpers'
 
-const emptyDecisions = { count: 0, next: null, previous: null, results: [] }
+const emptyDecisions = { results: [], next_cursor: null }
 const mockStats = {
-  curation_statistics: {
-    reviewed_decisions: 5,
-    pending_decisions: 10,
-    automatic_decisions: 2
+  registry: {
+    total_entity_mentions: 100,
+    total_canonical_entities: 40,
+    average_cluster_size: 2.5,
+    resolution_requests: 80
+  },
+  curation: {
+    total_decisions: 17,
+    selected_top: 5,
+    selected_alternative: 2,
+    rejected_all: 1
   }
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.route(`${API_BASE}/curation/stats/`, (route) =>
-    route.fulfill({ json: mockStats })
-  )
-  await page.route(`${API_BASE}/curation/decisions/**`, (route) =>
+  // Catch-all fallback registered first (lowest priority in Playwright's LIFO route matching)
+  await page.route(`${API_BASE}/api/v1/**`, (route) => route.fulfill({ json: {} }))
+  await page.route(`${API_BASE}/api/v1/curation/decisions**`, (route) =>
     route.fulfill({ json: emptyDecisions })
   )
-  await page.route(`${API_BASE}/**`, (route) => route.fulfill({ json: {} }))
-})
-
-test('status filter defaults to PENDING_MANUAL_REVIEW on load', async ({ page }) => {
-  await page.goto('/')
-  await expect(page).toHaveURL(/status=PENDING_MANUAL_REVIEW/)
+  await page.route(`${API_BASE}/api/v1/curation/stats`, (route) =>
+    route.fulfill({ json: mockStats })
+  )
+  await mockAuthRoutes(page)
 })
 
 test('search input updates URL query param after debounce', async ({ page }) => {
@@ -38,31 +42,11 @@ test('search input updates URL query param after debounce', async ({ page }) => 
   await expect(page).toHaveURL(/search=test\+entity|search=test%20entity/)
 })
 
-test('selecting a different status updates the URL', async ({ page }) => {
-  await page.goto('/')
-
-  const statusSelect = page.getByLabel('Select Status')
-  await statusSelect.click()
-  await page.getByText('Accepted').click()
-
-  await expect(page).toHaveURL(/status=ACCEPTED/)
-})
-
-test('selecting an entity type updates the URL', async ({ page }) => {
-  await page.goto('/')
-
-  const typeSelect = page.getByLabel('Select Entity Type')
-  await typeSelect.click()
-  await page.locator('.ant-select-dropdown').locator('.ant-select-item').first().click()
-
-  await expect(page).toHaveURL(/entity_type=/)
-})
-
 test('selecting confidence range updates the URL', async ({ page }) => {
   await page.goto('/')
 
-  const confidenceSelect = page.getByLabel('Select Confidence')
-  await confidenceSelect.click()
+  // Click the visible title div that covers the input (Ant Design Select pattern)
+  await page.getByTitle('All Confidence').click()
   await page.getByText('High (0.7-1.0)').click()
 
   await expect(page).toHaveURL(/confidence_min=0.7/)

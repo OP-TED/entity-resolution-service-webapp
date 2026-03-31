@@ -4,53 +4,58 @@ import { createTestQueryClient, render, screen } from '../test-utils'
 import { Header } from '../../src/components/Header'
 
 vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
-  curationStatsRetrieveOptions: vi.fn(() => ({
+  getStatisticsApiV1CurationStatsGetOptions: vi.fn(() => ({
     queryKey: ['curation-stats'],
     queryFn: vi.fn()
   }))
 }))
 
+vi.mock('../../src/context/useAuth', () => ({
+  useAuth: vi.fn(() => ({ user: null, logout: vi.fn() }))
+}))
+
 describe('Header', () => {
   it('renders the main page title', () => {
     render(<Header />)
-    expect(
-      screen.getByText('Resolution Decision Review')
-    ).toBeInTheDocument()
-  })
-
-  it('shows loading skeleton while stats are loading', () => {
-    // With no data in the query cache, the query is in loading state
-    render(<Header />)
-    // Title is always visible
     expect(screen.getByText('Resolution Decision Review')).toBeInTheDocument()
   })
 
-  it('shows reviewed, remaining and today counts when stats are loaded', () => {
+  it('shows loading skeleton while stats are loading', () => {
+    render(<Header />)
+    expect(screen.getByText('Resolution Decision Review')).toBeInTheDocument()
+  })
+
+  it('shows selected top, alternative, rejected, and total when stats are loaded', () => {
     const queryClient = createTestQueryClient()
     queryClient.setQueryData(['curation-stats'], {
-      curation_statistics: {
-        reviewed_decisions: 15,
-        pending_decisions: 8,
-        automatic_decisions: 5
+      curation: {
+        selected_top: 15,
+        selected_alternative: 3,
+        rejected_all: 2,
+        total_decisions: 20
       }
     })
 
     render(<Header />, { queryClient })
 
-    expect(screen.getByText(/15 reviewed/)).toBeInTheDocument()
-    expect(screen.getByText(/8 remaining/)).toBeInTheDocument()
-    // today = automatic + reviewed = 5 + 15 = 20
+    expect(screen.getByText(/15 Selected Top/)).toBeInTheDocument()
+    expect(screen.getByText(/3.*Selected Alternative/)).toBeInTheDocument()
+    expect(screen.getByText(/2 Rejected/)).toBeInTheDocument()
     expect(screen.getByText(/20 decisions/)).toBeInTheDocument()
   })
 
-  it('shows zero counts when curation_statistics is absent', () => {
+  it('shows zero counts when curation stats are absent', () => {
     const queryClient = createTestQueryClient()
     queryClient.setQueryData(['curation-stats'], {})
 
     render(<Header />, { queryClient })
 
-    expect(screen.getByText(/0 reviewed/)).toBeInTheDocument()
-    expect(screen.getByText(/0 remaining/)).toBeInTheDocument()
+    expect(screen.getByText(/0 Selected Top/)).toBeInTheDocument()
     expect(screen.getByText(/0 decisions/)).toBeInTheDocument()
+  })
+
+  it('renders sign out button', () => {
+    render(<Header />)
+    expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()
   })
 })

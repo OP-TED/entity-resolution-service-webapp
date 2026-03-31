@@ -8,10 +8,10 @@ import {
 import { Col, Flex, Row } from 'antd'
 import { useState } from 'react'
 
-import type { Decision } from '@api/types.gen'
+import type { DecisionSummary } from '@api/types.gen'
 
 function App() {
-  const [activeDecision, setActiveDecision] = useState<Decision>()
+  const [activeDecision, setActiveDecision] = useState<DecisionSummary>()
 
   return (
     <Flex vertical className="h-100vh overflow-hidden">

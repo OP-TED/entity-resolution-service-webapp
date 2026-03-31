@@ -1,11 +1,10 @@
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
+
 import {
-  curationDecisionsAcceptCreateMutation,
-  curationDecisionsProposedCanonicalEntityRetrieveOptions,
-  curationDecisionsRejectCreateMutation,
-  curationDecisionsRetrieveInfiniteQueryKey,
-  curationStatsRetrieveQueryKey
-} from '@api/@tanstack/react-query.gen'
+  acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation,
+  getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetOptions,
+  rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation
+} from '@api/index'
 import {
   AlternativeClusters,
   EntityCard,
@@ -13,8 +12,8 @@ import {
   SkeletonWrapper,
   Text
 } from '@components'
-import { useDecisionsLoadingState } from '@hooks/useDecisionsLoadingState'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDecisionsLoadingState, useRemoveDecisionFromCache } from '@hooks'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { formatTimeAgo, getConfidenceStatus, showApiErrors } from '@utils'
 
 import {
@@ -25,17 +24,16 @@ import {
   Flex,
   Popconfirm,
   Row,
-  Tag,
-  Tooltip
+  Tag
 } from 'antd'
 import { useEffect, useState } from 'react'
 
 import { useStyles } from './styles'
 
-import type { Decision } from '@api/types.gen'
+import type { DecisionSummary } from '@api/types.gen'
 
 type Props = {
-  currentDecision?: Decision
+  currentDecision?: DecisionSummary
 }
 
 export const ComparisonPanel = ({ currentDecision }: Props) => {
@@ -43,14 +41,16 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
   const [currentEntity, setCurrentEntity] = useState<number>(1)
   const isDecisionsMenuLoading = useDecisionsLoadingState()
   const { notification } = App.useApp()
-  const queryClient = useQueryClient()
+  const removeDecisionFromCache = useRemoveDecisionFromCache()
 
   const currentDecisionId = currentDecision?.id
 
   const { data, isLoading } = useQuery({
-    ...curationDecisionsProposedCanonicalEntityRetrieveOptions({
-      path: { id: String(currentDecisionId) }
-    }),
+    ...getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetOptions(
+      {
+        path: { decision_id: String(currentDecisionId) }
+      }
+    ),
     enabled: !!currentDecisionId
   })
 
@@ -61,37 +61,24 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
   }, [currentDecisionId])
 
   const { mutate: acceptDecision } = useMutation({
-    ...curationDecisionsAcceptCreateMutation(),
+    ...acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation(),
     onError: (e) =>
       showApiErrors(e, (message) => notification.error({ message })),
-    onSuccess: async () => {
-      onSuccessMutate()
-      notification.success({
-        message: 'Decision accepted'
-      })
+    onSuccess: () => {
+      if (currentDecisionId) removeDecisionFromCache(currentDecisionId)
+      notification.success({ message: 'Decision accepted' })
     }
   })
 
   const { mutate: rejectDecision } = useMutation({
-    ...curationDecisionsRejectCreateMutation(),
+    ...rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation(),
     onError: (e) =>
       showApiErrors(e, (message) => notification.error({ message })),
-    onSuccess: async () => {
-      onSuccessMutate()
-      notification.success({
-        message: 'Decision rejected'
-      })
+    onSuccess: () => {
+      if (currentDecisionId) removeDecisionFromCache(currentDecisionId)
+      notification.success({ message: 'Decision rejected' })
     }
   })
-
-  const onSuccessMutate = () => {
-    queryClient.invalidateQueries({
-      queryKey: curationDecisionsRetrieveInfiniteQueryKey()
-    })
-    queryClient.invalidateQueries({
-      queryKey: curationStatsRetrieveQueryKey()
-    })
-  }
 
   const onPreviousEntity = () => {
     if (currentEntity > 1) {
@@ -100,43 +87,35 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
   }
 
   const onNextEntity = () => {
-    if (currentEntity < (data?.top_alignment_links?.length ?? 0)) {
+    if (currentEntity < (data?.top_entities?.length ?? 0)) {
       setCurrentEntity((prev) => prev + 1)
     }
   }
 
-  const entityId =
-    currentDecision?.decision_context?.subject_entity_mention_identifier
+  const entityData = currentDecision?.about_entity_mention?.parsed_representation
 
-  const currentProposedEntity = data?.top_alignment_links?.[currentEntity - 1]
-  const confidenceScore = currentProposedEntity?.confidence_score ?? 0
+  const entityDisplayName =
+    (entityData as { name?: string } | null)?.name ??
+    currentDecision?.about_entity_mention?.identified_by?.request_id
+
+  const currentProposedEntity = data?.top_entities?.[currentEntity - 1]
+  const confidenceScore = data?.confidence_score
   const confidenceScoreFormatted = confidenceScore?.toFixed(2)
 
   const currentProposedEntityName = (
-    currentProposedEntity?.entity_mention?.parsed_data as { name: string }
+    currentProposedEntity?.parsed_representation as { name?: string } | null
   )?.name
 
-  const proposedEntityData = currentProposedEntity?.entity_mention?.parsed_data
-
-  const isPendingReview =
-    currentDecision?.decision_status === 'PENDING_MANUAL_REVIEW'
+  const proposedEntityData = currentProposedEntity?.parsed_representation
 
   const onClickAccept = () => {
     if (!currentDecisionId) return
-    acceptDecision({
-      path: {
-        id: String(currentDecisionId)
-      }
-    })
+    acceptDecision({ path: { decision_id: String(currentDecisionId) } })
   }
 
   const onClickReject = () => {
     if (!currentDecisionId) return
-    rejectDecision({
-      path: {
-        id: String(currentDecisionId)
-      }
-    })
+    rejectDecision({ path: { decision_id: String(currentDecisionId) } })
   }
 
   const isLoadingContent = isLoading || isDecisionsMenuLoading
@@ -178,10 +157,7 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
             >
               <Flex gap={4} className="w-full">
                 <Text isEllipsis size={32} weight={600}>
-                  {
-                    currentDecision?.decision_context
-                      ?.subject_entity_display_name
-                  }
+                  {entityDisplayName}
                 </Text>
 
                 {currentProposedEntityName && (
@@ -205,19 +181,14 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
                 trigger="click"
                 style={{ maxWidth: '200px' }}
               >
-                <Tooltip
-                  title="Only pending manual review decisions can be accepted."
-                  trigger={!isPendingReview ? 'hover' : 'contextMenu'}
-                >
-                  <Button
-                    shape="circle"
-                    icon={<CheckOutlined />}
-                    color="green"
-                    variant="solid"
-                    size="large"
-                    disabled={!isPendingReview}
-                  />
-                </Tooltip>
+                <Button
+                  shape="circle"
+                  icon={<CheckOutlined />}
+                  color="green"
+                  variant="solid"
+                  size="large"
+                  disabled={!currentDecisionId}
+                />
               </Popconfirm>
 
               <Popconfirm
@@ -225,20 +196,14 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
                 title={rejectMessage}
                 onConfirm={onClickReject}
               >
-                <Tooltip
-                  title="Only pending manual review decisions can be rejected."
-                  trigger={!isPendingReview ? 'hover' : 'contextMenu'}
-                  placement="left"
-                >
-                  <Button
-                    shape="circle"
-                    icon={<CloseOutlined />}
-                    color="danger"
-                    variant="solid"
-                    size="large"
-                    disabled={!isPendingReview}
-                  />
-                </Tooltip>
+                <Button
+                  shape="circle"
+                  icon={<CloseOutlined />}
+                  color="danger"
+                  variant="solid"
+                  size="large"
+                  disabled={!currentDecisionId}
+                />
               </Popconfirm>
             </Flex>
           </Col>
@@ -258,7 +223,7 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
               <Text weight={600}>Cluster size: </Text>
 
               <Text color="colorTextSecondary">
-                {data?.top_alignment_links?.length} entities •
+                {data?.top_entities?.length} entities •
               </Text>
 
               <Text weight={600}>Last updated: </Text>
@@ -273,7 +238,7 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
         <Row gutter={32}>
           <Col xs={24} lg={12}>
             <EntityCard
-              entityId={entityId}
+              entityData={entityData}
               compareWith={proposedEntityData}
               showDiffSummary={true}
             />

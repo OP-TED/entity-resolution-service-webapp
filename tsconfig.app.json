@@ -34,7 +34,13 @@
       "@styles/*": ["./src/styles/*"],
       "@styles": ["./src/styles"],
       "@types/*": ["./src/types/*"],
-      "@types": ["./src/types"]
+      "@types": ["./src/types"],
+      "@context/*": ["./src/context/*"],
+      "@context": ["./src/context"],
+      "@router/*": ["./src/router/*"],
+      "@router": ["./src/router"],
+      "@pages/*": ["./src/pages/*"],
+      "@pages": ["./src/pages"]
     }
   }
 }

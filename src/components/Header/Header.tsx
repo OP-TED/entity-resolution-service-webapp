@@ -1,20 +1,23 @@
-import { curationStatsRetrieveOptions } from '@api/@tanstack/react-query.gen'
+import { getStatisticsApiV1CurationStatsGetOptions } from '@api/@tanstack/react-query.gen'
 import { SkeletonWrapper, Text } from '@components'
+import { useAuth } from '@context/useAuth'
 import { useQuery } from '@tanstack/react-query'
 
-import { Flex, Typography } from 'antd'
+import { Button, Flex, Typography } from 'antd'
 
 import { useStyles } from './styles'
 
 const { Title } = Typography
 
 export const Header = () => {
-  const { data, isLoading } = useQuery(curationStatsRetrieveOptions())
+  const { data, isLoading } = useQuery(getStatisticsApiV1CurationStatsGetOptions())
+  const { user, logout } = useAuth()
   const { styles } = useStyles()
 
-  const reviewed = data?.curation_statistics?.reviewed_decisions ?? 0
-  const remaining = data?.curation_statistics?.pending_decisions ?? 0
-  const today = (data?.curation_statistics?.automatic_decisions ?? 0) + reviewed
+  const selectedTopCount = data?.curation?.selected_top ?? 0
+  const selectedAlternativeCount = data?.curation?.selected_alternative ?? 0
+  const rejectedCount = data?.curation?.rejected_all ?? 0
+  const totalCount = data?.curation?.total_decisions ?? 0
 
   return (
     <header className={styles.header}>
@@ -33,16 +36,28 @@ export const Header = () => {
             </Text>
 
             <Text color="colorWhite">
-              {reviewed} reviewed, {remaining} remaining |
+              {selectedTopCount} Selected Top | {selectedAlternativeCount}{' '}
+              Selected Alternative, {rejectedCount} Rejected
             </Text>
 
             <Text weight={600} color="colorWhite">
-              Today:
+              Total:
             </Text>
 
-            <Text color="colorWhite">{today} decisions</Text>
+            <Text color="colorWhite">{totalCount} decisions</Text>
           </Flex>
         </SkeletonWrapper>
+
+        <Flex gap={8} align="center">
+          {user && (
+            <Text color="colorWhite" size={13}>
+              {user.email}
+            </Text>
+          )}
+          <Button size="small" onClick={logout}>
+            Sign out
+          </Button>
+        </Flex>
       </Flex>
     </header>
   )

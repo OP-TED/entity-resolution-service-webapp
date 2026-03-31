@@ -27,3 +27,4 @@ env
 #tests
 playwright-report
 coverage
+test-results

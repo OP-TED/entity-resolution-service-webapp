@@ -1,50 +1,74 @@
 import { expect, test } from '@playwright/test'
 
-import { API_BASE } from './helpers'
+import { API_BASE, mockAuthRoutes } from './helpers'
 
 const mockStats = {
-  curation_statistics: {
-    reviewed_decisions: 42,
-    pending_decisions: 17,
-    automatic_decisions: 8
+  registry: {
+    total_entity_mentions: 200,
+    total_canonical_entities: 80,
+    average_cluster_size: 2.5,
+    resolution_requests: 150
+  },
+  curation: {
+    total_decisions: 67,
+    selected_top: 42,
+    selected_alternative: 3,
+    rejected_all: 5
   }
 }
 
 const mockDecisionsPage = {
-  count: 2,
-  next: null,
-  previous: null,
   results: [
     {
-      id: '1',
-      decision_status: 'PENDING_MANUAL_REVIEW',
+      id: 'decision-001',
+      about_entity_mention: {
+        identified_by: {
+          source_id: 'src-1',
+          request_id: 'entity-001',
+          entity_type: 'Person'
+        },
+        parsed_representation: { name: 'Alice Johnson' }
+      },
+      current_placement: {
+        cluster_id: 'cluster-1',
+        confidence_score: 0.85,
+        similarity_score: 0.80
+      },
       created_at: new Date(Date.now() - 60_000).toISOString(),
-      decision_context: {
-        subject_entity_display_name: 'Alice Johnson',
-        subject_entity_mention_identifier: 'entity-001'
-      }
+      updated_at: null
     },
     {
-      id: '2',
-      decision_status: 'PENDING_MANUAL_REVIEW',
-      created_at: new Date(Date.now() - 3600_000).toISOString(),
-      decision_context: {
-        subject_entity_display_name: 'Bob Smith',
-        subject_entity_mention_identifier: 'entity-002'
-      }
+      id: 'decision-002',
+      about_entity_mention: {
+        identified_by: {
+          source_id: 'src-1',
+          request_id: 'entity-002',
+          entity_type: 'Person'
+        },
+        parsed_representation: { name: 'Bob Smith' }
+      },
+      current_placement: {
+        cluster_id: 'cluster-2',
+        confidence_score: 0.72,
+        similarity_score: 0.68
+      },
+      created_at: new Date(Date.now() - 3_600_000).toISOString(),
+      updated_at: null
     }
-  ]
+  ],
+  next_cursor: null
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.route(`${API_BASE}/curation/stats/`, (route) =>
-    route.fulfill({ json: mockStats })
-  )
-  await page.route(`${API_BASE}/curation/decisions/**`, (route) =>
+  // Catch-all fallback registered first (lowest priority in Playwright's LIFO route matching)
+  await page.route(`${API_BASE}/api/v1/**`, (route) => route.fulfill({ json: {} }))
+  await page.route(`${API_BASE}/api/v1/curation/decisions**`, (route) =>
     route.fulfill({ json: mockDecisionsPage })
   )
-  // Catch-all fallback for any other API calls
-  await page.route(`${API_BASE}/**`, (route) => route.fulfill({ json: {} }))
+  await page.route(`${API_BASE}/api/v1/curation/stats`, (route) =>
+    route.fulfill({ json: mockStats })
+  )
+  await mockAuthRoutes(page)
 })
 
 test('page title is visible', async ({ page }) => {
@@ -54,32 +78,40 @@ test('page title is visible', async ({ page }) => {
   ).toBeVisible()
 })
 
-test('header shows correct statistics', async ({ page }) => {
+test('header shows curation progress statistics', async ({ page }) => {
   await page.goto('/')
-  // reviewed = 42, remaining = 17, today = automatic(8) + reviewed(42) = 50
-  await expect(page.getByText(/42 reviewed/)).toBeVisible()
-  await expect(page.getByText(/17 remaining/)).toBeVisible()
-  await expect(page.getByText(/50 decisions/)).toBeVisible()
+  await expect(page.getByText(/42 Selected Top/)).toBeVisible()
+  await expect(page.getByText(/3.*Selected Alternative/)).toBeVisible()
+  await expect(page.getByText(/5 Rejected/)).toBeVisible()
+  await expect(page.getByText(/67 decisions/)).toBeVisible()
 })
 
 test('filter bar renders all filter controls', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByText('Entity Type:')).toBeVisible()
-  await expect(page.getByText('Confidence:')).toBeVisible()
-  await expect(page.getByText('Status:')).toBeVisible()
+  await expect(page.getByText('Confidence:', { exact: true }).first()).toBeVisible()
   await expect(page.getByText('Sort by:')).toBeVisible()
   await expect(page.getByText('Search:')).toBeVisible()
 })
 
 test('decisions side menu shows loaded decisions', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByText('Alice Johnson')).toBeVisible()
-  await expect(page.getByText('Bob Smith')).toBeVisible()
+  await expect(page.getByRole('menu').getByText('Alice Johnson')).toBeVisible()
+  await expect(page.getByRole('menu').getByText('Bob Smith')).toBeVisible()
 })
 
 test('comparison panel renders decision review heading', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByText('Decision Review')).toBeVisible()
+  await expect(page.getByText('Decision Review', { exact: true })).toBeVisible()
+})
+
+test('header shows logged-in user email', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByText('curator@example.com')).toBeVisible()
+})
+
+test('sign out button is visible', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: /sign out/i })).toBeVisible()
 })
 
 test('app layout renders without JS errors', async ({ page }) => {

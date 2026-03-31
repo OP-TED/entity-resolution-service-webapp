@@ -1,10 +1,28 @@
 import { LoadingScreen } from '@components'
+import { useAuth } from '@context/useAuth'
+import { LoginPage } from '@pages/LoginPage'
 import { Suspense } from 'react'
-import { type RouteObject, Outlet, useRoutes } from 'react-router-dom'
+import { type RouteObject, Navigate, Outlet, useRoutes } from 'react-router-dom'
 
 import App from '../App'
 
 import { paths } from './paths'
+
+const ProtectedRoute = () => {
+  const { user, isLoading } = useAuth()
+
+  if (isLoading) return <LoadingScreen />
+  if (!user) return <Navigate to={paths.login} replace />
+  return <Outlet />
+}
+
+const GuestRoute = () => {
+  const { user, isLoading } = useAuth()
+
+  if (isLoading) return <LoadingScreen />
+  if (user) return <Navigate to={paths.root} replace />
+  return <Outlet />
+}
 
 export const Router = () => {
   const routes: RouteObject[] = [
@@ -16,8 +34,22 @@ export const Router = () => {
       ),
       children: [
         {
-          path: paths.root,
-          element: <App />
+          element: <ProtectedRoute />,
+          children: [
+            {
+              path: paths.root,
+              element: <App />
+            }
+          ]
+        },
+        {
+          element: <GuestRoute />,
+          children: [
+            {
+              path: paths.login,
+              element: <LoginPage />
+            }
+          ]
         }
       ]
     }

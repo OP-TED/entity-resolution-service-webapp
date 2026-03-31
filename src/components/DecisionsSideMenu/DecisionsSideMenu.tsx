@@ -1,4 +1,4 @@
-import { curationDecisionsRetrieveInfiniteOptions } from '@api/@tanstack/react-query.gen'
+import { listDecisionsApiV1CurationDecisionsGetInfiniteOptions } from '@api/index'
 import {
   DecisionSideMenuItem,
   DecisionsSideMenuTitle,
@@ -6,17 +6,16 @@ import {
 } from '@components'
 import { useInfiniteScroll, useQueryParams } from '@hooks'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { defaultFilters, defaultFiltersMenu } from '@utils'
 import { Menu } from 'antd'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import { useStyles } from './styles'
 
-import type { Decision } from '@api/types.gen'
+import type { DecisionSummary } from '@api/types.gen'
 
 type Props = {
-  activeDecision?: Decision
-  onSelect: (decision: Decision) => void
+  activeDecision?: DecisionSummary
+  onSelect: (decision: DecisionSummary | undefined) => void
 }
 
 export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
@@ -25,16 +24,16 @@ export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
-      ...curationDecisionsRetrieveInfiniteOptions({
+      ...listDecisionsApiV1CurationDecisionsGetInfiniteOptions({
         query: {
           ...params,
-          per_page: defaultFiltersMenu.page_size
+          limit: 20
         }
       }),
-      getNextPageParam: (lastPage) => lastPage?.next ?? undefined,
-      initialPageParam: defaultFilters.page
+        getNextPageParam: (lastPage) => lastPage?.next_cursor ?? undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      initialPageParam: undefined as any
     })
-
   const allDecisions = useMemo(
     () => data?.pages.flatMap((page) => page.results) ?? [],
     [data]
@@ -46,11 +45,36 @@ export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
     fetchNextPage
   })
 
+  const prevDecisionsRef = useRef<DecisionSummary[]>([])
+
   useEffect(() => {
-    if (allDecisions?.[0]) {
+    if (!activeDecision && allDecisions[0]) {
       onSelect(allDecisions[0])
+      prevDecisionsRef.current = allDecisions
+      return
     }
-  }, [allDecisions, onSelect])
+
+    if (activeDecision && allDecisions.length === 0) {
+      onSelect(undefined)
+      prevDecisionsRef.current = []
+      return
+    }
+
+    if (
+      activeDecision &&
+      allDecisions.length > 0 &&
+      !allDecisions.find((d) => d.id === activeDecision.id)
+    ) {
+      const prevIndex = prevDecisionsRef.current.findIndex(
+        (d) => d.id === activeDecision.id
+      )
+      const next =
+        allDecisions[prevIndex] ?? allDecisions[allDecisions.length - 1]
+      if (next) onSelect(next)
+    }
+
+    prevDecisionsRef.current = allDecisions
+  }, [allDecisions, activeDecision, onSelect])
 
   const selectedKeys = activeDecision?.id ? [activeDecision.id] : []
 
@@ -60,6 +84,21 @@ export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
       onSelect(decision)
     }
   }
+
+  const decisionItems = allDecisions?.map((decision) => ({
+    key: decision?.id,
+    label: <DecisionSideMenuItem decision={decision} />,
+    onClick: onClickMenuItem
+  }))
+
+  const loadingItems = isFetchingNextPage
+    ? Array.from({ length: 3 }, (_, i) => ({
+        key: `skeleton-loading-${i}`,
+        label: <SkeletonWrapper isLoading height={60} width="100%" />,
+        disabled: true,
+        style: { cursor: 'default' }
+      }))
+    : []
 
   return (
     <aside ref={scrollContainerRef} className={styles.decisionsSideMenu}>
@@ -71,20 +110,9 @@ export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
           selectedKeys={selectedKeys}
           onClick={onClickMenuItem}
           className={styles.menu}
-          items={allDecisions?.map((decision) => ({
-            key: decision?.id,
-            label: <DecisionSideMenuItem decision={decision} />,
-            onClick: onClickMenuItem
-          }))}
+          items={[...decisionItems, ...loadingItems]}
         />
       </SkeletonWrapper>
-
-      <SkeletonWrapper
-        isLoading={isFetchingNextPage}
-        count={1}
-        height={80}
-        width="100%"
-      />
     </aside>
   )
 }

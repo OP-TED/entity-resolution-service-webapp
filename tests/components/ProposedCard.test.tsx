@@ -10,19 +10,20 @@ vi.mock('../../src/hooks/useDecisionsLoadingState', () => ({
 }))
 
 const mockData: CanonicalEntityPreview = {
-  top_alignment_links: [
+  cluster_id: 'cluster-1',
+  confidence_score: 0.9,
+  similarity_score: 0.85,
+  top_entities: [
     {
-      entity_mention: {
-        parsed_data: { name: 'Alice', city: 'Paris' }
-      }
+      identified_by: { source_id: 'src-1', request_id: 'e1', entity_type: 'Person' },
+      parsed_representation: { name: 'Alice', city: 'Paris' }
     },
     {
-      entity_mention: {
-        parsed_data: { name: 'Bob', city: 'London' }
-      }
+      identified_by: { source_id: 'src-1', request_id: 'e2', entity_type: 'Person' },
+      parsed_representation: { name: 'Bob', city: 'London' }
     }
   ]
-} as unknown as CanonicalEntityPreview
+}
 
 describe('ProposedCard', () => {
   it('renders the default title "Proposed Match"', () => {
