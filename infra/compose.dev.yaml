@@ -1,0 +1,15 @@
+services:
+  app:
+    container_name: ers-webapp
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+      args:
+        ENVIRONMENT: development
+    ports:
+      - '8080:8080'
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:8080/']
+      interval: 10s
+      timeout: 5s
+      retries: 3

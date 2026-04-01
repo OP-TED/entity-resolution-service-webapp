@@ -22,10 +22,10 @@ npm install
 Copy the default environment file and set your API URL:
 
 ```bash
-cp .env .env.example
+cp infra/.env.example infra/.env
 ```
 
-Edit `.env.example`:
+Edit `infra/.env`:
 
 ```env
 VITE_APP_MAIN_API=https://your-api-host/

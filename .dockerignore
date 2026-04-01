@@ -1,2 +1,39 @@
+# Version control
+.git
+.github
+.husky
+
+# Dependencies (installed fresh via npm ci)
+node_modules
+
+# Build output
+dist
+dist-ssr
+coverage
+playwright-report
+test-results
+
+# Config and docs not needed in build
+docs
+*.md
+.commitlintrc
+.prettierrc
+.prettierignore
+commitlint.config.cjs
+eslint.config.js
+playwright.config.ts
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editor
+.vscode
+.idea
+.DS_Store
+
+# Infra (re-include only what the Dockerfile needs)
 infra
-!infra/docker
+!infra/nginx.conf
+!infra/curation-openapi-schema.json
