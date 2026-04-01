@@ -25,15 +25,17 @@ RUN npm run build -- --mode=$ENVIRONMENT
 FROM nginx:1.27-alpine AS production
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
- && mkdir -p /usr/share/nginx/html \
+ && mkdir -p /usr/share/nginx/html /etc/nginx/templates \
  && chown -R appuser:appgroup /usr/share/nginx/html \
  && chown -R appuser:appgroup /var/cache/nginx \
  && chown -R appuser:appgroup /var/log/nginx \
+ && chown -R appuser:appgroup /etc/nginx/conf.d \
+ && chown -R appuser:appgroup /etc/nginx/templates \
  && touch /var/run/nginx.pid \
  && chown appuser:appgroup /var/run/nginx.pid
 
 COPY --from=builder /usr/app/dist /usr/share/nginx/html
-COPY --chmod=644 infra/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --chmod=644 infra/nginx.conf /etc/nginx/templates/default.conf.template
 
 USER appuser
 

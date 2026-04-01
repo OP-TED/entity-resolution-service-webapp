@@ -49,7 +49,9 @@ All targets that start containers require `infra/.env` (copy from `infra/.env.ex
 
 ## Environment variables
 
-| Variable            | Used at    | Description                                                       |
-| ------------------- | ---------- | ----------------------------------------------------------------- |
-| `VITE_APP_MAIN_API` | Build time | Base URL of the ERS backend API, baked into the JS bundle by Vite |
-| `ENVIRONMENT`       | Build time | Vite build mode (`development`, `staging`, `production`)          |
+| Variable            | Used at    | Description                                                        |
+| ------------------- | ---------- | ------------------------------------------------------------------ |
+| `API_BACKEND_URL`   | Runtime    | Curation API address (`host:port`), resolved by nginx via envsubst |
+| `ENVIRONMENT`       | Build time | Vite build mode (`development`, `staging`, `production`)           |
+| `ERS_SCHEMA_URL`    | Build time | URL to fetch the OpenAPI schema (optional, for Dockerfile)         |
+| `VITE_APP_MAIN_API` | Build time | Live API URL for local openapi-ts generation (optional, for dev)   |
