@@ -26,6 +26,7 @@ export default defineConfig({
     exclude: ['tests/e2e/**', 'node_modules/**'],
     coverage: {
       provider: 'v8',
+      reporter: ['text', 'lcov'],
       include: ['src/**'],
       exclude: [
         'src/api/**',
