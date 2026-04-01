@@ -13,6 +13,12 @@ dist-ssr
 
 .env
 env
+
+# Generated API client (regenerated from schema on every build)
+src/api/
+
+# Fetched API schema (not committed, pulled at build time)
+infra/curation-openapi-schema.json
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

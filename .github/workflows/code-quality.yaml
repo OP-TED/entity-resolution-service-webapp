@@ -1,0 +1,91 @@
+# Quality Check workflow for Entity Resolution Service Webapp
+# ===========================================================
+# Runs on push to develop and on PRs targeting develop.
+#
+# Required repository secrets:
+#   - SONAR_TOKEN: SonarCloud authentication token
+
+name: Quality Check
+
+on:
+  push:
+    branches: [develop]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - 'LICENSE'
+      - 'infra/**'
+  pull_request:
+    branches: [develop]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - 'LICENSE'
+      - 'infra/**'
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, Test & Verify
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Generate API client from schema
+      - name: Fetch ERS API schema
+        run: make fetch-schema
+
+      - name: Generate API client
+        run: npx openapi-ts
+
+      # Quality checks
+      - name: Lint (ESLint)
+        id: lint
+        run: make lint
+        continue-on-error: true
+
+      - name: Type check (TypeScript)
+        id: typecheck
+        run: make typecheck
+        continue-on-error: true
+
+      - name: Unit tests with coverage
+        id: test
+        run: make test-coverage
+        continue-on-error: true
+
+      # Fail the job if any check failed
+      - name: Evaluate results
+        if: always()
+        run: |
+          echo "Lint:       ${{ steps.lint.outcome }}"
+          echo "Type check: ${{ steps.typecheck.outcome }}"
+          echo "Tests:      ${{ steps.test.outcome }}"
+
+          if [[ "${{ steps.lint.outcome }}" != "success" || \
+                "${{ steps.typecheck.outcome }}" != "success" || \
+                "${{ steps.test.outcome }}" != "success" ]]; then
+            echo "::error::One or more quality checks failed."
+            exit 1
+          fi
+
+      # SonarCloud
+      - name: SonarCloud scan
+        if: always()
+        uses: SonarSource/sonarqube-scan-action@v7
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
