@@ -130,25 +130,7 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
 
   return (
     <section className={styles.comparisonPanel}>
-      {!currentDecision ? (
-        <Flex
-          vertical
-          gap={24}
-          align="center"
-          justify="center"
-          className="h-100vh"
-        >
-          <Flex vertical gap={12} align="center">
-            <Text size={24} weight={600} color="colorTextSecondary">
-              No Decisions to Review
-            </Text>
-            <Text size={14} color="colorTextSecondary">
-              Select a decision from the list on the left to get started, or
-              adjust your filters to find decisions matching your criteria.
-            </Text>
-          </Flex>
-        </Flex>
-      ) : (
+      {currentDecision ? (
         <Flex vertical gap={12}>
           <Flex gap={12} align="center" justify="space-between">
             <SkeletonWrapper
@@ -241,8 +223,10 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
           {showAlert && (
             <Alert
               type="warning"
-              closable
-              onClose={() => setShowAlert(false)}
+              closable={{
+                closeIcon: true,
+                onClose: () => setShowAlert(false)
+              }}
               title={
                 <Flex gap={4} align="center" wrap>
                   <Text weight={600}>Why review needed: </Text>
@@ -290,6 +274,28 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
 
           <AlternativeClusters currentDecision={currentDecision} />
         </Flex>
+      ) : (
+
+          <Flex
+          vertical
+          gap={24}
+          align="center"
+          justify="center"
+          className="h-100vh"
+        >
+          <Flex vertical gap={12} align="center">
+            <Text size={24} weight={600} color="colorTextSecondary">
+              No Decisions to Review
+            </Text>
+            <Text size={14} color="colorTextSecondary">
+              Select a decision from the list on the left to get started, or
+              adjust your filters to find decisions matching your criteria.
+            </Text>
+          </Flex>
+        </Flex>
+
+
+      
       )}
     </section>
   )

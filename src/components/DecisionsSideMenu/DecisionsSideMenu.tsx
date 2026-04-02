@@ -1,4 +1,5 @@
 import { listDecisionsApiV1CurationDecisionsGetInfiniteOptions } from '@api/index'
+import { type DecisionSummary, DecisionOrdering } from '@api/types.gen'
 import {
   DecisionSideMenuItem,
   DecisionsSideMenuTitle,
@@ -11,7 +12,6 @@ import { useEffect, useMemo, useRef } from 'react'
 
 import { useStyles } from './styles'
 
-import type { DecisionOrdering, DecisionSummary } from '@api/types.gen'
 
 type Props = {
   activeDecision?: DecisionSummary
@@ -23,12 +23,24 @@ export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
   const { styles } = useStyles()
   const { ordering, ...restParams } = params
 
+  const normalizedOrdering =
+    typeof ordering === 'string' && ordering.startsWith('+')
+      ? ordering.slice(1)
+      : ordering
+
+  const validOrderingValues = new Set(Object.values(DecisionOrdering))
+  const safeOrdering =
+    typeof normalizedOrdering === 'string' &&
+    validOrderingValues.has(normalizedOrdering as DecisionOrdering)
+      ? (normalizedOrdering as DecisionOrdering)
+      : undefined
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
       ...listDecisionsApiV1CurationDecisionsGetInfiniteOptions({
         query: {
           ...restParams,
-          ordering: typeof ordering === 'string' ? (ordering as DecisionOrdering) : undefined, 
+          ordering: safeOrdering,
           limit: 20
         }
       }),

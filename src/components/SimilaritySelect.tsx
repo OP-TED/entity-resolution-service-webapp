@@ -23,14 +23,14 @@ export const SimilaritySelect = ({
         min: undefined,
         max: undefined
       },
-      { label: 'Low (0.0-0.4)', value: 'Low (0.0-0.4)', min: 0.0, max: 0.4 },
+      { label: 'Low (0-0.4)', value: 'Low (0-0.4)', min: 0, max: 0.4 },
       {
         label: 'Medium (0.4-0.7)',
         value: 'Medium (0.4-0.7)',
         min: 0.4,
         max: 0.7
       },
-      { label: 'High (0.7-1.0)', value: 'High (0.7-1.0)', min: 0.7, max: 1.0 }
+      { label: 'High (0.7-1)', value: 'High (0.7-1)', min: 0.7, max: 1 }
     ],
     []
   )

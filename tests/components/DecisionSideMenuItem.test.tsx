@@ -31,7 +31,7 @@ describe('DecisionSideMenuItem', () => {
 
   it('renders the confidence score formatted to 2 decimal places', () => {
     render(<DecisionSideMenuItem decision={baseDecision} />)
-    expect(screen.getByText('0.85')).toBeInTheDocument()
+    expect(screen.getByText('C: 0.85')).toBeInTheDocument()
   })
 
   it('renders a relative time ago label', () => {
