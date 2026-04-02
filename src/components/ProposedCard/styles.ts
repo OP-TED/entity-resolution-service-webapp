@@ -7,8 +7,13 @@ export const useStyles = createStyles(
       overflow: 'hidden',
       border: alternative
         ? `2px solid ${palette.borderYellow}`
-        : `2px solid ${token.colorPrimary}`,
+        : `2px solid ${palette.primaryLighter}`,
       height: '400px',
+
+      '.ant-card-head': {
+        background: token.colorBgContainer,
+        paddingInline: 16
+      },
 
       '.ant-card-body': {
         maxHeight: '270px',
@@ -17,8 +22,7 @@ export const useStyles = createStyles(
     },
 
     proposedCardHeader: {
-      background: alternative ? palette.bgYellowLight : palette.primaryLighter,
-      padding: token.paddingLG
+      background: 'transparent',
     }
   })
 )

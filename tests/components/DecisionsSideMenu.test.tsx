@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest'
 import { DecisionsSideMenu } from '../../src/components/DecisionsSideMenu'
 import { createTestQueryClient, fireEvent, render, screen, waitFor } from '../test-utils'
 
+const { listDecisionsApiV1CurationDecisionsGetInfiniteOptions } = await import('../../src/api/@tanstack/react-query.gen')
+
 vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
   listDecisionsApiV1CurationDecisionsGetInfiniteOptions: vi.fn(() => ({
     queryKey: ['decisions-infinite'],
@@ -115,6 +117,68 @@ describe('DecisionsSideMenu', () => {
 
     await waitFor(() => {
       expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'd1' }))
+    })
+  })
+
+  it('normalizes legacy ordering query params before building the query options', () => {
+    render(<DecisionsSideMenu onSelect={vi.fn()} />, {
+      initialEntries: ['/?ordering=%2Bcreated_at']
+    })
+
+    expect(listDecisionsApiV1CurationDecisionsGetInfiniteOptions).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: expect.objectContaining({ ordering: 'created_at', limit: 20 })
+      })
+    )
+  })
+
+  it('drops invalid ordering query params', () => {
+    render(<DecisionsSideMenu onSelect={vi.fn()} />, {
+      initialEntries: ['/?ordering=not-valid']
+    })
+
+    expect(listDecisionsApiV1CurationDecisionsGetInfiniteOptions).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: expect.objectContaining({ ordering: undefined, limit: 20 })
+      })
+    )
+  })
+
+  it('selects the item at the previous index when the active decision disappears', async () => {
+    const queryClient = createTestQueryClient()
+    const onSelect = vi.fn()
+
+    queryClient.setQueryData(['decisions-infinite'], {
+      pages: [
+        {
+          results: [makeDecision('d1'), makeDecision('d2'), makeDecision('d3')],
+          next_cursor: null
+        }
+      ],
+      pageParams: [undefined]
+    })
+
+    const { rerender } = render(
+      <DecisionsSideMenu activeDecision={makeDecision('d2') as never} onSelect={onSelect} />,
+      { queryClient }
+    )
+
+    queryClient.setQueryData(['decisions-infinite'], {
+      pages: [
+        {
+          results: [makeDecision('n1'), makeDecision('n2')],
+          next_cursor: null
+        }
+      ],
+      pageParams: [undefined]
+    })
+
+    rerender(
+      <DecisionsSideMenu activeDecision={makeDecision('d2') as never} onSelect={onSelect} />
+    )
+
+    await waitFor(() => {
+      expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'n2' }))
     })
   })
 })

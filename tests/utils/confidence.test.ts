@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { getConfidenceStatus } from '../../src/utils/confidence'
+import {
+  getConfidenceStatus,
+  getScoreLabel,
+  getScoreLevelMapping,
+  getSimilarityStatus
+} from '../../src/utils/confidence'
 
 describe('getConfidenceStatus', () => {
   it('returns error when score is undefined', () => {
@@ -26,5 +31,39 @@ describe('getConfidenceStatus', () => {
     expect(getConfidenceStatus(0.7)).toBe('success')
     expect(getConfidenceStatus(0.9)).toBe('success')
     expect(getConfidenceStatus(1.0)).toBe('success')
+  })
+})
+
+describe('getSimilarityStatus', () => {
+  it('returns error when score is undefined or zero', () => {
+    expect(getSimilarityStatus(undefined)).toBe('error')
+    expect(getSimilarityStatus(0)).toBe('error')
+  })
+
+  it('returns warning for medium range and success for high range', () => {
+    expect(getSimilarityStatus(0.4)).toBe('warning')
+    expect(getSimilarityStatus(0.69)).toBe('warning')
+    expect(getSimilarityStatus(0.7)).toBe('success')
+  })
+})
+
+describe('getScoreLabel', () => {
+  it('maps score bands to labels', () => {
+    expect(getScoreLabel(0.2)).toBe('Low')
+    expect(getScoreLabel(0.4)).toBe('Medium')
+    expect(getScoreLabel(0.8)).toBe('High')
+  })
+})
+
+describe('getScoreLevelMapping', () => {
+  it('returns N/A for missing scores', () => {
+    expect(getScoreLevelMapping(undefined)).toBe('N/A')
+    expect(getScoreLevelMapping(0)).toBe('N/A')
+  })
+
+  it('returns formatted labels for each score band', () => {
+    expect(getScoreLevelMapping(0.2)).toBe('Low (0.20)')
+    expect(getScoreLevelMapping(0.5)).toBe('Medium (0.50)')
+    expect(getScoreLevelMapping(0.91)).toBe('High (0.91)')
   })
 })

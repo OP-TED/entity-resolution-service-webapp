@@ -1,18 +1,16 @@
 import { Text } from '@components/Text'
 import { compareEntityAttributes, stringifyValue } from '@utils'
 
-import { Flex, Space } from 'antd'
+import { Flex } from 'antd'
 import { useMemo } from 'react'
 
 import { AttributeValue } from './AttributeValue'
 import { DiffIcon } from './DiffIcon '
-import { DiffSummary } from './DiffSummary'
 import { useStyles } from './styles'
 
 type Props = {
   parsedData?: unknown
   compareWith?: unknown
-  showDiffSummary?: boolean
 }
 
 const formatLabel = (key: string): string => {
@@ -26,7 +24,6 @@ const formatLabel = (key: string): string => {
 export const EntityAttributes = ({
   parsedData,
   compareWith,
-  showDiffSummary = false
 }: Props) => {
   const { styles, cx } = useStyles()
 
@@ -76,12 +73,6 @@ export const EntityAttributes = ({
 
   return (
     <div className="full-width">
-      {showDiffSummary && (
-        <Space>
-          <DiffSummary diffs={diffs} />
-        </Space>
-      )}
-
       <div className={styles.list}>
         {diffs?.map((diff) => (
           <Flex

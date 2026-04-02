@@ -27,6 +27,24 @@ function ScrollContainer({
   )
 }
 
+function NestedScrollContainer({
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage
+}: {
+  hasNextPage: boolean
+  isFetchingNextPage: boolean
+  fetchNextPage: () => void
+}) {
+  const ref = useInfiniteScroll({ hasNextPage, isFetchingNextPage, fetchNextPage })
+
+  return (
+    <div ref={ref as React.RefObject<HTMLDivElement>} data-testid="outer-container">
+      <div data-testid="inner-scroll" style={{ overflowY: 'scroll', height: '200px' }} />
+    </div>
+  )
+}
+
 describe('useInfiniteScroll', () => {
   it('returns a ref object', () => {
     const { result } = renderHook(() =>
@@ -95,5 +113,56 @@ describe('useInfiniteScroll', () => {
     })
 
     expect(fetchNextPage).not.toHaveBeenCalled()
+  })
+
+  it('attaches to a nested scrollable child element', () => {
+    const fetchNextPage = vi.fn()
+    render(
+      <NestedScrollContainer
+        hasNextPage={true}
+        isFetchingNextPage={false}
+        fetchNextPage={fetchNextPage}
+      />
+    )
+
+    const inner = screen.getByTestId('inner-scroll')
+
+    Object.defineProperties(inner, {
+      scrollTop: { value: 150, configurable: true },
+      scrollHeight: { value: 300, configurable: true },
+      clientHeight: { value: 100, configurable: true }
+    })
+
+    act(() => {
+      fireEvent.scroll(inner)
+    })
+
+    expect(fetchNextPage).toHaveBeenCalledOnce()
+  })
+
+  it('cleans up and rebinds listeners on rerender', () => {
+    const fetchNextPage = vi.fn()
+    const removeEventListenerSpy = vi.spyOn(HTMLElement.prototype, 'removeEventListener')
+
+    const { rerender, unmount } = render(
+      <ScrollContainer
+        hasNextPage={true}
+        isFetchingNextPage={false}
+        fetchNextPage={fetchNextPage}
+      />
+    )
+
+    rerender(
+      <ScrollContainer
+        hasNextPage={false}
+        isFetchingNextPage={false}
+        fetchNextPage={fetchNextPage}
+      />
+    )
+
+    unmount()
+
+    expect(removeEventListenerSpy).toHaveBeenCalled()
+    removeEventListenerSpy.mockRestore()
   })
 })

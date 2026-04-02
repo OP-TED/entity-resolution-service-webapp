@@ -21,10 +21,14 @@ const isEqual = (a: unknown, b: unknown) => {
   if (a == null || b == null) return false
   if (typeof a !== 'object' || typeof b !== 'object') return false
 
-  const aStr = JSON.stringify(a)
-  const bStr = JSON.stringify(b)
+  try {
+    const aStr = JSON.stringify(a)
+    const bStr = JSON.stringify(b)
 
-  return aStr === bStr
+    return aStr === bStr
+  } catch {
+    return false
+  }
 }
 
 /**
@@ -128,7 +132,7 @@ export const compareEntityAttributes = (
         type: 'modified',
         oldValue: currentValue,
         newValue: proposedValue,
-        currentValue: proposedValue
+        currentValue
       }
     }
 

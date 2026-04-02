@@ -31,17 +31,6 @@ describe('EntityCard', () => {
     expect(screen.getByText('No attributes available')).toBeInTheDocument()
   })
 
-  it('renders diff summary when showDiffSummary is true and data differs', () => {
-    render(
-      <EntityCard
-        entityData={{ name: 'Alice' }}
-        compareWith={{ name: 'Bob' }}
-        showDiffSummary
-      />
-    )
-    expect(screen.getByText(/1 Modified/)).toBeInTheDocument()
-  })
-
   it('renders in comparison mode when compareWith is provided', () => {
     render(
       <EntityCard

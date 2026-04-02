@@ -48,7 +48,7 @@ describe('FilterBar', () => {
 
   it('renders the Confidence filter label', () => {
     render(<FilterBar />)
-    expect(screen.getByText('Confidence:')).toBeInTheDocument()
+    expect(screen.getByText('C:')).toBeInTheDocument()
   })
 
   it('renders the Sort by filter label', () => {
@@ -112,3 +112,4 @@ describe('FilterBar', () => {
     expect(screen.getByLabelText('Select Confidence')).toHaveValue('Medium (0.4-0.7)')
   })
 })
+

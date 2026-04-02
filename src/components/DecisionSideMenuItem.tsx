@@ -1,5 +1,5 @@
 import { Text } from '@components'
-import { formatTimeAgo, getConfidenceStatus } from '@utils'
+import { formatTimeAgo, getConfidenceStatus, getSimilarityStatus } from '@utils'
 import { type MenuItemProps, Flex, Tag } from 'antd'
 
 import type { DecisionSummary } from '@api/types.gen'
@@ -10,7 +10,14 @@ type Props = {
 
 export const DecisionSideMenuItem = ({ decision }: Props) => {
   const confidenceScore = decision?.current_placement?.confidence_score
-  const confidenceClass = getConfidenceStatus(confidenceScore)
+  const similarityScore = decision?.current_placement?.similarity_score
+
+  const confidenceScoreFormatted = confidenceScore
+    ? confidenceScore.toFixed(2)
+    : 'N/A'
+  const similarityScoreFormatted = similarityScore
+    ? similarityScore.toFixed(2)
+    : 'N/A'
 
   const entityName =
     (
@@ -22,9 +29,20 @@ export const DecisionSideMenuItem = ({ decision }: Props) => {
   return (
     <Flex vertical gap={8}>
       <Flex justify="space-between">
-        <Tag variant="solid" color={confidenceClass}>
-          {confidenceScore?.toFixed(2)}
-        </Tag>
+        <Flex gap={8} align="center">
+          <Tag variant="solid"  color={getConfidenceStatus(confidenceScore)}>
+            <Text size={12} color="colorWhite">
+              C: {confidenceScoreFormatted}
+            </Text>
+          </Tag>
+          {similarityScoreFormatted && (
+            <Tag variant="solid" color={getSimilarityStatus(similarityScore)}>
+              <Text size={12} color="colorWhite">
+                S: {similarityScoreFormatted}
+              </Text>
+            </Tag>
+          )}
+        </Flex>
 
         <Text size={13} color="colorTextSecondary">
           {formatTimeAgo(decision?.created_at)}
