@@ -34,6 +34,16 @@ describe('stringifyValue', () => {
   it('JSON-stringifies objects', () => {
     expect(stringifyValue({ a: 1 })).toBe('{\n  "a": 1\n}')
   })
+
+  it('returns fallback for unknown primitive types', () => {
+    expect(stringifyValue(Symbol('x'))).toBe('[Unknown Value]')
+  })
+
+  it('returns [Complex Object] for circular objects', () => {
+    const circular: Record<string, unknown> = {}
+    circular.self = circular
+    expect(stringifyValue(circular)).toBe('[Complex Object]')
+  })
 })
 
 describe('compareEntityAttributes', () => {
@@ -77,7 +87,7 @@ describe('compareEntityAttributes', () => {
     expect(removed).toMatchObject({ type: 'removed', oldValue: 30 })
   })
 
-  it('sorts results: modified first, then added, unchanged, removed', () => {
+  it('sorts results: modified first, then added, then unchanged, then removed', () => {
     const current = { a: 'old', b: 'same', c: 'gone' }
     const proposed = { a: 'new', b: 'same', d: 'fresh' }
     const result = compareEntityAttributes(current, proposed)
@@ -85,6 +95,40 @@ describe('compareEntityAttributes', () => {
     expect(types.indexOf('modified')).toBeLessThan(types.indexOf('added'))
     expect(types.indexOf('added')).toBeLessThan(types.indexOf('unchanged'))
     expect(types.indexOf('unchanged')).toBeLessThan(types.indexOf('removed'))
+  })
+
+  it('treats case and whitespace differences as unchanged', () => {
+    const result = compareEntityAttributes(
+      { name: '  Alice  ' },
+      { name: 'alice' }
+    )
+    expect(result[0]).toMatchObject({ key: 'name', type: 'unchanged' })
+  })
+
+  it('treats deeply equal objects as unchanged', () => {
+    const result = compareEntityAttributes(
+      { meta: { a: 1, b: true } },
+      { meta: { a: 1, b: true } }
+    )
+    expect(result[0]).toMatchObject({ key: 'meta', type: 'unchanged' })
+  })
+
+  it('marks non-equal objects as modified', () => {
+    const result = compareEntityAttributes(
+      { meta: { a: 1 } },
+      { meta: { a: 2 } }
+    )
+    expect(result[0]).toMatchObject({ key: 'meta', type: 'modified' })
+  })
+
+  it('handles circular objects by treating them as unchanged fallback', () => {
+    const a: Record<string, unknown> = {}
+    const b: Record<string, unknown> = {}
+    a.self = a
+    b.self = b
+
+    const result = compareEntityAttributes({ meta: a }, { meta: b })
+    expect(result[0]).toMatchObject({ key: 'meta', type: 'unchanged' })
   })
 })
 
@@ -99,5 +143,14 @@ describe('getChangeSummary', () => {
     expect(summary.unchanged).toBe(1)
     expect(summary.added).toBe(1)
     expect(summary.removed).toBe(1)
+  })
+
+  it('returns zeros for empty diff list', () => {
+    expect(getChangeSummary([])).toEqual({
+      added: 0,
+      removed: 0,
+      modified: 0,
+      unchanged: 0
+    })
   })
 })

@@ -65,4 +65,170 @@ describe('showApiErrors', () => {
     showApiErrors({ response: { data: [] } }, notify)
     expect(notify).not.toHaveBeenCalled()
   })
+
+  it('extracts error messages from objects with msg property in response.data array', () => {
+    const notify = vi.fn()
+    showApiErrors(
+      {
+        response: {
+          data: [
+            { msg: 'First error' },
+            { msg: 'Second error' }
+          ]
+        }
+      },
+      notify
+    )
+    expect(notify).toHaveBeenCalledTimes(2)
+    expect(notify).toHaveBeenNthCalledWith(1, 'First error', 'error')
+    expect(notify).toHaveBeenNthCalledWith(2, 'Second error', 'error')
+  })
+
+  it('handles detail string in response.data', () => {
+    const notify = vi.fn()
+    showApiErrors(
+      { response: { data: { detail: 'Detailed error message' } } },
+      notify
+    )
+    expect(notify).toHaveBeenCalledWith('Detailed error message', 'error')
+  })
+
+  it('handles detail array in response.data', () => {
+    const notify = vi.fn()
+    showApiErrors(
+      {
+        response: {
+          data: {
+            detail: ['Error 1', 'Error 2']
+          }
+        }
+      },
+      notify
+    )
+    expect(notify).toHaveBeenCalledTimes(2)
+    expect(notify).toHaveBeenNthCalledWith(1, 'Error 1', 'error')
+    expect(notify).toHaveBeenNthCalledWith(2, 'Error 2', 'error')
+  })
+
+  it('extracts msg from objects in detail array', () => {
+    const notify = vi.fn()
+    showApiErrors(
+      {
+        response: {
+          data: {
+            detail: [
+              { msg: 'Validation error 1' },
+              { msg: 'Validation error 2' }
+            ]
+          }
+        }
+      },
+      notify
+    )
+    expect(notify).toHaveBeenCalledTimes(2)
+    expect(notify).toHaveBeenNthCalledWith(1, 'Validation error 1', 'error')
+    expect(notify).toHaveBeenNthCalledWith(2, 'Validation error 2', 'error')
+  })
+
+  it('deduplicates messages from detail array', () => {
+    const notify = vi.fn()
+    showApiErrors(
+      {
+        response: {
+          data: {
+            detail: ['Duplicate', 'Different', 'Duplicate']
+          }
+        }
+      },
+      notify
+    )
+    expect(notify).toHaveBeenCalledTimes(2)
+    expect(notify).toHaveBeenNthCalledWith(1, 'Duplicate', 'error')
+    expect(notify).toHaveBeenNthCalledWith(2, 'Different', 'error')
+  })
+
+  it('ignores non-string and non-msg values in arrays', () => {
+    const notify = vi.fn()
+    showApiErrors(
+      {
+        response: {
+          data: [
+            'Valid error',
+            123,
+            null,
+            { /* no msg property */ },
+            'Another valid'
+          ]
+        }
+      },
+      notify
+    )
+    expect(notify).toHaveBeenCalledTimes(2)
+    expect(notify).toHaveBeenNthCalledWith(1, 'Valid error', 'error')
+    expect(notify).toHaveBeenNthCalledWith(2, 'Another valid', 'error')
+  })
+
+  it('converts non-string msg values to strings', () => {
+    const notify = vi.fn()
+    showApiErrors(
+      {
+        response: {
+          data: [
+            { msg: 123 },
+            { msg: true }
+          ]
+        }
+      },
+      notify
+    )
+    expect(notify).toHaveBeenCalledTimes(2)
+    expect(notify).toHaveBeenNthCalledWith(1, '123', 'error')
+    expect(notify).toHaveBeenNthCalledWith(2, 'true', 'error')
+  })
+
+  it('prefers response.data over body for complex errors', () => {
+    const notify = vi.fn()
+    showApiErrors(
+      {
+        response: {
+          data: { detail: 'Response detail error' }
+        },
+        body: 'Body error'
+      },
+      notify
+    )
+    expect(notify).toHaveBeenCalledOnce()
+    expect(notify).toHaveBeenCalledWith('Response detail error', 'error')
+  })
+
+  it('handles errors with empty detail array', () => {
+    const notify = vi.fn()
+    showApiErrors(
+      { response: { data: { detail: [] } } },
+      notify
+    )
+    expect(notify).not.toHaveBeenCalled()
+  })
+
+  it('handles mixed string and object messages in detail', () => {
+    const notify = vi.fn()
+    showApiErrors(
+      {
+        response: {
+          data: {
+            detail: [
+              'String error',
+              { msg: 'Object error' },
+              'Another string'
+            ]
+          }
+        }
+      },
+      notify
+    )
+    expect(notify).toHaveBeenCalledTimes(3)
+    expect(notify).toHaveBeenNthCalledWith(1, 'String error', 'error')
+    expect(notify).toHaveBeenNthCalledWith(2, 'Object error', 'error')
+    expect(notify).toHaveBeenNthCalledWith(3, 'Another string', 'error')
+  })
 })

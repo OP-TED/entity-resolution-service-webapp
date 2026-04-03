@@ -45,8 +45,8 @@ test('search input updates URL query param after debounce', async ({ page }) => 
 test('selecting confidence range updates the URL', async ({ page }) => {
   await page.goto('/')
 
-  // Click the visible title div that covers the input (Ant Design Select pattern)
-  await page.getByTitle('All Confidence').click()
+  // Click the select trigger text (Ant Design Select pattern)
+  await page.getByText('All Confidence').first().click()
   await page.getByText('High (0.7-1.0)').click()
 
   await expect(page).toHaveURL(/confidence_min=0.7/)
@@ -60,7 +60,7 @@ test('selecting sort order updates the URL', async ({ page }) => {
   await sortSelect.click()
   await page.getByText('Confidence (Low to High)').click()
 
-  await expect(page).toHaveURL(/ordering=%2Bconfidence_score|ordering=\+confidence_score/)
+  await expect(page).toHaveURL(/ordering=confidence_score/)
 })
 
 test('clearing search removes it from the URL', async ({ page }) => {

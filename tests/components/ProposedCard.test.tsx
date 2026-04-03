@@ -151,4 +151,23 @@ describe('ProposedCard', () => {
     )
     expect(screen.getByText('Proposed Match')).toBeInTheDocument()
   })
+
+  it('includes reference-only fields with empty values', () => {
+    render(
+      <ProposedCard
+        currentEntity={1}
+        data={mockData}
+        referenceEntityData={{ name: 'Alice', city: 'Paris', address: '123 Main St', country: 'US' }}
+        isLoading={false}
+        onPrevious={vi.fn()}
+        onNext={vi.fn()}
+      />
+    )
+
+    expect(screen.getByText('Address:')).toBeInTheDocument()
+    expect(screen.getByText('Country:')).toBeInTheDocument()
+    // Missing fields are rendered as empty values on the proposed side.
+    expect(screen.queryByText('123 Main St')).not.toBeInTheDocument()
+    expect(screen.queryByText('US')).not.toBeInTheDocument()
+  })
 })

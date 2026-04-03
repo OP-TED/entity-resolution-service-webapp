@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { createTestQueryClient, render, screen } from '../test-utils'
+import { createTestQueryClient, fireEvent, render, screen } from '../test-utils'
 import { Header } from '../../src/components/Header'
 
 vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
@@ -13,6 +13,8 @@ vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
 vi.mock('../../src/context/useAuth', () => ({
   useAuth: vi.fn(() => ({ user: null, logout: vi.fn() }))
 }))
+
+const { useAuth } = await import('../../src/context/useAuth')
 
 describe('Header', () => {
   it('renders the main page title', () => {
@@ -57,5 +59,27 @@ describe('Header', () => {
   it('renders sign out button', () => {
     render(<Header />)
     expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()
+  })
+
+  it('renders the current user email when a user exists', () => {
+    const logout = vi.fn()
+    vi.mocked(useAuth).mockReturnValueOnce({
+      user: { email: 'user@example.com' },
+      logout
+    } as never)
+
+    render(<Header />)
+
+    expect(screen.getByText('user@example.com')).toBeInTheDocument()
+  })
+
+  it('calls logout when sign out is clicked', () => {
+    const logout = vi.fn()
+    vi.mocked(useAuth).mockReturnValueOnce({ user: null, logout } as never)
+
+    render(<Header />)
+    fireEvent.click(screen.getByRole('button', { name: /sign out/i }))
+
+    expect(logout).toHaveBeenCalledOnce()
   })
 })

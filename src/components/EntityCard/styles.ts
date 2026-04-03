@@ -5,6 +5,11 @@ export const useStyles = createStyles(({ token }) => ({
   entityCard: {
     overflow: 'hidden',
     height: '400px',
+    border: `2px solid ${token.colorPrimary}`,
+
+    '.ant-card-head': {
+      background: palette.primaryLighter
+    },
 
     '.ant-card-body': {
       maxHeight: '340px',
@@ -13,8 +18,8 @@ export const useStyles = createStyles(({ token }) => ({
   },
 
   entityCardHeader: {
-    background: palette.bgGrayLighter,
-    padding: token.paddingLG,
-    fontWeight: 500
+     paddingInline: 16,
+    fontWeight: 500,
+    background: 'transparent'
   }
 }))

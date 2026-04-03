@@ -1,4 +1,5 @@
-import { ConfidenceSelect, SearchFilter, Text } from '@components'
+import { DecisionOrdering } from '@api/types.gen'
+import { ConfidenceSelect, SearchFilter, SimilaritySelect, Text } from '@components'
 import { useQueryUpdate } from '@hooks'
 
 import { Flex, Select } from 'antd'
@@ -10,18 +11,18 @@ export const FilterBar = () => {
   const { styles } = useStyles()
 
   const orderingOptions = [
-    { label: 'Created At (Newest)', value: '+created_at' },
-    { label: 'Created At (Oldest)', value: '-created_at' },
-    { label: 'Updated At (Newest)', value: '+updated_at' },
-    { label: 'Updated At (Oldest)', value: '-updated_at' },
-    { label: 'Confidence (Low to High)', value: '+confidence_score' },
-    { label: 'Confidence (High to Low)', value: '-confidence_score' }
+    { label: 'Created At (Newest)', value: DecisionOrdering.CREATED_AT },
+    { label: 'Created At (Oldest)', value: DecisionOrdering['-CREATED_AT'] },
+    { label: 'Updated At (Newest)', value: DecisionOrdering.UPDATED_AT },
+    { label: 'Updated At (Oldest)', value: DecisionOrdering['-UPDATED_AT'] },
+    { label: 'Confidence (Low to High)', value: DecisionOrdering.CONFIDENCE_SCORE },
+    { label: 'Confidence (High to Low)', value: DecisionOrdering['-CONFIDENCE_SCORE'] }
   ]
 
   return (
     <Flex className={styles.filterBar} align="center" gap={16} wrap>
       <Flex align="center" gap={8}>
-        <Text weight={500}>Confidence:</Text>
+        <Text weight={500}>C:</Text>
 
         <ConfidenceSelect
           onChange={(value) => updateQuery(value)}
@@ -30,6 +31,20 @@ export const FilterBar = () => {
           }
           confidenceMax={
             params?.confidence_max ? Number(params.confidence_max) : undefined
+          }
+        />
+      </Flex>
+
+      <Flex align="center" gap={8}>
+        <Text weight={500}>S:</Text>
+
+        <SimilaritySelect
+          onChange={(value) => updateQuery(value)}
+          similarityMin={
+            params?.similarity_min ? Number(params.similarity_min) : undefined
+          }
+          similarityMax={
+            params?.similarity_max ? Number(params.similarity_max) : undefined
           }
         />
       </Flex>

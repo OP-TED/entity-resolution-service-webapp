@@ -1,4 +1,5 @@
 import { listDecisionsApiV1CurationDecisionsGetInfiniteOptions } from '@api/index'
+import { type DecisionSummary, DecisionOrdering } from '@api/types.gen'
 import {
   DecisionSideMenuItem,
   DecisionsSideMenuTitle,
@@ -11,7 +12,6 @@ import { useEffect, useMemo, useRef } from 'react'
 
 import { useStyles } from './styles'
 
-import type { DecisionSummary } from '@api/types.gen'
 
 type Props = {
   activeDecision?: DecisionSummary
@@ -21,23 +21,41 @@ type Props = {
 export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
   const params = useQueryParams()
   const { styles } = useStyles()
+  const { ordering, ...restParams } = params
+
+  const normalizedOrdering =
+    typeof ordering === 'string' && ordering.startsWith('+')
+      ? ordering.slice(1)
+      : ordering
+
+  const validOrderingValues = new Set(Object.values(DecisionOrdering))
+  const safeOrdering =
+    typeof normalizedOrdering === 'string' &&
+    validOrderingValues.has(normalizedOrdering as DecisionOrdering)
+      ? (normalizedOrdering as DecisionOrdering)
+      : undefined
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
       ...listDecisionsApiV1CurationDecisionsGetInfiniteOptions({
         query: {
-          ...params,
+          ...restParams,
+          ordering: safeOrdering,
           limit: 20
         }
       }),
-        getNextPageParam: (lastPage) => lastPage?.next_cursor ?? undefined,
+      getNextPageParam: (lastPage) => lastPage?.next_cursor ?? undefined,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       initialPageParam: undefined as any
     })
   const allDecisions = useMemo(
-    () => data?.pages.flatMap((page) => page.results) ?? [],
+    () => data?.pages.flatMap((page) => page?.results) ?? [],
     [data]
   )
+
+  const decisionsCount = data?.pages
+    ?.flatMap((page) => page?.count)
+    ?.reduce((acc, count) => (acc ?? 0) + (count ?? 0), 0)
 
   const scrollContainerRef = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,
@@ -62,14 +80,13 @@ export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
 
     if (
       activeDecision &&
-      allDecisions.length > 0 &&
-      !allDecisions.find((d) => d.id === activeDecision.id)
+      allDecisions?.length > 0 &&
+      !allDecisions?.some((d) => d?.id === activeDecision?.id)
     ) {
       const prevIndex = prevDecisionsRef.current.findIndex(
-        (d) => d.id === activeDecision.id
+        (d) => d?.id === activeDecision?.id
       )
-      const next =
-        allDecisions[prevIndex] ?? allDecisions[allDecisions.length - 1]
+      const next = allDecisions[prevIndex] ?? allDecisions.at(-1)
       if (next) onSelect(next)
     }
 
@@ -102,7 +119,7 @@ export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
 
   return (
     <aside ref={scrollContainerRef} className={styles.decisionsSideMenu}>
-      <DecisionsSideMenuTitle />
+      <DecisionsSideMenuTitle count={decisionsCount} />
 
       <SkeletonWrapper isLoading={isLoading} count={8} height={80} width="100%">
         <Menu

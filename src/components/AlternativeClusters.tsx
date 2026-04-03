@@ -6,7 +6,7 @@ import {
   useInfiniteQuery,
   useMutation
 } from '@tanstack/react-query'
-import { getConfidenceStatus, showApiErrors } from '@utils'
+import { getConfidenceStatus, getSimilarityStatus, showApiErrors } from '@utils'
 import { App, Button, Collapse, Flex, Popconfirm, Tag, Tooltip } from 'antd'
 import { useMemo, useState } from 'react'
 import Skeleton from 'react-loading-skeleton'
@@ -103,12 +103,26 @@ export const AlternativeClusters = ({ currentDecision }: Props) => {
                     Compare with {index === 0 ? '2nd' : `${index + 2}nd`} best
                     cluster
                   </Text>
-                  <Tag
-                    variant="solid"
-                    color={getConfidenceStatus(cluster.confidence_score)}
-                  >
-                    Conf: {cluster.confidence_score?.toFixed(2)}
-                  </Tag>
+                  <Flex gap={8}>
+                    <Tag
+                      variant="solid"
+                      color={getConfidenceStatus(cluster.confidence_score)}
+                    >
+                      <Text size={12} color='colorWhite'>
+                        C: {cluster.confidence_score?.toFixed(2)}
+                      </Text>
+                    </Tag>
+                    {cluster?.similarity_score !== undefined && (
+                      <Tag
+                        variant="solid"
+                        color={getSimilarityStatus(cluster?.similarity_score)}
+                      >
+                        <Text size={12} color='colorWhite'>
+                          S: {cluster?.similarity_score?.toFixed(2)}
+                        </Text>
+                      </Tag>
+                    )}
+                  </Flex>
                 </Flex>
               ),
               children: (
