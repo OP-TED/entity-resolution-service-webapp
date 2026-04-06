@@ -1,11 +1,12 @@
+import { DownOutlined, UserOutlined } from '@ant-design/icons'
 import { getStatisticsApiV1CurationStatsGetOptions } from '@api/@tanstack/react-query.gen'
 import { SkeletonWrapper, Text } from '@components'
 import { useAuth } from '@context/useAuth'
 import { paths } from '@router/paths'
 import { useQuery } from '@tanstack/react-query'
 
-import { Button, Flex, Typography } from 'antd'
-import { NavLink } from 'react-router-dom'
+import { Avatar, Button, Dropdown, Flex, Typography } from 'antd'
+import { NavLink, useNavigate } from 'react-router-dom'
 
 import { useStyles } from './styles'
 
@@ -16,6 +17,7 @@ export const Header = () => {
     getStatisticsApiV1CurationStatsGetOptions()
   )
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const { styles } = useStyles()
 
   const selectedTopCount = data?.curation?.selected_top ?? 0
@@ -29,6 +31,28 @@ export const Header = () => {
     textDecoration: 'none',
     fontSize: 14
   })
+
+  const onClickAdminPanel = () => {
+    navigate('/admin')
+  }
+
+  const menuItems = [
+    ...(user?.is_superuser
+      ? [
+          {
+            key: 'admin-panel',
+            label: 'Admin Panel',
+            onClick: onClickAdminPanel
+          }
+        ]
+      : []),
+    {
+      key: 'sign-out',
+      label: 'Sign out',
+      danger: true,
+      onClick: logout
+    }
+  ]
 
   return (
     <header className={styles.header}>
@@ -73,14 +97,24 @@ export const Header = () => {
         </SkeletonWrapper>
 
         <Flex gap={8} align="center">
-          {user && (
-            <Text color="colorWhite" size={13}>
-              {user.email}
-            </Text>
-          )}
-          <Button size="small" onClick={logout}>
-            Sign out
-          </Button>
+          <Dropdown
+            trigger={['click']}
+            menu={{ items: menuItems }}
+            placement="bottomRight"
+          >
+            <Button type="text" className={styles.userMenuTrigger}>
+              <Flex gap={8} align="center">
+                <Avatar
+                  size="small"
+                  icon={<UserOutlined />}
+                />
+                <Text color="colorWhite" size={13}>
+                  {user?.email ?? 'User'}
+                </Text>
+                <DownOutlined />
+              </Flex>
+            </Button>
+          </Dropdown>
         </Flex>
       </Flex>
     </header>

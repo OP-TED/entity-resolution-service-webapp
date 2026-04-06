@@ -1,6 +1,6 @@
 import { Text } from '@components'
 import { formatTimeAgo, getConfidenceStatus, getSimilarityStatus } from '@utils'
-import { type MenuItemProps, Flex, Tag } from 'antd'
+import { type MenuItemProps, Flex, Tag, Tooltip } from 'antd'
 
 import type { DecisionSummary } from '@api/types.gen'
 
@@ -30,17 +30,22 @@ export const DecisionSideMenuItem = ({ decision }: Props) => {
     <Flex vertical gap={8}>
       <Flex justify="space-between">
         <Flex gap={8} align="center">
-          <Tag variant="solid"  color={getConfidenceStatus(confidenceScore)}>
-            <Text size={12} color="colorWhite">
-              C: {confidenceScoreFormatted}
-            </Text>
-          </Tag>
-          {similarityScoreFormatted && (
-            <Tag variant="solid" color={getSimilarityStatus(similarityScore)}>
+          <Tooltip title="Confidence">
+            <Tag variant="solid" color={getConfidenceStatus(confidenceScore)}>
               <Text size={12} color="colorWhite">
-                S: {similarityScoreFormatted}
+                C: {confidenceScoreFormatted}
               </Text>
             </Tag>
+          </Tooltip>
+
+          {similarityScoreFormatted && (
+            <Tooltip title="Similarity">
+              <Tag variant="solid" color={getSimilarityStatus(similarityScore)}>
+                <Text size={12} color="colorWhite">
+                  S: {similarityScoreFormatted}
+                </Text>
+              </Tag>
+            </Tooltip>
           )}
         </Flex>
 
