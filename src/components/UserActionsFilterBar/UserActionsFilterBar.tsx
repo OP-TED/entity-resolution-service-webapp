@@ -1,5 +1,6 @@
 import { BaseOrdering, UserActionType } from '@api/types.gen'
 import { Text } from '@components'
+import { UsersSelect } from '@components/UsersSelect'
 import { useQueryUpdate } from '@hooks'
 import { Flex, Select } from 'antd'
 
@@ -30,10 +31,16 @@ export const UserActionsFilterBar = () => {
           value={params?.action_type ? String(params.action_type) : ''}
           className="select-min-width"
           options={actionTypeOptions}
-          onChange={(value) =>
-            updateQuery({ action_type: value || undefined })
-          }
+          onChange={(value) => updateQuery({ action_type: value || undefined })}
           aria-label="Filter by action type"
+        />
+      </Flex>
+
+      <Flex align="center" gap={8}>
+        <Text weight={500}>User:</Text>
+
+        <UsersSelect
+          onChange={(value) => updateQuery({ actor: value || undefined })}
         />
       </Flex>
 
