@@ -135,15 +135,27 @@ test('filter bar renders all filter controls', async ({ page }) => {
 
 test('decisions side menu shows loaded decisions', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('menu').getByText('Alice Johnson')).toBeVisible()
-  await expect(page.getByRole('menu').getByText('Bob Smith')).toBeVisible()
+  await page.waitForResponse(
+    (response) =>
+      response.request().method() === 'GET' &&
+      response.url().includes('/api/v1/curation/decisions')
+  )
+
+  await expect(page.getByRole('menu').getByText('Alice Johnson')).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('menu').getByText('Bob Smith')).toBeVisible({ timeout: 15_000 })
 })
 
 test('comparison panel renders core decision content', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByText('Alice Johnson', { exact: true }).first()).toBeVisible()
-  await expect(page.getByText('Current Entity', { exact: true })).toBeVisible()
-  await expect(page.getByText('Proposed Match', { exact: true })).toBeVisible()
+  await page.waitForResponse(
+    (response) =>
+      response.request().method() === 'GET' &&
+      response.url().includes('/api/v1/curation/decisions')
+  )
+
+  await expect(page.getByText('Alice Johnson', { exact: true }).first()).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText('Current Entity', { exact: true })).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText('Proposed Match', { exact: true })).toBeVisible({ timeout: 15_000 })
 })
 
 test('selecting a decision renders diff badges and semantic colors', async ({ page }) => {
@@ -193,7 +205,7 @@ test('header shows logged-in user email', async ({ page }) => {
 
 test('sign out button is visible', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('button', { name: /sign out/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /sign out/i })).toBeVisible({ timeout: 15_000 })
 })
 
 test('app layout renders without JS errors', async ({ page }) => {

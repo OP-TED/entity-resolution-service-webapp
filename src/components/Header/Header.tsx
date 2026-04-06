@@ -1,16 +1,20 @@
 import { getStatisticsApiV1CurationStatsGetOptions } from '@api/@tanstack/react-query.gen'
 import { SkeletonWrapper, Text } from '@components'
 import { useAuth } from '@context/useAuth'
+import { paths } from '@router/paths'
 import { useQuery } from '@tanstack/react-query'
 
 import { Button, Flex, Typography } from 'antd'
+import { NavLink } from 'react-router-dom'
 
 import { useStyles } from './styles'
 
 const { Title } = Typography
 
 export const Header = () => {
-  const { data, isLoading } = useQuery(getStatisticsApiV1CurationStatsGetOptions())
+  const { data, isLoading } = useQuery(
+    getStatisticsApiV1CurationStatsGetOptions()
+  )
   const { user, logout } = useAuth()
   const { styles } = useStyles()
 
@@ -19,10 +23,30 @@ export const Header = () => {
   const rejectedCount = data?.curation?.rejected_all ?? 0
   const totalCount = data?.curation?.total_decisions ?? 0
 
+  const getActiveLinkStyle = ({ isActive }: { isActive: boolean }) => ({
+    color: isActive ? 'white' : 'rgba(255,255,255,0.65)',
+    fontWeight: isActive ? 700 : 400,
+    textDecoration: 'none',
+    fontSize: 14
+  })
+
   return (
     <header className={styles.header}>
       <Flex justify="space-between" align="center" gap={16} wrap="wrap">
-        <Title level={1}>Resolution Decision Review</Title>
+        <Flex gap={24} align="center">
+          <Title level={1}>Resolution Decision Review</Title>
+
+          <Flex gap={16}>
+            <NavLink to={paths.root} end style={getActiveLinkStyle}>
+              Decisions
+            </NavLink>
+
+            <NavLink to={paths.history} style={getActiveLinkStyle}>
+              History
+            </NavLink>
+
+          </Flex>
+        </Flex>
 
         <SkeletonWrapper
           isLoading={isLoading}
