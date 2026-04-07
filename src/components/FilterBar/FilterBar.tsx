@@ -11,8 +11,8 @@ export const FilterBar = () => {
   const { styles } = useStyles()
 
   const orderingOptions = [
-    { label: 'Created At (Newest)', value: DecisionOrdering.CREATED_AT },
-    { label: 'Created At (Oldest)', value: DecisionOrdering['-CREATED_AT'] },
+    { label: 'Created At (Newest)', value: DecisionOrdering['-CREATED_AT'] },
+    { label: 'Created At (Oldest)', value: DecisionOrdering.CREATED_AT },
     { label: 'Updated At (Newest)', value: DecisionOrdering.UPDATED_AT },
     { label: 'Updated At (Oldest)', value: DecisionOrdering['-UPDATED_AT'] },
     { label: 'Confidence (Low to High)', value: DecisionOrdering.CONFIDENCE_SCORE },
@@ -22,7 +22,7 @@ export const FilterBar = () => {
   return (
     <Flex className={styles.filterBar} align="center" gap={16} wrap>
       <Flex align="center" gap={8}>
-        <Text weight={500}>C:</Text>
+        <Text weight={500}>Confidence:</Text>
 
         <ConfidenceSelect
           onChange={(value) => updateQuery(value)}
@@ -36,7 +36,7 @@ export const FilterBar = () => {
       </Flex>
 
       <Flex align="center" gap={8}>
-        <Text weight={500}>S:</Text>
+        <Text weight={500}>Similarity:</Text>
 
         <SimilaritySelect
           onChange={(value) => updateQuery(value)}

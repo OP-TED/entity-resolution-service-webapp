@@ -1,11 +1,11 @@
-import { assignDecisionApiV1CurationDecisionsDecisionIdAssignPostMutation, getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetInfiniteOptions } from '@api/index'
+import {
+  assignDecisionApiV1CurationDecisionsDecisionIdAssignPostMutation,
+  getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetInfiniteOptions
+} from '@api/index'
 import { ProposedCard, Text } from '@components'
 import { useDecisionsLoadingState } from '@hooks/useDecisionsLoadingState'
 import { useRemoveDecisionFromCache } from '@hooks/useRemoveDecisionFromCache'
-import {
-  useInfiniteQuery,
-  useMutation
-} from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query'
 import { getConfidenceStatus, getSimilarityStatus, showApiErrors } from '@utils'
 import { App, Button, Collapse, Flex, Popconfirm, Tag, Tooltip } from 'antd'
 import { useMemo, useState } from 'react'
@@ -104,23 +104,28 @@ export const AlternativeClusters = ({ currentDecision }: Props) => {
                     cluster
                   </Text>
                   <Flex gap={8}>
-                    <Tag
-                      variant="solid"
-                      color={getConfidenceStatus(cluster.confidence_score)}
-                    >
-                      <Text size={12} color='colorWhite'>
-                        C: {cluster.confidence_score?.toFixed(2)}
-                      </Text>
-                    </Tag>
-                    {cluster?.similarity_score !== undefined && (
+                    <Tooltip title="Confidence">
                       <Tag
                         variant="solid"
-                        color={getSimilarityStatus(cluster?.similarity_score)}
+                        color={getConfidenceStatus(cluster.confidence_score)}
                       >
-                        <Text size={12} color='colorWhite'>
-                          S: {cluster?.similarity_score?.toFixed(2)}
+                        <Text size={12} color="colorWhite">
+                          C: {cluster.confidence_score?.toFixed(2)}
                         </Text>
                       </Tag>
+                    </Tooltip>
+
+                    {cluster?.similarity_score !== undefined && (
+                      <Tooltip title="Similarity">
+                        <Tag
+                          variant="solid"
+                          color={getSimilarityStatus(cluster?.similarity_score)}
+                        >
+                          <Text size={12} color="colorWhite">
+                            S: {cluster?.similarity_score?.toFixed(2)}
+                          </Text>
+                        </Tag>
+                      </Tooltip>
                     )}
                   </Flex>
                 </Flex>
@@ -153,12 +158,9 @@ export const AlternativeClusters = ({ currentDecision }: Props) => {
                     >
                       <Tooltip
                         title="You can assign only decisions that are pending manual review."
-                        trigger='contextMenu'
+                        trigger="contextMenu"
                       >
-                        <Button
-                          variant="solid"
-                          color="orange"
-                        >
+                        <Button variant="solid" color="orange">
                           Use this cluster instead
                         </Button>
                       </Tooltip>

@@ -53,9 +53,7 @@ export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
     [data]
   )
 
-  const decisionsCount = data?.pages
-    ?.flatMap((page) => page?.count)
-    ?.reduce((acc, count) => (acc ?? 0) + (count ?? 0), 0)
+  const decisionsCount = data?.pages?.[0]?.count ?? allDecisions.length
 
   const scrollContainerRef = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,

@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient, fireEvent, render, screen } from '../test-utils'
 import { Header } from '../../src/components/Header'
 
+const mockNavigate = vi.hoisted(() => vi.fn())
+
 vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
   getStatisticsApiV1CurationStatsGetOptions: vi.fn(() => ({
     queryKey: ['curation-stats'],
@@ -13,6 +15,14 @@ vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
 vi.mock('../../src/context/useAuth', () => ({
   useAuth: vi.fn(() => ({ user: null, logout: vi.fn() }))
 }))
+
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-router-dom')>()
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate
+  }
+})
 
 const { useAuth } = await import('../../src/context/useAuth')
 
@@ -58,7 +68,7 @@ describe('Header', () => {
 
   it('renders sign out button', () => {
     render(<Header />)
-    expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /user/i })).toBeInTheDocument()
   })
 
   it('renders the current user email when a user exists', () => {
@@ -75,11 +85,41 @@ describe('Header', () => {
 
   it('calls logout when sign out is clicked', () => {
     const logout = vi.fn()
-    vi.mocked(useAuth).mockReturnValueOnce({ user: null, logout } as never)
+    vi.mocked(useAuth).mockReturnValueOnce({
+      user: { email: 'user@example.com', is_superuser: false },
+      logout
+    } as never)
 
     render(<Header />)
-    fireEvent.click(screen.getByRole('button', { name: /sign out/i }))
+    fireEvent.click(screen.getByRole('button', { name: /user@example.com/i }))
+    fireEvent.click(screen.getByText(/sign out/i))
 
     expect(logout).toHaveBeenCalledOnce()
+  })
+
+  it('shows admin panel option only for admin users', () => {
+    vi.mocked(useAuth).mockReturnValueOnce({
+      user: { email: 'admin@example.com', is_superuser: true },
+      logout: vi.fn()
+    } as never)
+
+    render(<Header />)
+
+    fireEvent.click(screen.getByRole('button', { name: /admin@example.com/i }))
+    expect(screen.getByText('Admin Panel')).toBeInTheDocument()
+  })
+
+  it('navigates to admin panel when Admin Panel is clicked', () => {
+    vi.mocked(useAuth).mockReturnValueOnce({
+      user: { email: 'admin@example.com', is_superuser: true },
+      logout: vi.fn()
+    } as never)
+
+    render(<Header />)
+
+    fireEvent.click(screen.getByRole('button', { name: /admin@example.com/i }))
+    fireEvent.click(screen.getByText('Admin Panel'))
+
+    expect(mockNavigate).toHaveBeenCalledWith('/admin')
   })
 })

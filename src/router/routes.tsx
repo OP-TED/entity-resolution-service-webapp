@@ -1,5 +1,6 @@
 import { LoadingScreen } from '@components'
 import { useAuth } from '@context/useAuth'
+import { HistoryPage } from '@pages/HistoryPage'
 import { LoginPage } from '@pages/LoginPage'
 import { Suspense } from 'react'
 import { type RouteObject, Navigate, Outlet, useRoutes } from 'react-router-dom'
@@ -39,6 +40,10 @@ export const Router = () => {
             {
               path: paths.root,
               element: <App />
+            },
+            {
+              path: paths.history,
+              element: <HistoryPage />
             }
           ]
         },

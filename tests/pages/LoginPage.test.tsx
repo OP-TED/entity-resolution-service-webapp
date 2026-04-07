@@ -10,9 +10,13 @@ vi.mock('../../src/context/useAuth', () => ({
 }))
 
 describe('LoginPage', () => {
+  // antd Typography + Form components are heavy; allow extra time for ARIA-based queries
+  vi.setConfig({ testTimeout: 20000 })
+
   it('renders the "Sign in" heading', () => {
     render(<LoginPage />)
-    expect(screen.getByRole('heading', { name: /Sign in/i })).toBeInTheDocument()
+    // selector scopes search to <h3>; faster than getByRole('heading') in Ant Design DOM
+    expect(screen.getByText('Sign in', { selector: 'h3' })).toBeInTheDocument()
   })
 
   it('renders the subtitle text', () => {

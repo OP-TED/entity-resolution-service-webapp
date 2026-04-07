@@ -48,7 +48,7 @@ describe('FilterBar', () => {
 
   it('renders the Confidence filter label', () => {
     render(<FilterBar />)
-    expect(screen.getByText('C:')).toBeInTheDocument()
+    expect(screen.getByText('Confidence:')).toBeInTheDocument()
   })
 
   it('renders the Sort by filter label', () => {
@@ -79,7 +79,7 @@ describe('FilterBar', () => {
       screen.getByLabelText('Sort by'),
       'Created At (Oldest)'
     )
-    expect(mockUpdateQuery).toHaveBeenCalledWith({ ordering: '-created_at' })
+    expect(mockUpdateQuery).toHaveBeenCalledWith({ ordering: 'created_at' })
   })
 
   it('calls updateQuery with confidence params when ConfidenceSelect changes', async () => {
@@ -91,6 +91,18 @@ describe('FilterBar', () => {
     expect(mockUpdateQuery).toHaveBeenCalledWith({
       confidence_min: 0,
       confidence_max: 0.4
+    })
+  })
+
+  it('calls updateQuery with similarity params when SimilaritySelect changes', async () => {
+    render(<FilterBar />)
+    await userEvent.selectOptions(
+      screen.getByLabelText('Select Similarity'),
+      'High (0.7-1)'
+    )
+    expect(mockUpdateQuery).toHaveBeenCalledWith({
+      similarity_min: 0.7,
+      similarity_max: 1
     })
   })
 

@@ -17,11 +17,22 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   formatTimeAgo,
   getConfidenceStatus,
+  getScoreLabel,
   getSimilarityStatus,
   showApiErrors
 } from '@utils'
 
-import { Alert, App, Button, Col, Flex, Popconfirm, Row, Tag } from 'antd'
+import {
+  Alert,
+  App,
+  Button,
+  Col,
+  Flex,
+  Popconfirm,
+  Row,
+  Tag,
+  Tooltip
+} from 'antd'
 import { useEffect, useState } from 'react'
 
 import { useStyles } from './styles'
@@ -165,23 +176,28 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
                 width="140px"
               >
                 <Flex gap={8} align="center">
-                  <Tag
-                    variant="solid"
-                    color={getConfidenceStatus(confidenceScore)}
-                  >
-                    <Text size={12}  color='colorWhite'>
-                      C: {confidenceScoreFormatted}
-                    </Text>
-                  </Tag>
-                  {similarityScoreFormatted && (
+                  <Tooltip title="Confidence">
                     <Tag
                       variant="solid"
-                      color={getSimilarityStatus(similarityScore)}
+                      color={getConfidenceStatus(confidenceScore)}
                     >
-                      <Text size={12}  color='colorWhite'>
-                        S: {similarityScoreFormatted}
+                      <Text size={12} color="colorWhite">
+                        C: {confidenceScoreFormatted}
                       </Text>
                     </Tag>
+                  </Tooltip>
+
+                  {similarityScoreFormatted && (
+                    <Tooltip title="Similarity">
+                      <Tag
+                        variant="solid"
+                        color={getSimilarityStatus(similarityScore)}
+                      >
+                        <Text size={12} color="colorWhite">
+                          S: {similarityScoreFormatted}
+                        </Text>
+                      </Tag>
+                    </Tooltip>
                   )}
                 </Flex>
               </SkeletonWrapper>
@@ -232,8 +248,10 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
                   <Text weight={600}>Why review needed: </Text>
 
                   <Text color="colorTextSecondary">
-                    High similarity but low confidence due to multiple competing
-                    alternatives •
+                    <strong> {getScoreLabel(similarityScore ?? 0)} </strong>
+                    similarity but{' '}
+                    <strong>{getScoreLabel(confidenceScore ?? 0)}</strong>{' '}
+                    confidence due to multiple competing alternatives •
                   </Text>
 
                   <Text weight={600}>Cluster size: </Text>
@@ -275,8 +293,7 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
           <AlternativeClusters currentDecision={currentDecision} />
         </Flex>
       ) : (
-
-          <Flex
+        <Flex
           vertical
           gap={24}
           align="center"
@@ -293,9 +310,6 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
             </Text>
           </Flex>
         </Flex>
-
-
-      
       )}
     </section>
   )
