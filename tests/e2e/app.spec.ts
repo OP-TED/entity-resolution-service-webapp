@@ -127,8 +127,8 @@ test('header shows curation progress statistics', async ({ page }) => {
 
 test('filter bar renders all filter controls', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByText('C:', { exact: true }).first()).toBeVisible()
-  await expect(page.getByText('S:', { exact: true }).first()).toBeVisible()
+  await expect(page.getByText('Confidence:').first()).toBeVisible()
+  await expect(page.getByText('Similarity:').first()).toBeVisible()
   await expect(page.getByText('Sort by:')).toBeVisible()
   await expect(page.getByText('Search:')).toBeVisible()
 })
@@ -203,9 +203,11 @@ test('header shows logged-in user email', async ({ page }) => {
   await expect(page.getByText('curator@example.com')).toBeVisible()
 })
 
-test('sign out button is visible', async ({ page }) => {
+test('sign out option is visible in user menu', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('button', { name: /sign out/i })).toBeVisible({ timeout: 15_000 })
+  // Open the user dropdown menu
+  await page.getByText('curator@example.com').click()
+  await expect(page.getByText('Sign out')).toBeVisible()
 })
 
 test('app layout renders without JS errors', async ({ page }) => {

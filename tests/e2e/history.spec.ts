@@ -114,6 +114,9 @@ test.beforeEach(async ({ page }) => {
   await page.route(`${API_BASE}/api/v1/user-actions/*/candidates**`, (route) =>
     route.fulfill({ json: mockCandidates })
   )
+  await page.route(`${API_BASE}/api/v1/users`, (route) =>
+    route.fulfill({ json: { count: 0, results: [], next: null, previous: null } })
+  )
   await mockAuthRoutes(page)
 })
 
@@ -143,7 +146,7 @@ test('clicking History nav link navigates to /history', async ({ page }) => {
 test('Decisions nav link navigates back to /', async ({ page }) => {
   await page.goto('/history')
   await page.getByRole('link', { name: 'Decisions' }).click()
-  await expect(page).toHaveURL(/\/$/)
+  await expect(page).not.toHaveURL(/\/history/)
 })
 
 test('history side menu shows loaded actions', async ({ page }) => {

@@ -33,7 +33,7 @@ export const Header = () => {
   })
 
   const onClickAdminPanel = () => {
-    navigate('/admin')
+    navigate(paths.admin)
   }
 
   const menuItems = [
