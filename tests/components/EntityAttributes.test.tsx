@@ -67,7 +67,7 @@ describe('EntityAttributes', () => {
 // ─── AttributeValue ──────────────────────────────────────────────────────────
 
 describe('AttributeValue', () => {
-  it('returns the current value string for a non-modified diff', () => {
+  it('renders the current value for an "added" diff', () => {
     const diff: AttributeDiff = {
       key: 'name',
       type: 'added',
@@ -87,7 +87,6 @@ describe('AttributeValue', () => {
       currentValue: 'Alice'
     }
     render(<AttributeValue diff={diff} />)
-    // AttributeValue shows currentValue only; old/new are shown via row color
     expect(screen.getByText('Alice')).toBeInTheDocument()
   })
 
@@ -100,25 +99,33 @@ describe('AttributeValue', () => {
 // ─── DiffIcon ────────────────────────────────────────────────────────────────
 
 describe('DiffIcon', () => {
-  it('renders for "added" type without crashing', () => {
+  it('renders PlusCircleOutlined icon for "added" type', () => {
     const { container } = render(<DiffIcon type="added" />)
-    expect(container.firstChild).not.toBeNull()
+    expect(container.querySelector('.anticon-plus-circle')).toBeInTheDocument()
   })
 
-  it('renders for "removed" type without crashing', () => {
+  it('renders CloseCircleOutlined icon for "removed" type', () => {
     const { container } = render(<DiffIcon type="removed" />)
-    expect(container.firstChild).not.toBeNull()
+    expect(container.querySelector('.anticon-close-circle')).toBeInTheDocument()
   })
 
-  it('renders for "modified" type without crashing', () => {
+  it('renders EditOutlined icon for "modified" type', () => {
     const { container } = render(<DiffIcon type="modified" />)
-    expect(container.firstChild).not.toBeNull()
+    expect(container.querySelector('.anticon-edit')).toBeInTheDocument()
   })
 
-  it('renders for "unchanged" type without crashing', () => {
+  it('renders CheckCircleOutlined icon for "unchanged" type', () => {
     const { container } = render(<DiffIcon type="unchanged" />)
-    expect(container.firstChild).not.toBeNull()
+    expect(container.querySelector('.anticon-check-circle')).toBeInTheDocument()
+  })
+
+  it('renders different icons for different diff types', () => {
+    const { container: addedContainer } = render(<DiffIcon type="added" />)
+    const { container: removedContainer } = render(<DiffIcon type="removed" />)
+
+    expect(addedContainer.querySelector('.anticon-plus-circle')).toBeInTheDocument()
+    expect(addedContainer.querySelector('.anticon-close-circle')).not.toBeInTheDocument()
+    expect(removedContainer.querySelector('.anticon-close-circle')).toBeInTheDocument()
+    expect(removedContainer.querySelector('.anticon-plus-circle')).not.toBeInTheDocument()
   })
 })
-
-

@@ -37,7 +37,7 @@ const clusterPage = (overrides = {}) => ({
         {
           cluster_id: 'cluster-1',
           confidence_score: 0.75,
-          similarity_score: 0.70,
+          similarity_score: 0.7,
           top_entities: [
             {
               identified_by: { source_id: 's1', request_id: 'e1', entity_type: 'Person' },
@@ -54,27 +54,14 @@ const clusterPage = (overrides = {}) => ({
 })
 
 describe('AlternativeClusters', () => {
-  it('renders the "Load More" button', () => {
+  it('renders the "Load More" button, disabled when no next page', () => {
     render(<AlternativeClusters />)
-    expect(screen.getByRole('button', { name: /Load More/i })).toBeInTheDocument()
+    const loadMore = screen.getByRole('button', { name: /Load More/i })
+    expect(loadMore).toBeInTheDocument()
+    expect(loadMore).toBeDisabled()
   })
 
-  it('"Load More" button is disabled when there is no next page', () => {
-    render(<AlternativeClusters />)
-    expect(screen.getByRole('button', { name: /Load More/i })).toBeDisabled()
-  })
-
-  it('renders without crashing when no currentDecision is provided', () => {
-    render(<AlternativeClusters />)
-    expect(document.body).toBeInTheDocument()
-  })
-
-  it('renders without crashing when a decision is provided', () => {
-    render(<AlternativeClusters currentDecision={mockDecision as never} />)
-    expect(screen.getByRole('button', { name: /Load More/i })).toBeInTheDocument()
-  })
-
-  it('renders cluster cards when alternative clusters are preloaded in cache', () => {
+  it('renders cluster cards with confidence score when data is in cache', () => {
     const queryClient = createTestQueryClient()
     queryClient.setQueryData(['alternative-clusters'], clusterPage())
 
@@ -99,14 +86,12 @@ describe('AlternativeClusters', () => {
 
     render(<AlternativeClusters currentDecision={mockDecision as never} />, { queryClient })
 
-    // Expand the Collapse panel by clicking its header
-    const collapseHeader = screen.getByText(/Compare with 2nd best cluster/i)
-    fireEvent.click(collapseHeader)
+    fireEvent.click(screen.getByText(/Compare with 2nd best cluster/i))
 
     expect(screen.getByRole('button', { name: /Use this cluster instead/i })).toBeInTheDocument()
   })
 
-  it('renders a confidence tag for the cluster', () => {
+  it('renders a confidence tag with the cluster score', () => {
     const queryClient = createTestQueryClient()
     queryClient.setQueryData(['alternative-clusters'], clusterPage({ confidence_score: 0.92 }))
 
@@ -115,21 +100,12 @@ describe('AlternativeClusters', () => {
     expect(screen.getByText(/0\.92/)).toBeInTheDocument()
   })
 
-  it('shows loading skeleton when the decisions menu is loading', () => {
-    vi.doMock('../../src/hooks/useDecisionsLoadingState', () => ({
-      useDecisionsLoadingState: () => true
-    }))
-
-    render(<AlternativeClusters currentDecision={mockDecision as never} />)
-    expect(screen.getByRole('button', { name: /Load More/i })).toBeInTheDocument()
-  })
-
-  it('clicking the next entity button covers onClickNextEntity', () => {
+  it('navigates between entities within a cluster', () => {
     const queryClient = createTestQueryClient()
     queryClient.setQueryData(['alternative-clusters'], clusterPage({
       top_entities: [
-        { identified_by: { source_id: 's1', request_id: 'e1', entity_type: 'Person' }, parsed_representation: { name: 'A' } },
-        { identified_by: { source_id: 's1', request_id: 'e2', entity_type: 'Person' }, parsed_representation: { name: 'B' } }
+        { identified_by: { source_id: 's1', request_id: 'e1', entity_type: 'Person' }, parsed_representation: { name: 'Entity A' } },
+        { identified_by: { source_id: 's1', request_id: 'e2', entity_type: 'Person' }, parsed_representation: { name: 'Entity B' } }
       ]
     }))
 
@@ -137,53 +113,35 @@ describe('AlternativeClusters', () => {
 
     fireEvent.click(screen.getByText(/Compare with 2nd best cluster/i))
 
-    // Arrow-right button (icon-only) = next navigation button in ProposedCard
+    // Should start at entity 1
+    expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+
+    // Click next to go to entity 2
     const nextBtn = document.querySelector('[aria-label="arrow-right"]')?.closest('button')
-    if (nextBtn) expect(() => fireEvent.click(nextBtn as HTMLElement)).not.toThrow()
+    expect(nextBtn).toBeTruthy()
+    fireEvent.click(nextBtn!)
 
-    expect(document.querySelector('button[disabled]') !== null || document.querySelector('button') !== null).toBe(true)
-  })
+    expect(screen.getByText(/Entity 2 of 2/)).toBeInTheDocument()
 
-  it('clicking the previous entity button covers onClickPreviousEntity after advancing', () => {
-    const queryClient = createTestQueryClient()
-    queryClient.setQueryData(['alternative-clusters'], clusterPage({
-      top_entities: [
-        { identified_by: { source_id: 's1', request_id: 'e1', entity_type: 'Person' }, parsed_representation: { name: 'A' } },
-        { identified_by: { source_id: 's1', request_id: 'e2', entity_type: 'Person' }, parsed_representation: { name: 'B' } }
-      ]
-    }))
-
-    render(<AlternativeClusters currentDecision={mockDecision as never} />, { queryClient })
-
-    fireEvent.click(screen.getByText(/Compare with 2nd best cluster/i))
-
-    // Click next first to advance to entity 2 (enabling the previous button)
-    const nextBtn = document.querySelector('[aria-label="arrow-right"]')?.closest('button')
-    if (nextBtn) fireEvent.click(nextBtn as HTMLElement)
-
-    // Previous button should now be enabled; click it
+    // Click previous to go back to entity 1
     const prevBtn = document.querySelector('[aria-label="arrow-left"]')?.closest('button')
-    if (prevBtn) expect(() => fireEvent.click(prevBtn as HTMLElement)).not.toThrow()
+    expect(prevBtn).toBeTruthy()
+    fireEvent.click(prevBtn!)
 
-    expect(document.body).toBeInTheDocument()
+    expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
   })
 
-  it('confirming the Popconfirm covers onConfirmSwitchCluster', () => {
+  it('opens Popconfirm when "Use this cluster instead" is clicked', () => {
     const queryClient = createTestQueryClient()
     queryClient.setQueryData(['alternative-clusters'], clusterPage())
 
     render(<AlternativeClusters currentDecision={mockDecision as never} />, { queryClient })
 
-    // Expand panel synchronously (no animation in happy-dom)
     fireEvent.click(screen.getByText(/Compare with 2nd best cluster/i))
-
-    // Click the Popconfirm trigger synchronously
     fireEvent.click(screen.getByRole('button', { name: /Use this cluster instead/i }))
 
-    // The Popconfirm popup renders synchronously in happy-dom
+    // The Popconfirm popup should render with OK button
     const okBtn = screen.getAllByRole('button').find((b) => b.textContent === 'OK')
-    if (okBtn) expect(() => fireEvent.click(okBtn)).not.toThrow()
-
-    expect(document.body).toBeInTheDocument()
+    expect(okBtn).toBeTruthy()
   })
 })

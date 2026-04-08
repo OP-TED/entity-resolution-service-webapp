@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { DecisionSideMenuItem } from '../../src/components/DecisionSideMenuItem'
 import { render, screen } from '../test-utils'
@@ -18,40 +18,128 @@ const baseDecision: DecisionSummary = {
   current_placement: {
     cluster_id: 'cluster-1',
     confidence_score: 0.85,
-    similarity_score: 0.80
+    similarity_score: 0.8
   },
-  created_at: new Date(Date.now() - 60_000).toISOString()
+  created_at: '2026-03-15T12:00:00Z'
 }
 
 describe('DecisionSideMenuItem', () => {
-  it('renders the entity display name from parsed_representation', () => {
-    render(<DecisionSideMenuItem decision={baseDecision} />)
-    expect(screen.getByText('Alice Corp')).toBeInTheDocument()
-  })
+  describe('entity name display', () => {
+    it('renders the entity display name from parsed_representation', () => {
+      render(<DecisionSideMenuItem decision={baseDecision} />)
+      expect(screen.getByText('Alice Corp')).toBeInTheDocument()
+    })
 
-  it('renders the confidence score formatted to 2 decimal places', () => {
-    render(<DecisionSideMenuItem decision={baseDecision} />)
-    expect(screen.getByText('C: 0.85')).toBeInTheDocument()
-  })
-
-  it('renders a relative time ago label', () => {
-    render(<DecisionSideMenuItem decision={baseDecision} />)
-    expect(screen.getByText(/ago/i)).toBeInTheDocument()
-  })
-
-  it('falls back to request_id when parsed_representation has no name', () => {
-    const decision: DecisionSummary = {
-      ...baseDecision,
-      about_entity_mention: {
-        identified_by: {
-          source_id: 'src-1',
-          request_id: 'entity-fallback-id',
-          entity_type: 'Person'
-        },
-        parsed_representation: {}
+    it('falls back to request_id when parsed_representation has no name', () => {
+      const decision: DecisionSummary = {
+        ...baseDecision,
+        about_entity_mention: {
+          identified_by: {
+            source_id: 'src-1',
+            request_id: 'entity-fallback-id',
+            entity_type: 'Person'
+          },
+          parsed_representation: {}
+        }
       }
-    }
-    render(<DecisionSideMenuItem decision={decision} />)
-    expect(screen.getByText('entity-fallback-id')).toBeInTheDocument()
+      render(<DecisionSideMenuItem decision={decision} />)
+      expect(screen.getByText('entity-fallback-id')).toBeInTheDocument()
+    })
+
+    it('renders different names for different decisions', () => {
+      const decision: DecisionSummary = {
+        ...baseDecision,
+        about_entity_mention: {
+          ...baseDecision.about_entity_mention,
+          parsed_representation: { name: 'Acme Industries' }
+        }
+      }
+      render(<DecisionSideMenuItem decision={decision} />)
+      expect(screen.getByText('Acme Industries')).toBeInTheDocument()
+      expect(screen.queryByText('Alice Corp')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('confidence and similarity scores', () => {
+    it('renders the confidence score formatted to 2 decimal places', () => {
+      render(<DecisionSideMenuItem decision={baseDecision} />)
+      expect(screen.getByText('C: 0.85')).toBeInTheDocument()
+    })
+
+    it('renders the similarity score formatted to 2 decimal places', () => {
+      render(<DecisionSideMenuItem decision={baseDecision} />)
+      expect(screen.getByText('S: 0.80')).toBeInTheDocument()
+    })
+
+    it('shows N/A for missing confidence score', () => {
+      const decision: DecisionSummary = {
+        ...baseDecision,
+        current_placement: {
+          cluster_id: 'cluster-1',
+          confidence_score: 0,
+          similarity_score: 0.8
+        }
+      }
+      render(<DecisionSideMenuItem decision={decision} />)
+      expect(screen.getByText('C: N/A')).toBeInTheDocument()
+    })
+
+    it('renders confidence tag with success color for high score', () => {
+      render(<DecisionSideMenuItem decision={baseDecision} />)
+      const confidenceTag = screen.getByText('C: 0.85').closest('.ant-tag')
+      expect(confidenceTag).toHaveClass('ant-tag-success')
+    })
+
+    it('renders confidence tag with warning color for medium score', () => {
+      const decision: DecisionSummary = {
+        ...baseDecision,
+        current_placement: { cluster_id: 'c1', confidence_score: 0.55, similarity_score: 0.8 }
+      }
+      render(<DecisionSideMenuItem decision={decision} />)
+      const confidenceTag = screen.getByText('C: 0.55').closest('.ant-tag')
+      expect(confidenceTag).toHaveClass('ant-tag-warning')
+    })
+
+    it('renders confidence tag with error color for low score', () => {
+      const decision: DecisionSummary = {
+        ...baseDecision,
+        current_placement: { cluster_id: 'c1', confidence_score: 0.2, similarity_score: 0.8 }
+      }
+      render(<DecisionSideMenuItem decision={decision} />)
+      const confidenceTag = screen.getByText('C: 0.20').closest('.ant-tag')
+      expect(confidenceTag).toHaveClass('ant-tag-error')
+    })
+  })
+
+  describe('time display', () => {
+    it('renders exact "1m ago" for a decision created 60 seconds ago', () => {
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date('2026-03-15T12:01:00Z'))
+
+      render(<DecisionSideMenuItem decision={baseDecision} />)
+      expect(screen.getByText('1m ago')).toBeInTheDocument()
+
+      vi.useRealTimers()
+    })
+
+    it('renders "2h ago" for a decision created 2 hours ago', () => {
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date('2026-03-15T14:00:00Z'))
+
+      render(<DecisionSideMenuItem decision={baseDecision} />)
+      expect(screen.getByText('2h ago')).toBeInTheDocument()
+
+      vi.useRealTimers()
+    })
+
+    it('renders "3d ago" for a decision created 3 days ago', () => {
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date('2026-03-18T12:00:00Z'))
+
+      render(<DecisionSideMenuItem decision={baseDecision} />)
+      expect(screen.getByText('3d ago')).toBeInTheDocument()
+
+      vi.useRealTimers()
+    })
   })
 })

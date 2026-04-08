@@ -102,232 +102,153 @@ const mockDecision = {
 }
 
 describe('ComparisonPanel', () => {
-  it('renders the section element', () => {
-    render(<ComparisonPanel />)
-    expect(document.body.querySelector('section')).toBeTruthy()
-  })
-
-  it('renders at least the accept and reject circle buttons when decision is provided', () => {
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
-    const buttons = document.querySelectorAll('button')
-    expect(buttons.length).toBeGreaterThanOrEqual(2)
-  })
-
-  it('renders without crashing when no decision is provided', () => {
-    render(<ComparisonPanel />)
-    expect(screen.getByText('No Decisions to Review')).toBeInTheDocument()
-  })
-
-  it('renders with a currentDecision without crashing', () => {
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
-    expect(document.body.querySelector('section')).toBeTruthy()
-  })
-
-  it('renders the warning alert when decision is provided', () => {
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
-    expect(screen.getByText(/Why review needed/)).toBeInTheDocument()
-  })
-
-  it('shows empty state when no decision is provided', () => {
-    render(<ComparisonPanel />)
-    expect(screen.getByText('No Decisions to Review')).toBeInTheDocument()
-  })
-
-  it('accept and reject buttons are enabled when a decision is provided', () => {
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
-    const buttons = document.querySelectorAll('button')
-    expect(buttons.length).toBeGreaterThanOrEqual(2)
-  })
-
-  it('clicking next entity button stays on decision review screen', () => {
-    const queryClient = createTestQueryClient()
-    queryClient.setQueryData(['proposed-entity'], {
-      cluster_id: 'cluster-1',
-      confidence_score: 0.9,
-      similarity_score: 0.8,
-      top_entities: [
-        {
-          identified_by: { source_id: 's1', request_id: 'e1', entity_type: 'Person' },
-          parsed_representation: { name: 'A' }
-        },
-        {
-          identified_by: { source_id: 's1', request_id: 'e2', entity_type: 'Person' },
-          parsed_representation: { name: 'B' }
-        }
-      ]
-    })
-    render(<ComparisonPanel currentDecision={mockDecision as never} />, { queryClient })
-
-    const buttons = Array.from(document.querySelectorAll('button'))
-    const enabledButtons = buttons.filter((b) => !b.hasAttribute('disabled'))
-    if (enabledButtons.length > 0) {
-      fireEvent.click(enabledButtons[enabledButtons.length - 1])
-    }
-    expect(document.body.querySelector('section')).toBeTruthy()
-  })
-
-  it('clicking a disabled button is a no-op', () => {
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
-    expect(document.body.querySelector('section')).toBeTruthy()
-  })
-
-  it('accept button click does not throw', () => {
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
-    const buttons = screen.getAllByRole('button')
-    const circleButtons = buttons.filter((b) => !b.hasAttribute('disabled') && b.className.includes('circle'))
-    if (circleButtons.length > 0) {
-      expect(() => fireEvent.click(circleButtons[0])).not.toThrow()
-    }
-    expect(document.body.querySelector('section')).toBeTruthy()
-  })
-
-  it('clicking accept triggers mutation success flow and cache removal', async () => {
-    const { acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation } =
-      await import('../../src/api/@tanstack/react-query.gen')
-
-    vi.mocked(acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation).mockReturnValueOnce({
-      mutationFn: vi.fn().mockResolvedValue({})
-    })
-
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
-
-    const confirms = screen.getAllByRole('button', { name: 'confirm-pop' })
-    fireEvent.click(confirms[0])
-
-    await waitFor(() => {
-      expect(mockRemoveDecisionFromCache).toHaveBeenCalledWith('decision-99')
-      expect(mockNotification.success).toHaveBeenCalledWith({ message: 'Decision accepted' })
+  describe('empty state', () => {
+    it('shows "No Decisions to Review" when no decision is provided', () => {
+      render(<ComparisonPanel />)
+      expect(screen.getByText('No Decisions to Review')).toBeInTheDocument()
     })
   })
 
-  it('clicking reject triggers mutation success flow and cache removal', async () => {
-    const { rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation } =
-      await import('../../src/api/@tanstack/react-query.gen')
-
-    vi.mocked(rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation).mockReturnValueOnce({
-      mutationFn: vi.fn().mockResolvedValue({})
+  describe('with a decision', () => {
+    it('renders accept and reject confirm buttons', () => {
+      render(<ComparisonPanel currentDecision={mockDecision as never} />)
+      const confirmButtons = screen.getAllByRole('button', { name: 'confirm-pop' })
+      expect(confirmButtons).toHaveLength(2)
     })
 
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
+    it('renders the warning alert explaining why review is needed', () => {
+      render(<ComparisonPanel currentDecision={mockDecision as never} />)
+      expect(screen.getByText(/Why review needed/)).toBeInTheDocument()
+    })
 
-    const confirms = screen.getAllByRole('button', { name: 'confirm-pop' })
-    fireEvent.click(confirms[1])
+    it('closes the warning alert when close icon is clicked', () => {
+      render(<ComparisonPanel currentDecision={mockDecision as never} />)
 
-    await waitFor(() => {
-      expect(mockRemoveDecisionFromCache).toHaveBeenCalledWith('decision-99')
-      expect(mockNotification.success).toHaveBeenCalledWith({ message: 'Decision rejected' })
+      expect(screen.getByText(/Why review needed/i)).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: 'close-alert' }))
+      expect(screen.queryByText(/Why review needed/i)).not.toBeInTheDocument()
     })
   })
 
-  it('accept mutation error path shows notification error', async () => {
-    const { acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation } =
-      await import('../../src/api/@tanstack/react-query.gen')
+  describe('entity navigation', () => {
+    it('navigates between entities in the proposed cluster', () => {
+      const queryClient = createTestQueryClient()
+      queryClient.setQueryData(['proposed-entity'], {
+        cluster_id: 'cluster-1',
+        confidence_score: 0.9,
+        similarity_score: 0.8,
+        top_entities: [
+          {
+            identified_by: { source_id: 's1', request_id: 'e1', entity_type: 'Person' },
+            parsed_representation: { name: 'Entity A' }
+          },
+          {
+            identified_by: { source_id: 's1', request_id: 'e2', entity_type: 'Person' },
+            parsed_representation: { name: 'Entity B' }
+          }
+        ]
+      })
+      render(<ComparisonPanel currentDecision={mockDecision as never} />, { queryClient })
 
-    vi.mocked(acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation).mockReturnValueOnce({
-      mutationFn: vi.fn().mockRejectedValue({
-        body: { detail: 'accept failed' }
+      // Should start at entity 1
+      expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+
+      // Navigate forward
+      const nextBtn = document.querySelector('[aria-label="arrow-right"]')?.closest('button')
+      expect(nextBtn).toBeTruthy()
+      expect(nextBtn).not.toBeDisabled()
+      fireEvent.click(nextBtn!)
+
+      expect(screen.getByText(/Entity 2 of 2/)).toBeInTheDocument()
+
+      // Navigate back
+      const prevBtn = document.querySelector('[aria-label="arrow-left"]')?.closest('button')
+      expect(prevBtn).toBeTruthy()
+      fireEvent.click(prevBtn!)
+
+      expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+    })
+  })
+
+  describe('accept flow', () => {
+    it('calls mutation, removes from cache, and shows success notification', async () => {
+      const { acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation } =
+        await import('../../src/api/@tanstack/react-query.gen')
+
+      vi.mocked(acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation).mockReturnValueOnce({
+        mutationFn: vi.fn().mockResolvedValue({})
+      })
+
+      render(<ComparisonPanel currentDecision={mockDecision as never} />)
+
+      const confirms = screen.getAllByRole('button', { name: 'confirm-pop' })
+      fireEvent.click(confirms[0])
+
+      await waitFor(() => {
+        expect(mockRemoveDecisionFromCache).toHaveBeenCalledWith('decision-99')
+        expect(mockNotification.success).toHaveBeenCalledWith({ message: 'Decision accepted' })
       })
     })
 
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
+    it('shows error notification when accept mutation fails', async () => {
+      const { acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation } =
+        await import('../../src/api/@tanstack/react-query.gen')
 
-    const confirms = screen.getAllByRole('button', { name: 'confirm-pop' })
-    fireEvent.click(confirms[0])
+      vi.mocked(acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation).mockReturnValueOnce({
+        mutationFn: vi.fn().mockRejectedValue({
+          body: { detail: 'accept failed' }
+        })
+      })
 
-    await waitFor(() => {
-      expect(mockNotification.error).toHaveBeenCalled()
+      render(<ComparisonPanel currentDecision={mockDecision as never} />)
+
+      const confirms = screen.getAllByRole('button', { name: 'confirm-pop' })
+      fireEvent.click(confirms[0])
+
+      await waitFor(() => {
+        expect(mockNotification.error).toHaveBeenCalled()
+      })
     })
   })
 
-  it('reject mutation error path shows notification error', async () => {
-    const { rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation } =
-      await import('../../src/api/@tanstack/react-query.gen')
+  describe('reject flow', () => {
+    it('calls mutation, removes from cache, and shows success notification', async () => {
+      const { rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation } =
+        await import('../../src/api/@tanstack/react-query.gen')
 
-    vi.mocked(rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation).mockReturnValueOnce({
-      mutationFn: vi.fn().mockRejectedValue({
-        body: { detail: 'reject failed' }
+      vi.mocked(rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation).mockReturnValueOnce({
+        mutationFn: vi.fn().mockResolvedValue({})
+      })
+
+      render(<ComparisonPanel currentDecision={mockDecision as never} />)
+
+      const confirms = screen.getAllByRole('button', { name: 'confirm-pop' })
+      fireEvent.click(confirms[1])
+
+      await waitFor(() => {
+        expect(mockRemoveDecisionFromCache).toHaveBeenCalledWith('decision-99')
+        expect(mockNotification.success).toHaveBeenCalledWith({ message: 'Decision rejected' })
       })
     })
 
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
+    it('shows error notification when reject mutation fails', async () => {
+      const { rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation } =
+        await import('../../src/api/@tanstack/react-query.gen')
 
-    const confirms = screen.getAllByRole('button', { name: 'confirm-pop' })
-    fireEvent.click(confirms[1])
+      vi.mocked(rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation).mockReturnValueOnce({
+        mutationFn: vi.fn().mockRejectedValue({
+          body: { detail: 'reject failed' }
+        })
+      })
 
-    await waitFor(() => {
-      expect(mockNotification.error).toHaveBeenCalled()
+      render(<ComparisonPanel currentDecision={mockDecision as never} />)
+
+      const confirms = screen.getAllByRole('button', { name: 'confirm-pop' })
+      fireEvent.click(confirms[1])
+
+      await waitFor(() => {
+        expect(mockNotification.error).toHaveBeenCalled()
+      })
     })
-  })
-
-  it('closes the warning alert when close icon is clicked', () => {
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
-
-    expect(screen.getByText(/Why review needed/i)).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'close-alert' }))
-    expect(screen.queryByText(/Why review needed/i)).not.toBeInTheDocument()
-  })
-
-  it('reject button click does not throw', () => {
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
-    const buttons = screen.getAllByRole('button')
-    const circleButtons = buttons.filter((b) => !b.hasAttribute('disabled') && b.className.includes('circle'))
-    if (circleButtons.length > 1) {
-      expect(() => fireEvent.click(circleButtons[1])).not.toThrow()
-    }
-    expect(document.body.querySelector('section')).toBeTruthy()
-  })
-
-  it('onPreviousEntity does not throw when called at entity 1', () => {
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
-
-    const prevBtn = document.querySelector('[aria-label="arrow-left"]')?.closest('button')
-    if (prevBtn) expect(() => fireEvent.click(prevBtn as HTMLElement)).not.toThrow()
-
-    expect(document.body.querySelector('section')).toBeTruthy()
-  })
-
-  it('onNextEntity does not throw when clicked', () => {
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
-
-    const nextBtn = document.querySelector('[aria-label="arrow-right"]')?.closest('button')
-    if (nextBtn) expect(() => fireEvent.click(nextBtn as HTMLElement)).not.toThrow()
-
-    expect(document.body.querySelector('section')).toBeTruthy()
-  })
-
-  it('onPreviousEntity decrements entity index when at entity 2', () => {
-    const queryClient = createTestQueryClient()
-    queryClient.setQueryData(['proposed-entity'], {
-      cluster_id: 'cluster-1',
-      confidence_score: 0.9,
-      similarity_score: 0.8,
-      top_entities: [
-        { identified_by: { source_id: 's1', request_id: 'e1', entity_type: 'Person' }, parsed_representation: { name: 'A' } },
-        { identified_by: { source_id: 's1', request_id: 'e2', entity_type: 'Person' }, parsed_representation: { name: 'B' } }
-      ]
-    })
-
-    render(<ComparisonPanel currentDecision={mockDecision as never} />, { queryClient })
-
-    const nextBtn = document.querySelector('[aria-label="arrow-right"]')?.closest('button')
-    if (nextBtn) fireEvent.click(nextBtn as HTMLElement)
-
-    const prevBtn = document.querySelector('[aria-label="arrow-left"]')?.closest('button')
-    if (prevBtn) expect(() => fireEvent.click(prevBtn as HTMLElement)).not.toThrow()
-
-    expect(document.body.querySelector('section')).toBeTruthy()
-  })
-
-  it('acceptDecision onError callback does not throw when mutation fails', async () => {
-    const { acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation } =
-      await import('../../src/api/@tanstack/react-query.gen')
-
-    vi.mocked(acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation).mockReturnValueOnce({
-      mutationFn: vi.fn().mockRejectedValue(new Error('network error'))
-    })
-
-    render(<ComparisonPanel currentDecision={mockDecision as never} />)
-    expect(document.querySelectorAll('button').length).toBeGreaterThan(0)
   })
 })
-

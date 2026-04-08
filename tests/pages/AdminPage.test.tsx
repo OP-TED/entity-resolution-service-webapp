@@ -13,6 +13,7 @@ const mockNotification = vi.hoisted(() => ({
 }))
 
 const mockUpdateQuery = vi.hoisted(() => vi.fn())
+const mockDeactivateMutate = vi.hoisted(() => vi.fn())
 
 const mockUsers: UserResponse[] = [
   {
@@ -47,6 +48,9 @@ vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
   })),
   listUsersApiV1UsersGetQueryKey: vi.fn(() => ['users']),
   patchUserApiV1UsersUserIdPatchMutation: vi.fn(() => ({
+    mutationFn: mockDeactivateMutate
+  })),
+  createUserApiV1UsersPostMutation: vi.fn(() => ({
     mutationFn: vi.fn()
   })),
   getStatisticsApiV1CurationStatsGetOptions: vi.fn(() => ({
@@ -88,97 +92,172 @@ beforeEach(() => {
 })
 
 describe('AdminPage', () => {
-  it('renders the User Management heading', async () => {
-    render(<AdminPage />)
-    expect(screen.getByText('User Management')).toBeInTheDocument()
-  })
+  describe('page layout', () => {
+    it('renders the "User Management" heading', () => {
+      render(<AdminPage />)
+      expect(screen.getByText('User Management')).toBeInTheDocument()
+    })
 
-  it('renders the Add User button', () => {
-    render(<AdminPage />)
-    expect(screen.getByRole('button', { name: /Add User/i })).toBeInTheDocument()
-  })
+    it('renders the "Add User" button', () => {
+      render(<AdminPage />)
+      expect(screen.getByRole('button', { name: /Add User/i })).toBeInTheDocument()
+    })
 
-  it('renders the email search input', () => {
-    render(<AdminPage />)
-    expect(screen.getByPlaceholderText('Search by email')).toBeInTheDocument()
-  })
+    it('renders the email search input', () => {
+      render(<AdminPage />)
+      expect(screen.getByPlaceholderText('Search by email')).toBeInTheDocument()
+    })
 
-  it('renders user data in the table', async () => {
-    render(<AdminPage />)
+    it('renders all table column headers', async () => {
+      render(<AdminPage />)
 
-    await waitFor(() => {
-      expect(screen.getByText('alice@example.com')).toBeInTheDocument()
-      expect(screen.getByText('bob@example.com')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getAllByText('Email').length).toBeGreaterThanOrEqual(1)
+      })
+
+      expect(screen.getAllByText('Active').length).toBeGreaterThanOrEqual(1)
+      expect(screen.getAllByText('Superuser').length).toBeGreaterThanOrEqual(1)
+      expect(screen.getAllByText('Verified').length).toBeGreaterThanOrEqual(1)
+      expect(screen.getAllByText('Created').length).toBeGreaterThanOrEqual(1)
+      expect(screen.getAllByText('Actions').length).toBeGreaterThanOrEqual(1)
     })
   })
 
-  it('renders Active/Superuser/Verified tags correctly', async () => {
-    render(<AdminPage />)
+  describe('user table data', () => {
+    it('renders user emails in the table', async () => {
+      render(<AdminPage />)
 
-    await waitFor(() => {
-      expect(screen.getByText('alice@example.com')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText('alice@example.com')).toBeInTheDocument()
+        expect(screen.getByText('bob@example.com')).toBeInTheDocument()
+      })
     })
 
-    const yesNodes = screen.getAllByText('Yes')
-    const noNodes = screen.getAllByText('No')
+    it('renders Active tags with correct color — green for active, orange for inactive', async () => {
+      render(<AdminPage />)
 
-    // alice: active=Yes, superuser=No, verified=Yes
-    // bob: active=No, superuser=Yes, verified=No
-    expect(yesNodes.length).toBeGreaterThanOrEqual(3)
-    expect(noNodes.length).toBeGreaterThanOrEqual(3)
+      await waitFor(() => {
+        expect(screen.getByText('alice@example.com')).toBeInTheDocument()
+      })
+
+      const yesNodes = screen.getAllByText('Yes')
+      const noNodes = screen.getAllByText('No')
+
+      // alice: active=Yes(green), superuser=No(orange), verified=Yes(green)
+      // bob: active=No(orange), superuser=Yes(green), verified=No(orange)
+      // Check that Yes tags are green and No tags are orange
+      for (const node of yesNodes) {
+        expect(node.closest('.ant-tag')).toHaveClass('ant-tag-green')
+      }
+      for (const node of noNodes) {
+        expect(node.closest('.ant-tag')).toHaveClass('ant-tag-orange')
+      }
+    })
+
+    it('renders created date formatted via toLocaleDateString', async () => {
+      render(<AdminPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('alice@example.com')).toBeInTheDocument()
+      })
+
+      const formatted = new Date('2025-01-15T10:00:00Z').toLocaleDateString()
+      expect(screen.getByText(formatted)).toBeInTheDocument()
+    })
   })
 
-  it('renders created date formatted', async () => {
-    render(<AdminPage />)
+  describe('search', () => {
+    it('calls updateQuery with email and resets page to 1 when typing', () => {
+      render(<AdminPage />)
 
-    await waitFor(() => {
-      expect(screen.getByText('alice@example.com')).toBeInTheDocument()
+      fireEvent.change(screen.getByPlaceholderText('Search by email'), {
+        target: { value: 'alice' }
+      })
+
+      expect(mockUpdateQuery).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'alice', page: 1 })
+      )
     })
-
-    // The date should be rendered via toLocaleDateString()
-    const formatted = new Date('2025-01-15T10:00:00Z').toLocaleDateString()
-    expect(screen.getByText(formatted)).toBeInTheDocument()
   })
 
-  it('disables deactivate button for already inactive users', async () => {
-    render(<AdminPage />)
+  describe('action buttons', () => {
+    it('disables deactivate button for already inactive users', async () => {
+      render(<AdminPage />)
 
-    await waitFor(() => {
-      expect(screen.getByText('bob@example.com')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText('bob@example.com')).toBeInTheDocument()
+      })
+
+      // bob is inactive — his delete button should be disabled
+      const disabledDeleteBtns = Array.from(
+        document.querySelectorAll('button[disabled]')
+      ).filter((btn) => btn.querySelector('.anticon-delete'))
+      expect(disabledDeleteBtns.length).toBeGreaterThanOrEqual(1)
     })
 
-    // bob is inactive — his delete button should be disabled
-    const deleteButtons = document.querySelectorAll('button[class*="danger"], button[disabled]')
-    const disabledDeleteBtns = Array.from(deleteButtons).filter(
-      (btn) => btn.hasAttribute('disabled')
-    )
-    expect(disabledDeleteBtns.length).toBeGreaterThanOrEqual(1)
-  })
+    it('enables deactivate button for active users', async () => {
+      render(<AdminPage />)
 
-  it('calls updateQuery when email search changes', () => {
-    render(<AdminPage />)
+      await waitFor(() => {
+        expect(screen.getByText('alice@example.com')).toBeInTheDocument()
+      })
 
-    fireEvent.change(screen.getByPlaceholderText('Search by email'), {
-      target: { value: 'alice' }
+      // Find all delete buttons that are NOT disabled
+      const enabledDeleteBtns = Array.from(
+        document.querySelectorAll('button:not([disabled])')
+      ).filter((btn) => btn.querySelector('.anticon-delete'))
+      expect(enabledDeleteBtns.length).toBeGreaterThanOrEqual(1)
     })
 
-    expect(mockUpdateQuery).toHaveBeenCalledWith(
-      expect.objectContaining({ email: 'alice', page: 1 })
-    )
-  })
+    it('opens "Add User" modal when Add User button is clicked', async () => {
+      render(<AdminPage />)
 
-  it('renders table column headers', async () => {
-    render(<AdminPage />)
+      fireEvent.click(screen.getByRole('button', { name: /Add User/i }))
 
-    await waitFor(() => {
-      // Ant Design Table duplicates header text in hidden sizer elements, so use getAllByText
-      expect(screen.getAllByText('Email').length).toBeGreaterThanOrEqual(1)
+      await waitFor(() => {
+        // The modal should show "Add User" as its title
+        expect(screen.getAllByText('Add User').length).toBeGreaterThanOrEqual(2)
+        // Email and password fields should be present in create mode
+        expect(screen.getByPlaceholderText('user@example.com')).toBeInTheDocument()
+      })
     })
 
-    expect(screen.getAllByText('Active').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByText('Superuser').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByText('Verified').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByText('Created').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByText('Actions').length).toBeGreaterThanOrEqual(1)
+    it('opens "Edit User" modal with user email when edit button is clicked', async () => {
+      render(<AdminPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('alice@example.com')).toBeInTheDocument()
+      })
+
+      // Find the edit button in alice's row
+      const editBtns = Array.from(
+        document.querySelectorAll('button:not([disabled])')
+      ).filter((btn) => btn.querySelector('.anticon-edit'))
+      expect(editBtns.length).toBeGreaterThanOrEqual(1)
+
+      fireEvent.click(editBtns[0])
+
+      await waitFor(() => {
+        expect(screen.getByText('Edit User — alice@example.com')).toBeInTheDocument()
+      })
+
+      // Email/password fields should NOT be present in edit mode
+      expect(screen.queryByPlaceholderText('user@example.com')).not.toBeInTheDocument()
+    })
+
+    it('has edit and deactivate buttons per row', async () => {
+      render(<AdminPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('alice@example.com')).toBeInTheDocument()
+      })
+
+      const editBtns = document.querySelectorAll('.anticon-edit')
+      const deleteBtns = document.querySelectorAll('.anticon-delete')
+
+      // Each user row should have an edit and a deactivate button
+      expect(editBtns.length).toBe(2)
+      expect(deleteBtns.length).toBe(2)
+    })
   })
 })
