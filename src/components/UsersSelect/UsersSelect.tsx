@@ -20,12 +20,14 @@ export const UsersSelect = (props: SelectProps) => {
   })
 
   const usersOptions = useMemo(() => {
-    return data?.pages?.flatMap((page) =>
-      page?.results?.map(({ id, email }) => ({
-        label: email,
-        value: id
-      }))
-    )
+    return data?.pages
+      ?.flatMap((page) =>
+        page?.results?.map(({ id, email }) => ({
+          label: email,
+          value: id
+        }))
+      )
+      .filter(Boolean)
   }, [data])
 
   return (

@@ -1,5 +1,6 @@
 import { LoadingScreen } from '@components'
 import { useAuth } from '@context/useAuth'
+import { AdminPage } from '@pages/AdminPage'
 import { HistoryPage } from '@pages/HistoryPage'
 import { LoginPage } from '@pages/LoginPage'
 import { Suspense } from 'react'
@@ -14,6 +15,15 @@ const ProtectedRoute = () => {
 
   if (isLoading) return <LoadingScreen />
   if (!user) return <Navigate to={paths.login} replace />
+  return <Outlet />
+}
+
+const SuperAdminRoute = () => {
+  const { user, isLoading } = useAuth()
+
+  if (isLoading) return <LoadingScreen />
+  if (!user) return <Navigate to={paths.login} replace />
+  if (!user?.is_superuser) return <Navigate to={paths.root} replace />
   return <Outlet />
 }
 
@@ -44,6 +54,15 @@ export const Router = () => {
             {
               path: paths.history,
               element: <HistoryPage />
+            }
+          ]
+        },
+        {
+          element: <SuperAdminRoute />,
+          children: [
+            {
+              path: paths.admin,
+              element: <AdminPage />
             }
           ]
         },
