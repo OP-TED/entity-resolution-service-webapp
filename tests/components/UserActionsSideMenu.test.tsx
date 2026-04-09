@@ -25,7 +25,7 @@ const makeAction = (id: string, actionType = 'ACCEPT_TOP') => ({
   candidates: [],
   selected_cluster: { cluster_id: 'c1', confidence_score: 0.8, similarity_score: 0.7 },
   action_type: actionType,
-  actor: 'admin@ers.local',
+  actor: { id: 'user-1', email: 'admin@ers.local' },
   created_at: new Date().toISOString()
 })
 

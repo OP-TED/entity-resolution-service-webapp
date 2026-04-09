@@ -1,7 +1,7 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 
 import { useKeyboardShortcuts } from '../../src/hooks/useKeyboardShortcuts'
-import { act, fireEvent, renderHook, screen } from '../test-utils'
+import { act, fireEvent, renderHook, screen, waitFor } from '../test-utils'
 
 vi.mock('../../src/api/index', () => ({
   acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation: vi.fn(() => ({
@@ -25,6 +25,11 @@ const baseDecision = {
 }
 
 describe('useKeyboardShortcuts', () => {
+  // antd modals render into the DOM and persist after unmount — clean them up
+  beforeEach(() => {
+    document.querySelectorAll('.ant-modal-root').forEach((el) => el.remove())
+  })
+
   it('registers a keydown listener on mount and removes it on unmount', () => {
     const addSpy = vi.spyOn(globalThis, 'addEventListener')
     const removeSpy = vi.spyOn(globalThis, 'removeEventListener')
@@ -63,61 +68,12 @@ describe('useKeyboardShortcuts', () => {
     const event = new KeyboardEvent('keydown', { code: 'KeyA', bubbles: true })
     Object.defineProperty(event, 'target', { value: input, configurable: true })
 
-    expect(() => capturedHandler!(event)).not.toThrow()
+    // Should not open the accept modal because target is an input
+    capturedHandler!(event)
+    expect(screen.queryByText('Accept Decision')).not.toBeInTheDocument()
 
     input.remove()
     addSpy.mockRestore()
-  })
-
-  it('handles ArrowUp and ArrowDown keys without errors', () => {
-    renderHook(() =>
-      useKeyboardShortcuts({ activeDecision: undefined })
-    )
-
-    act(() => {
-      fireEvent.keyDown(globalThis as unknown as Window, { code: 'ArrowUp' })
-      fireEvent.keyDown(globalThis as unknown as Window, { code: 'ArrowDown' })
-    })
-
-    expect(true).toBe(true)
-  })
-
-  it('pressing KeyA on a decision opens the accept confirm modal', () => {
-    renderHook(() =>
-      useKeyboardShortcuts({ activeDecision: baseDecision as never })
-    )
-
-    expect(() => {
-      act(() => {
-        fireEvent.keyDown(globalThis as unknown as Window, { code: 'KeyA' })
-      })
-    }).not.toThrow()
-
-    expect(screen.getAllByText('Accept Decision').length).toBeGreaterThan(0)
-  })
-
-  it('pressing KeyR on a decision opens the reject confirm modal without errors', () => {
-    renderHook(() =>
-      useKeyboardShortcuts({ activeDecision: baseDecision as never })
-    )
-
-    expect(() => {
-      act(() => {
-        fireEvent.keyDown(globalThis as unknown as Window, { code: 'KeyR' })
-      })
-    }).not.toThrow()
-  })
-
-  it('pressing KeyA without a decision does not throw', () => {
-    renderHook(() =>
-      useKeyboardShortcuts({ activeDecision: undefined })
-    )
-
-    expect(() => {
-      act(() => {
-        fireEvent.keyDown(globalThis as unknown as Window, { code: 'KeyA' })
-      })
-    }).not.toThrow()
   })
 
   it('ignores keydown events when target is a TEXTAREA element', () => {
@@ -138,7 +94,8 @@ describe('useKeyboardShortcuts', () => {
     const event = new KeyboardEvent('keydown', { code: 'KeyA', bubbles: true })
     Object.defineProperty(event, 'target', { value: textarea, configurable: true })
 
-    expect(() => capturedHandler!(event)).not.toThrow()
+    capturedHandler!(event)
+    expect(screen.queryByText('Accept Decision')).not.toBeInTheDocument()
 
     textarea.remove()
     addSpy.mockRestore()
@@ -163,27 +120,65 @@ describe('useKeyboardShortcuts', () => {
     const event = new KeyboardEvent('keydown', { code: 'KeyR', bubbles: true })
     Object.defineProperty(event, 'target', { value: div, configurable: true })
 
-    expect(() => capturedHandler!(event)).not.toThrow()
+    capturedHandler!(event)
+    expect(screen.queryByText('Reject Decision')).not.toBeInTheDocument()
 
     div.remove()
     addSpy.mockRestore()
   })
 
-  it('pressing KeyR without a decision does not throw', () => {
+  // NOTE: The hook does NOT guard against undefined activeDecision — the modal
+  // still opens. This is a potential bug (it would call the API with id "undefined").
+  // These tests document the current behaviour rather than silently ignoring it.
+  it('still opens accept modal when KeyA is pressed without a decision', () => {
     renderHook(() =>
       useKeyboardShortcuts({ activeDecision: undefined })
     )
 
-    expect(() => {
-      act(() => {
-        fireEvent.keyDown(globalThis as unknown as Window, { code: 'KeyR' })
-      })
-    }).not.toThrow()
+    act(() => {
+      fireEvent.keyDown(globalThis as unknown as Window, { code: 'KeyA' })
+    })
+
+    expect(screen.queryAllByText('Accept Decision').length).toBeGreaterThan(0)
   })
 
-  it('clicking OK in the accept modal calls acceptDecision', async () => {
-    const { waitFor } = await import('@testing-library/react')
+  it('still opens reject modal when KeyR is pressed without a decision', () => {
+    renderHook(() =>
+      useKeyboardShortcuts({ activeDecision: undefined })
+    )
 
+    act(() => {
+      fireEvent.keyDown(globalThis as unknown as Window, { code: 'KeyR' })
+    })
+
+    expect(screen.queryAllByText('Reject Decision').length).toBeGreaterThan(0)
+  })
+
+  it('pressing KeyA on a decision opens the accept confirm modal', () => {
+    renderHook(() =>
+      useKeyboardShortcuts({ activeDecision: baseDecision as never })
+    )
+
+    act(() => {
+      fireEvent.keyDown(globalThis as unknown as Window, { code: 'KeyA' })
+    })
+
+    expect(screen.getAllByText('Accept Decision').length).toBeGreaterThan(0)
+  })
+
+  it('pressing KeyR on a decision opens the reject confirm modal', () => {
+    renderHook(() =>
+      useKeyboardShortcuts({ activeDecision: baseDecision as never })
+    )
+
+    act(() => {
+      fireEvent.keyDown(globalThis as unknown as Window, { code: 'KeyR' })
+    })
+
+    expect(screen.getAllByText('Reject Decision').length).toBeGreaterThan(0)
+  })
+
+  it('clicking OK in the accept modal triggers the accept action', async () => {
     renderHook(() =>
       useKeyboardShortcuts({ activeDecision: baseDecision as never })
     )
@@ -199,14 +194,11 @@ describe('useKeyboardShortcuts', () => {
     const okButton = screen.getAllByRole('button').find(
       (b) => b.textContent === 'OK'
     )
-    if (okButton) {
-      act(() => { fireEvent.click(okButton) })
-    }
+    expect(okButton).toBeTruthy()
+    act(() => { fireEvent.click(okButton!) })
   })
 
-  it('clicking Cancel in the accept modal does not throw', async () => {
-    const { waitFor } = await import('@testing-library/react')
-
+  it('clicking Cancel in the accept modal dismisses it', async () => {
     renderHook(() =>
       useKeyboardShortcuts({ activeDecision: baseDecision as never })
     )
@@ -222,14 +214,11 @@ describe('useKeyboardShortcuts', () => {
     const cancelButton = screen.getAllByRole('button').find(
       (b) => b.textContent === 'Cancel'
     )
-    if (cancelButton) {
-      expect(() => act(() => { fireEvent.click(cancelButton) })).not.toThrow()
-    }
+    expect(cancelButton).toBeTruthy()
+    act(() => { fireEvent.click(cancelButton!) })
   })
 
-  it('clicking OK in the reject modal calls rejectDecision', async () => {
-    const { waitFor } = await import('@testing-library/react')
-
+  it('clicking OK in the reject modal triggers the reject action', async () => {
     renderHook(() =>
       useKeyboardShortcuts({ activeDecision: baseDecision as never })
     )
@@ -245,14 +234,11 @@ describe('useKeyboardShortcuts', () => {
     const okButton = screen.getAllByRole('button').find(
       (b) => b.textContent === 'OK'
     )
-    if (okButton) {
-      act(() => { fireEvent.click(okButton) })
-    }
+    expect(okButton).toBeTruthy()
+    act(() => { fireEvent.click(okButton!) })
   })
 
-  it('clicking Cancel in the reject modal does not throw', async () => {
-    const { waitFor } = await import('@testing-library/react')
-
+  it('clicking Cancel in the reject modal dismisses it', async () => {
     renderHook(() =>
       useKeyboardShortcuts({ activeDecision: baseDecision as never })
     )
@@ -268,8 +254,22 @@ describe('useKeyboardShortcuts', () => {
     const cancelButton = screen.getAllByRole('button').find(
       (b) => b.textContent === 'Cancel'
     )
-    if (cancelButton) {
-      expect(() => act(() => { fireEvent.click(cancelButton) })).not.toThrow()
-    }
+    expect(cancelButton).toBeTruthy()
+    act(() => { fireEvent.click(cancelButton!) })
+  })
+
+  it('handles ArrowUp and ArrowDown without errors when no decision is active', () => {
+    renderHook(() =>
+      useKeyboardShortcuts({ activeDecision: undefined })
+    )
+
+    act(() => {
+      fireEvent.keyDown(globalThis as unknown as Window, { code: 'ArrowUp' })
+      fireEvent.keyDown(globalThis as unknown as Window, { code: 'ArrowDown' })
+    })
+
+    // No modal should appear for arrow keys
+    expect(screen.queryByText('Accept Decision')).not.toBeInTheDocument()
+    expect(screen.queryByText('Reject Decision')).not.toBeInTheDocument()
   })
 })
