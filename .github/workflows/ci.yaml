@@ -90,7 +90,7 @@ jobs:
 
       # SonarCloud
       - name: SonarCloud scan
-        if: always()
+        if: always() && secrets.SONAR_TOKEN != ''
         uses: SonarSource/sonarqube-scan-action@v7
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -98,7 +98,7 @@ jobs:
   trigger-staging-deploy:
     name: Trigger staging deploy
     needs: quality
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.repository_owner == 'meaningfy-ws'
     runs-on: ubuntu-latest
     env:
       OPS_REPO: meaningfy-ws/enity-resolution-ops
