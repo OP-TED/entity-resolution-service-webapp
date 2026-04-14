@@ -21,14 +21,12 @@ on:
       - 'docs/**'
       - '*.md'
       - 'LICENSE'
-      - 'infra/**'
   pull_request:
     branches: [develop]
     paths-ignore:
       - 'docs/**'
       - '*.md'
       - 'LICENSE'
-      - 'infra/**'
 
 permissions:
   contents: read
