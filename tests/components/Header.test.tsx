@@ -122,4 +122,36 @@ describe('Header', () => {
 
     expect(mockNavigate).toHaveBeenCalledWith('/admin')
   })
+
+  describe('confirmation preference toggles', () => {
+    it('renders skip all confirmations menu item', () => {
+      render(<Header />)
+
+      fireEvent.click(screen.getByRole('button', { name: /user/i }))
+
+      expect(screen.getByText('Skip all confirmations')).toBeInTheDocument()
+    })
+
+    it('renders per-action skip toggles', () => {
+      render(<Header />)
+
+      fireEvent.click(screen.getByRole('button', { name: /user/i }))
+
+      expect(screen.getByText('Skip accept')).toBeInTheDocument()
+      expect(screen.getByText('Skip reject')).toBeInTheDocument()
+      expect(screen.getByText('Skip assign alternative')).toBeInTheDocument()
+    })
+
+    it('toggles skipAll when "Skip all confirmations" is clicked', () => {
+      render(<Header />)
+
+      fireEvent.click(screen.getByRole('button', { name: /user/i }))
+      fireEvent.click(screen.getByText('Skip all confirmations'))
+
+      // After toggling on, the switch should be checked
+      const skipAllSwitch = screen.getByText('Skip all confirmations')
+        .closest('[class*="menu"]')?.querySelector('[role="switch"]')
+      expect(skipAllSwitch).toBeTruthy()
+    })
+  })
 })

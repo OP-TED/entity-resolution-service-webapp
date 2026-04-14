@@ -1,7 +1,11 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 
 import { AlternativeClusters } from '../../src/components/AlternativeClusters'
 import { createTestQueryClient, fireEvent, render, screen } from '../test-utils'
+
+beforeEach(() => {
+  sessionStorage.clear()
+})
 
 vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
   getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetInfiniteOptions:
@@ -143,5 +147,38 @@ describe('AlternativeClusters', () => {
     // The Popconfirm popup should render with OK button
     const okBtn = screen.getAllByRole('button').find((b) => b.textContent === 'OK')
     expect(okBtn).toBeTruthy()
+  })
+
+  describe('skip assign confirmation', () => {
+    it('does not open Popconfirm when assign skip is enabled', () => {
+      sessionStorage.setItem('ere_skip_assign', 'true')
+
+      const queryClient = createTestQueryClient()
+      queryClient.setQueryData(['alternative-clusters'], clusterPage())
+
+      render(<AlternativeClusters currentDecision={mockDecision as never} />, { queryClient })
+
+      fireEvent.click(screen.getByText(/Compare with 2nd best cluster/i))
+      fireEvent.click(screen.getByRole('button', { name: /Use this cluster instead/i }))
+
+      // No OK button should appear because Popconfirm is disabled
+      const okBtn = screen.getAllByRole('button').find((b) => b.textContent === 'OK')
+      expect(okBtn).toBeUndefined()
+    })
+
+    it('does not open Popconfirm when skip-all is enabled', () => {
+      sessionStorage.setItem('ere_skip_all', 'true')
+
+      const queryClient = createTestQueryClient()
+      queryClient.setQueryData(['alternative-clusters'], clusterPage())
+
+      render(<AlternativeClusters currentDecision={mockDecision as never} />, { queryClient })
+
+      fireEvent.click(screen.getByText(/Compare with 2nd best cluster/i))
+      fireEvent.click(screen.getByRole('button', { name: /Use this cluster instead/i }))
+
+      const okBtn = screen.getAllByRole('button').find((b) => b.textContent === 'OK')
+      expect(okBtn).toBeUndefined()
+    })
   })
 })

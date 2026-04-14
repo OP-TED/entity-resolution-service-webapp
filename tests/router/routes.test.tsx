@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
+import { ConfirmationPreferenceProvider } from '../../src/context/ConfirmationPreferenceContext'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { App, ConfigProvider } from 'antd'
 import { MemoryRouter } from 'react-router-dom'
@@ -51,6 +52,10 @@ vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
   listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey: vi.fn(() => ['decisions-infinite']),
   listDecisionsApiV1CurationDecisionsGetQueryKey: vi.fn(() => ['decisions']),
   getStatisticsApiV1CurationStatsGetQueryKey: vi.fn(() => ['stats']),
+  listEntityTypesApiV1CurationEntityTypesGetOptions: vi.fn(() => ({
+    queryKey: ['entity-types'],
+    queryFn: vi.fn().mockResolvedValue([])
+  })),
   listUsersApiV1UsersGetOptions: vi.fn(() => ({
     queryKey: ['users'],
     queryFn: vi.fn().mockResolvedValue({ count: 0, results: [], next: null, previous: null })
@@ -81,7 +86,9 @@ function renderWithRouter(initialEntries: string[]) {
       <QueryClientProvider client={queryClient}>
         <ConfigProvider>
           <App>
-            <Router />
+            <ConfirmationPreferenceProvider>
+              <Router />
+            </ConfirmationPreferenceProvider>
           </App>
         </ConfigProvider>
       </QueryClientProvider>

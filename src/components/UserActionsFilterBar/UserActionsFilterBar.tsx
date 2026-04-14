@@ -14,8 +14,8 @@ const actionTypeOptions = [
 ]
 
 const orderingOptions = [
-  { label: 'Created At (Newest)', value: BaseOrdering.CREATED_AT },
-  { label: 'Created At (Oldest)', value: BaseOrdering['-CREATED_AT'] }
+  { label: 'Created At (Newest)', value: BaseOrdering['-CREATED_AT'] },
+  { label: 'Created At (Oldest)', value: BaseOrdering.CREATED_AT }
 ]
 
 export const UserActionsFilterBar = () => {

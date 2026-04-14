@@ -1,6 +1,8 @@
+import { listEntityTypesApiV1CurationEntityTypesGetOptions } from '@api/@tanstack/react-query.gen'
 import { DecisionOrdering } from '@api/types.gen'
 import { ConfidenceSelect, SearchFilter, SimilaritySelect, Text } from '@components'
 import { useQueryUpdate } from '@hooks'
+import { useQuery } from '@tanstack/react-query'
 
 import { Flex, Select } from 'antd'
 
@@ -9,6 +11,15 @@ import { useStyles } from './styles'
 export const FilterBar = () => {
   const { updateQuery, params } = useQueryUpdate()
   const { styles } = useStyles()
+
+  const { data: entityTypes } = useQuery(
+    listEntityTypesApiV1CurationEntityTypesGetOptions()
+  )
+
+  const entityTypeOptions = [
+    { label: 'All Entity Types', value: '' },
+    ...(entityTypes?.map((t) => ({ label: t, value: t })) ?? [])
+  ]
 
   const orderingOptions = [
     { label: 'Created At (Newest)', value: DecisionOrdering['-CREATED_AT'] },
@@ -21,6 +32,18 @@ export const FilterBar = () => {
 
   return (
     <Flex className={styles.filterBar} align="center" gap={16} wrap>
+      <Flex align="center" gap={8}>
+        <Text weight={500}>Entity Type:</Text>
+
+        <Select
+          value={params?.entity_type ? String(params.entity_type) : ''}
+          className="select-min-width"
+          options={entityTypeOptions}
+          onChange={(value) => updateQuery({ entity_type: value || undefined })}
+          aria-label="Filter by entity type"
+        />
+      </Flex>
+
       <Flex align="center" gap={8}>
         <Text weight={500}>Confidence:</Text>
 
