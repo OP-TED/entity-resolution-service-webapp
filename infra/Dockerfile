@@ -1,8 +1,17 @@
+# --- Stage 1: Schema Fetcher ---
+# This stage isolates the network dependency and tool installation
+FROM alpine:latest AS fetcher
+# Default URL points to the main Meaningfy backend repo. 
+# This can be overridden via --build-arg ERS_SCHEMA_URL=...
+ARG ERS_SCHEMA_URL=https://raw.githubusercontent.com/meaningfy-ws/entity-resolution-service/develop/resources/curation-openapi-schema.json
+RUN apk add --no-cache curl && \
+    curl -fsSL "$ERS_SCHEMA_URL" -o /tmp/schema.json
+
+# --- Stage 2: Builder ---
 FROM node:22-slim AS builder
 WORKDIR /usr/app
 
 ARG ENVIRONMENT
-ARG ERS_SCHEMA_URL
 
 COPY package.json package-lock.json tsconfig.json tsconfig.app.json tsconfig.node.json ./
 
@@ -10,18 +19,16 @@ RUN npm ci
 
 COPY . .
 
-# Fetch the OpenAPI schema from the ERS backend repo so the API client can be
-# generated without a running backend. When ERS_SCHEMA_URL is not set the build
-# relies on infra/curation-openapi-schema.json already being present (e.g. via make fetch-schema).
-RUN if [ -n "$ERS_SCHEMA_URL" ]; then \
-      apt-get update -qq && apt-get install -y -qq curl > /dev/null && \
-      curl -fsSL "$ERS_SCHEMA_URL" -o infra/curation-openapi-schema.json; \
-    fi
+# Copy schema from fetcher if it was successfully retrieved.
+# If the file exists in the local context (infra/curation-openapi-schema.json), 
+# it will be overwritten by the fetched one, ensuring the latest version is used.
+COPY --from=fetcher /tmp/schema.json* infra/curation-openapi-schema.json
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN npm run build -- --mode=$ENVIRONMENT
 
+# --- Stage 3: Production ---
 FROM nginx:1.27-alpine AS production
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup \

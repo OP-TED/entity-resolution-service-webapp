@@ -2,6 +2,14 @@
 
 Docker and CI configuration for the ERS Webapp.
 
+## External Dependencies
+
+The build process requires the ERS Backend OpenAPI schema.
+
+- **File:** `infra/curation-openapi-schema.json`
+- **Local acquisition:** Run `make fetch-schema` from the root directory.
+- **Automated acquisition:** The `Dockerfile` automatically fetches the schema from the Meaningfy repository during build. This can be overridden by providing the `ERS_SCHEMA_URL` build argument.
+
 ## Structure
 
 ```
@@ -35,23 +43,24 @@ Run from the repo root:
 | `make check-quality` | Run lint + typecheck         |
 | `make check-all`     | Run lint + typecheck + tests |
 
-**Docker:**
+**Docker & Build:**
 
-| Target         | Description                    |
-| -------------- | ------------------------------ |
-| `make up`      | Start containers               |
-| `make down`    | Stop containers                |
-| `make rebuild` | Rebuild and restart containers |
-| `make logs`    | Follow container logs          |
-| `make help`    | Show available targets         |
+| Target              | Description                    |
+| ------------------- | ------------------------------ |
+| `make fetch-schema` | Fetch latest OpenAPI schema    |
+| `make up`           | Start containers               |
+| `make down`         | Stop containers                |
+| `make rebuild`      | Rebuild and restart containers |
+| `make logs`         | Follow container logs          |
+| `make help`         | Show available targets         |
 
 All targets that start containers require `infra/.env` (copy from `infra/.env.example`).
 
 ## Environment variables
 
-| Variable            | Used at    | Description                                                        |
-| ------------------- | ---------- | ------------------------------------------------------------------ |
-| `API_BACKEND_URL`   | Runtime    | Curation API address (`host:port`), resolved by nginx via envsubst |
-| `ENVIRONMENT`       | Build time | Vite build mode (`development`, `staging`, `production`)           |
-| `ERS_SCHEMA_URL`    | Build time | URL to fetch the OpenAPI schema (optional, for Dockerfile)         |
-| `VITE_APP_MAIN_API` | Build time | Live API URL for local openapi-ts generation (optional, for dev)   |
+| Variable            | Used at    | Description                                                              |
+| ------------------- | ---------- | ------------------------------------------------------------------------ |
+| `API_BACKEND_URL`   | Runtime    | Curation API address (`host:port`), resolved by nginx via envsubst       |
+| `ENVIRONMENT`       | Build time | Vite build mode (`development`, `staging`, `production`)                 |
+| `ERS_SCHEMA_URL`    | Build time | URL to fetch the OpenAPI schema. Defaults to the Meaningfy backend repo. |
+| `VITE_APP_MAIN_API` | Build time | Live API URL for local openapi-ts generation (optional, for dev)         |
