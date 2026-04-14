@@ -36,6 +36,7 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
 
 COPY --from=builder /usr/app/dist /usr/share/nginx/html
 COPY --chmod=644 infra/nginx.conf /etc/nginx/templates/default.conf.template
+COPY --chmod=755 infra/25-set-resolver.sh /docker-entrypoint.d/25-set-resolver.sh
 
 USER appuser
 

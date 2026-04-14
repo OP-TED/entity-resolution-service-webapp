@@ -36,4 +36,5 @@ playwright.config.ts
 # Infra (re-include only what the Dockerfile needs)
 infra
 !infra/nginx.conf
+!infra/25-set-resolver.sh
 !infra/curation-openapi-schema.json
