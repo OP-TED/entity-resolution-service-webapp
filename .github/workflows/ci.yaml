@@ -89,8 +89,17 @@ jobs:
           fi
 
       # SonarCloud
+      - name: Check for SonarCloud Token
+        id: sonar_check
+        run: |
+          if [ -z "${{ secrets.SONAR_TOKEN }}" ]; then
+            echo "has_token=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_token=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: SonarCloud scan
-        if: always() && secrets.SONAR_TOKEN != ''
+        if: always() && steps.sonar_check.outputs.has_token == 'true'
         uses: SonarSource/sonarqube-scan-action@v7
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
