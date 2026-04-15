@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 
+import { BulkSelectionProvider } from '../src/context/BulkSelectionContext'
 import { ConfirmationPreferenceProvider } from '../src/context/ConfirmationPreferenceContext'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { type RenderHookOptions, type RenderOptions, render, renderHook } from '@testing-library/react'
@@ -35,7 +36,7 @@ function AllProviders({
         <ConfigProvider>
           <App>
             <ConfirmationPreferenceProvider>
-              {children}
+              <BulkSelectionProvider>{children}</BulkSelectionProvider>
             </ConfirmationPreferenceProvider>
           </App>
         </ConfigProvider>

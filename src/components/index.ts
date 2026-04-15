@@ -1,4 +1,6 @@
 export * from './AlternativeClusters'
+export * from './BulkActionBar'
+export * from './BulkConfirmModal'
 export * from './ComparisonPanel'
 export * from './DecisionsSideMenu'
 export * from './EntityCard'

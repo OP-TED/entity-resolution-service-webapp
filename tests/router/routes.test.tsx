@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
+import { BulkSelectionProvider } from '../../src/context/BulkSelectionContext'
 import { ConfirmationPreferenceProvider } from '../../src/context/ConfirmationPreferenceContext'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { App, ConfigProvider } from 'antd'
@@ -63,7 +64,13 @@ vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
   listUsersApiV1UsersGetQueryKey: vi.fn(() => ['users']),
   patchUserApiV1UsersUserIdPatchMutation: vi.fn(() => ({
     mutationFn: vi.fn()
-  }))
+  })),
+  bulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostMutation: vi.fn(
+    () => ({ mutationFn: vi.fn() })
+  ),
+  bulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostMutation: vi.fn(
+    () => ({ mutationFn: vi.fn() })
+  )
 }))
 
 vi.mock('../../src/hooks/useQueryUpdate', () => ({
@@ -87,7 +94,9 @@ function renderWithRouter(initialEntries: string[]) {
         <ConfigProvider>
           <App>
             <ConfirmationPreferenceProvider>
-              <Router />
+              <BulkSelectionProvider>
+                <Router />
+              </BulkSelectionProvider>
             </ConfirmationPreferenceProvider>
           </App>
         </ConfigProvider>

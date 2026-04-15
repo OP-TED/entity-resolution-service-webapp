@@ -1,14 +1,17 @@
 import { listDecisionsApiV1CurationDecisionsGetInfiniteOptions } from '@api/index'
 import { type DecisionSummary, DecisionOrdering } from '@api/types.gen'
 import {
+  BulkActionBar,
   DecisionSideMenuItem,
   DecisionsSideMenuTitle,
   SkeletonWrapper
 } from '@components'
+import { useBulkSelection } from '@context/useBulkSelection'
 import { useInfiniteScroll, useQueryParams } from '@hooks'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { Menu } from 'antd'
-import { useEffect, useMemo, useRef } from 'react'
+
+import { Button, Flex, Menu } from 'antd'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { useStyles } from './styles'
 
@@ -22,6 +25,15 @@ export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
   const params = useQueryParams()
   const { styles } = useStyles()
   const { ordering, ...restParams } = params
+  const {
+    isSelectionMode,
+    isSelected,
+    toggleId,
+    selectRange,
+    selectMany,
+    clear,
+    selectedCount
+  } = useBulkSelection()
 
   const normalizedOrdering =
     typeof ordering === 'string' && ordering.startsWith('+')
@@ -62,17 +74,26 @@ export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
   })
 
   const prevDecisionsRef = useRef<DecisionSummary[]>([])
+  const lastSelectedIdRef = useRef<string | null>(null)
 
   useEffect(() => {
+    if (isSelectionMode) {
+      prevDecisionsRef.current = allDecisions
+
+      return
+    }
+
     if (!activeDecision && allDecisions[0]) {
       onSelect(allDecisions[0])
       prevDecisionsRef.current = allDecisions
+
       return
     }
 
     if (activeDecision && allDecisions.length === 0) {
       onSelect(undefined)
       prevDecisionsRef.current = []
+
       return
     }
 
@@ -89,21 +110,60 @@ export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
     }
 
     prevDecisionsRef.current = allDecisions
-  }, [allDecisions, activeDecision, onSelect])
+  }, [allDecisions, activeDecision, isSelectionMode, onSelect])
 
   const selectedKeys = activeDecision?.id ? [activeDecision.id] : []
 
-  const onClickMenuItem = ({ key }: { key: string }) => {
-    const decision = allDecisions.find((d) => String(d.id) === key)
-    if (decision) {
-      onSelect(decision)
-    }
-  }
+  const onSelectionToggle = useCallback(
+    (id: string, shiftKey: boolean) => {
+      if (shiftKey && lastSelectedIdRef.current) {
+        const ids = allDecisions.map((d) => d?.id).filter(Boolean) as string[]
+        const startIndex = ids.indexOf(lastSelectedIdRef.current)
+        const endIndex = ids.indexOf(id)
+        if (startIndex !== -1 && endIndex !== -1) {
+          const [from, to] =
+            startIndex < endIndex
+              ? [startIndex, endIndex]
+              : [endIndex, startIndex]
+          selectRange(ids.slice(from, to + 1))
+          lastSelectedIdRef.current = id
+
+          return
+        }
+      }
+      toggleId(id)
+      lastSelectedIdRef.current = id
+    },
+    [allDecisions, selectRange, toggleId]
+  )
+
+  const onClickMenuItem = useCallback(
+    (info: { key: string; domEvent: React.MouseEvent | React.KeyboardEvent }) => {
+      const { key, domEvent } = info
+      if (isSelectionMode) {
+        const shift =
+          'shiftKey' in domEvent ? Boolean(domEvent.shiftKey) : false
+        onSelectionToggle(key, shift)
+
+        return
+      }
+      const decision = allDecisions.find((d) => String(d.id) === key)
+      if (decision) {
+        onSelect(decision)
+      }
+    },
+    [allDecisions, onSelectionToggle, isSelectionMode, onSelect]
+  )
 
   const decisionItems = allDecisions?.map((decision) => ({
     key: decision?.id,
-    label: <DecisionSideMenuItem decision={decision} />,
-    onClick: onClickMenuItem
+    label: (
+      <DecisionSideMenuItem
+        decision={decision}
+        selectionMode={isSelectionMode}
+        selected={isSelectionMode && isSelected(decision?.id)}
+      />
+    )
   }))
 
   const loadingItems = isFetchingNextPage
@@ -115,19 +175,57 @@ export const DecisionsSideMenu = ({ activeDecision, onSelect }: Props) => {
       }))
     : []
 
+  const allLoadedIds = useMemo(
+    () => allDecisions.map((d) => d?.id).filter(Boolean) as string[],
+    [allDecisions]
+  )
+  const allLoadedSelected =
+    allLoadedIds.length > 0 && selectedCount >= allLoadedIds.length
+
   return (
-    <aside ref={scrollContainerRef} className={styles.decisionsSideMenu}>
+    <aside className={styles.decisionsSideMenu}>
       <DecisionsSideMenuTitle count={decisionsCount} />
 
-      <SkeletonWrapper isLoading={isLoading} count={8} height={80} width="100%">
-        <Menu
-          mode="inline"
-          selectedKeys={selectedKeys}
-          onClick={onClickMenuItem}
-          className={styles.menu}
-          items={[...decisionItems, ...loadingItems]}
-        />
-      </SkeletonWrapper>
+      {isSelectionMode && allLoadedIds.length > 0 && (
+        <Flex
+          gap={8}
+          align="center"
+          justify="space-between"
+          className={styles.selectionToolbar}
+        >
+          <Button
+            size="small"
+            type="link"
+            onClick={() =>
+              allLoadedSelected ? clear() : selectMany(allLoadedIds)
+            }
+          >
+            {allLoadedSelected ? 'Clear' : `Select all loaded (${allLoadedIds.length})`}
+          </Button>
+          {selectedCount > 0 && !allLoadedSelected && (
+            <Button size="small" type="link" onClick={clear}>
+              Clear ({selectedCount})
+            </Button>
+          )}
+        </Flex>
+      )}
+
+      <div
+        ref={scrollContainerRef as React.RefObject<HTMLDivElement>}
+        className={styles.menuScroll}
+      >
+        <SkeletonWrapper isLoading={isLoading} count={8} height={80} width="100%">
+          <Menu
+            mode="inline"
+            selectedKeys={isSelectionMode ? [] : selectedKeys}
+            onClick={onClickMenuItem}
+            className={styles.menu}
+            items={[...decisionItems, ...loadingItems]}
+          />
+        </SkeletonWrapper>
+      </div>
+
+      <BulkActionBar />
     </aside>
   )
 }
