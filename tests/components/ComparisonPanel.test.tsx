@@ -72,13 +72,40 @@ vi.mock('@ant-design/icons', () => {
 vi.mock('antd', () => {
   const Pass = ({ children }: { children?: ReactNode }) => <>{children}</>
 
-  const Popconfirm = ({ children, onConfirm, disabled }: { children: ReactNode; onConfirm?: () => void; disabled?: boolean }) => (
+  const Popconfirm = ({
+    children,
+    description,
+    onConfirm,
+    onCancel,
+    onOpenChange,
+    disabled
+  }: {
+    children: ReactNode
+    description?: ReactNode
+    onConfirm?: () => void
+    onCancel?: () => void
+    onOpenChange?: (open: boolean) => void
+    disabled?: boolean
+  }) => (
     <div>
       {children}
       {!disabled && (
-        <button type="button" aria-label="confirm-pop" onClick={onConfirm}>
-          confirm
-        </button>
+        <>
+          {description}
+          <button type="button" aria-label="confirm-pop" onClick={onConfirm}>
+            confirm
+          </button>
+          <button type="button" aria-label="cancel-pop" onClick={onCancel}>
+            cancel
+          </button>
+          <button
+            type="button"
+            aria-label="openchange-pop"
+            onClick={() => onOpenChange?.(true)}
+          >
+            open
+          </button>
+        </>
       )}
     </div>
   )
@@ -371,6 +398,93 @@ describe('ComparisonPanel', () => {
       await waitFor(() => {
         expect(mockRemoveDecisionFromCache).toHaveBeenCalledWith('decision-99')
         expect(mockNotification.success).toHaveBeenCalledWith({ message: 'Decision rejected' })
+      })
+    })
+  })
+
+  describe('"Don\'t show again" checkbox on cancel/open', () => {
+    it('persists accept skip to sessionStorage when canceling with checkbox checked', () => {
+      render(<ComparisonPanel currentDecision={mockDecision as never} />)
+
+      // Two Popconfirms render two checkboxes — index 0 is the accept one
+      const checkboxes = screen.getAllByRole('checkbox')
+      fireEvent.click(checkboxes[0])
+
+      const cancelButtons = screen.getAllByRole('button', { name: 'cancel-pop' })
+      fireEvent.click(cancelButtons[0])
+
+      expect(sessionStorage.getItem('ere_skip_accept')).toBe('true')
+    })
+
+    it('persists reject skip to sessionStorage when canceling with checkbox checked', () => {
+      render(<ComparisonPanel currentDecision={mockDecision as never} />)
+
+      const checkboxes = screen.getAllByRole('checkbox')
+      fireEvent.click(checkboxes[1])
+
+      const cancelButtons = screen.getAllByRole('button', { name: 'cancel-pop' })
+      fireEvent.click(cancelButtons[1])
+
+      expect(sessionStorage.getItem('ere_skip_reject')).toBe('true')
+    })
+
+    it('does not persist skip on cancel when the checkbox is not checked', () => {
+      render(<ComparisonPanel currentDecision={mockDecision as never} />)
+
+      const cancelButtons = screen.getAllByRole('button', { name: 'cancel-pop' })
+      fireEvent.click(cancelButtons[0])
+
+      expect(sessionStorage.getItem('ere_skip_accept')).toBeNull()
+    })
+
+    it('resets the accept checkbox when the Popconfirm re-opens', () => {
+      render(<ComparisonPanel currentDecision={mockDecision as never} />)
+
+      const checkboxes = screen.getAllByRole('checkbox')
+      fireEvent.click(checkboxes[0])
+      expect(checkboxes[0]).toBeChecked()
+
+      // Trigger onOpenChange(true) — component should reset dontShowAccept
+      const openButtons = screen.getAllByRole('button', { name: 'openchange-pop' })
+      fireEvent.click(openButtons[0])
+
+      // After the reset, the accept checkbox should be unchecked again
+      const refreshedCheckboxes = screen.getAllByRole('checkbox')
+      expect(refreshedCheckboxes[0]).not.toBeChecked()
+    })
+
+    it('resets the reject checkbox when the Popconfirm re-opens', () => {
+      render(<ComparisonPanel currentDecision={mockDecision as never} />)
+
+      const checkboxes = screen.getAllByRole('checkbox')
+      fireEvent.click(checkboxes[1])
+      expect(checkboxes[1]).toBeChecked()
+
+      const openButtons = screen.getAllByRole('button', { name: 'openchange-pop' })
+      fireEvent.click(openButtons[1])
+
+      const refreshedCheckboxes = screen.getAllByRole('checkbox')
+      expect(refreshedCheckboxes[1]).not.toBeChecked()
+    })
+
+    it('persists accept skip on confirm when the checkbox is checked', async () => {
+      const { acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation } =
+        await import('../../src/api/@tanstack/react-query.gen')
+
+      vi.mocked(acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation).mockReturnValueOnce({
+        mutationFn: vi.fn().mockResolvedValue({})
+      })
+
+      render(<ComparisonPanel currentDecision={mockDecision as never} />)
+
+      const checkboxes = screen.getAllByRole('checkbox')
+      fireEvent.click(checkboxes[0])
+
+      const confirmButtons = screen.getAllByRole('button', { name: 'confirm-pop' })
+      fireEvent.click(confirmButtons[0])
+
+      await waitFor(() => {
+        expect(sessionStorage.getItem('ere_skip_accept')).toBe('true')
       })
     })
   })

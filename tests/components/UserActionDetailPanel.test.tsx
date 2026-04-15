@@ -1,7 +1,18 @@
+import { QueryClient } from '@tanstack/react-query'
 import { describe, expect, it, vi } from 'vitest'
 
 import { UserActionDetailPanel } from '../../src/components/UserActionDetailPanel'
 import { createTestQueryClient, fireEvent, render, screen, waitFor } from '../test-utils'
+
+// Interactive tests need staleTime: Infinity to prevent background refetches
+// from wiping cached data (the default mock queryFn returns null/empty) while
+// the test is still running.
+const createStableClient = () => new QueryClient({
+  defaultOptions: {
+    queries: { retry: false, gcTime: 0, staleTime: Infinity },
+    mutations: { retry: false }
+  }
+})
 
 vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
   getSelectedClusterApiV1UserActionsActionIdSelectedClusterGetOptions: vi.fn(
@@ -169,7 +180,7 @@ describe('UserActionDetailPanel', () => {
 
   describe('selected cluster', () => {
     it('shows "Selected Cluster" ProposedCard when data is in cache', async () => {
-      const queryClient = createTestQueryClient()
+      const queryClient = createStableClient()
       queryClient.setQueryData(['selected-cluster'], mockSelectedCluster)
 
       render(
@@ -183,7 +194,7 @@ describe('UserActionDetailPanel', () => {
     })
 
     it('shows entity count label from selected cluster', async () => {
-      const queryClient = createTestQueryClient()
+      const queryClient = createStableClient()
       queryClient.setQueryData(['selected-cluster'], mockSelectedCluster)
 
       render(
@@ -355,6 +366,311 @@ describe('UserActionDetailPanel', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/Entity 1 of 1/)).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('selected cluster navigation', () => {
+    it('advances to the next entity when forward arrow is clicked', async () => {
+      const queryClient = createStableClient()
+      queryClient.setQueryData(['selected-cluster'], mockSelectedCluster)
+
+      render(
+        <UserActionDetailPanel currentAction={mockAction as never} />,
+        { queryClient }
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+      })
+
+      const nextBtn = document.querySelector('[aria-label="arrow-right"]')?.closest('button')
+      expect(nextBtn).toBeTruthy()
+      fireEvent.click(nextBtn!)
+
+      expect(screen.getByText(/Entity 2 of 2/)).toBeInTheDocument()
+    })
+
+    it('goes back to the previous entity when back arrow is clicked', async () => {
+      const queryClient = createStableClient()
+      queryClient.setQueryData(['selected-cluster'], mockSelectedCluster)
+
+      render(
+        <UserActionDetailPanel currentAction={mockAction as never} />,
+        { queryClient }
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+      })
+
+      const nextBtn = document.querySelector('[aria-label="arrow-right"]')?.closest('button')
+      fireEvent.click(nextBtn!)
+      expect(screen.getByText(/Entity 2 of 2/)).toBeInTheDocument()
+
+      const prevBtn = document.querySelector('[aria-label="arrow-left"]')?.closest('button')
+      expect(prevBtn).toBeTruthy()
+      fireEvent.click(prevBtn!)
+      expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+    })
+
+    it('does not go past the last entity when clicking forward at the end', async () => {
+      const queryClient = createStableClient()
+      queryClient.setQueryData(['selected-cluster'], mockSelectedCluster)
+
+      render(
+        <UserActionDetailPanel currentAction={mockAction as never} />,
+        { queryClient }
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+      })
+
+      const nextBtn = document.querySelector('[aria-label="arrow-right"]')?.closest('button')
+      fireEvent.click(nextBtn!)
+      fireEvent.click(nextBtn!)
+      // Math.min caps at total entities, so still 2 of 2
+      expect(screen.getByText(/Entity 2 of 2/)).toBeInTheDocument()
+    })
+
+    it('does not go below the first entity when clicking back at the start', async () => {
+      const queryClient = createStableClient()
+      queryClient.setQueryData(['selected-cluster'], mockSelectedCluster)
+
+      render(
+        <UserActionDetailPanel currentAction={mockAction as never} />,
+        { queryClient }
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+      })
+
+      const prevBtn = document.querySelector('[aria-label="arrow-left"]')?.closest('button')
+      fireEvent.click(prevBtn!)
+      // Math.max floors at 1, so still 1 of 2
+      expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+    })
+  })
+
+  describe('candidate navigation', () => {
+    const candidateWithEntities = {
+      cluster_id: 'cand-cluster',
+      confidence_score: 0.7,
+      similarity_score: 0.65,
+      top_entities: [
+        { identified_by: { source_id: 's1', request_id: 'c1', entity_type: 'Person' }, parsed_representation: { name: 'Cand A' } },
+        { identified_by: { source_id: 's1', request_id: 'c2', entity_type: 'Person' }, parsed_representation: { name: 'Cand B' } }
+      ]
+    }
+
+    it('navigates forward and backward within a candidate cluster', async () => {
+      const queryClient = createStableClient()
+      queryClient.setQueryData(['candidates-infinite'], {
+        pages: [{ results: [candidateWithEntities], next: null }],
+        pageParams: [1]
+      })
+
+      render(
+        <UserActionDetailPanel
+          currentAction={{ ...mockAction, action_type: 'REJECT_ALL', selected_cluster: null } as never}
+        />,
+        { queryClient }
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText(/Candidate 1/)).toBeInTheDocument()
+      })
+
+      // Expand the candidate collapse
+      fireEvent.click(screen.getByText(/Candidate 1/))
+
+      await waitFor(() => {
+        expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+      })
+
+      const nextBtn = document.querySelector('[aria-label="arrow-right"]')?.closest('button')
+      expect(nextBtn).toBeTruthy()
+      fireEvent.click(nextBtn!)
+      expect(screen.getByText(/Entity 2 of 2/)).toBeInTheDocument()
+
+      const prevBtn = document.querySelector('[aria-label="arrow-left"]')?.closest('button')
+      expect(prevBtn).toBeTruthy()
+      fireEvent.click(prevBtn!)
+      expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+    })
+
+    it('clamps candidate entity index at upper bound when next is clicked past end', async () => {
+      const queryClient = createStableClient()
+      queryClient.setQueryData(['candidates-infinite'], {
+        pages: [{ results: [candidateWithEntities], next: null }],
+        pageParams: [1]
+      })
+
+      render(
+        <UserActionDetailPanel
+          currentAction={{ ...mockAction, action_type: 'REJECT_ALL', selected_cluster: null } as never}
+        />,
+        { queryClient }
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText(/Candidate 1/)).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByText(/Candidate 1/))
+
+      await waitFor(() => {
+        expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+      })
+
+      const nextBtn = document.querySelector('[aria-label="arrow-right"]')?.closest('button')
+      fireEvent.click(nextBtn!)
+      fireEvent.click(nextBtn!)
+      expect(screen.getByText(/Entity 2 of 2/)).toBeInTheDocument()
+    })
+
+    it('clamps candidate entity index at lower bound when back is clicked at start', async () => {
+      const queryClient = createStableClient()
+      queryClient.setQueryData(['candidates-infinite'], {
+        pages: [{ results: [candidateWithEntities], next: null }],
+        pageParams: [1]
+      })
+
+      render(
+        <UserActionDetailPanel
+          currentAction={{ ...mockAction, action_type: 'REJECT_ALL', selected_cluster: null } as never}
+        />,
+        { queryClient }
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText(/Candidate 1/)).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByText(/Candidate 1/))
+
+      await waitFor(() => {
+        expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+      })
+
+      const prevBtn = document.querySelector('[aria-label="arrow-left"]')?.closest('button')
+      fireEvent.click(prevBtn!)
+      expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+    })
+  })
+
+  describe('load more candidates', () => {
+    it('shows "Load more candidates" when the last page has a next cursor', async () => {
+      const queryClient = createStableClient()
+      queryClient.setQueryData(['candidates-infinite'], {
+        pages: [{
+          results: [{ cluster_id: 'c-1', confidence_score: 0.5, similarity_score: 0.5, top_entities: [] }],
+          next: 2
+        }],
+        pageParams: [1]
+      })
+
+      render(
+        <UserActionDetailPanel currentAction={mockAction as never} />,
+        { queryClient }
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('Load more candidates')).toBeInTheDocument()
+      })
+    })
+
+    it('hides "Load more candidates" when the last page has no next cursor', async () => {
+      const queryClient = createStableClient()
+      queryClient.setQueryData(['candidates-infinite'], {
+        pages: [{
+          results: [{ cluster_id: 'c-1', confidence_score: 0.5, similarity_score: 0.5, top_entities: [] }],
+          next: null
+        }],
+        pageParams: [1]
+      })
+
+      render(
+        <UserActionDetailPanel currentAction={mockAction as never} />,
+        { queryClient }
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText(/Candidate 1/)).toBeInTheDocument()
+      })
+      expect(screen.queryByText('Load more candidates')).not.toBeInTheDocument()
+    })
+
+    it('invokes fetchNextPage when "Load more candidates" is clicked', async () => {
+      const { getCandidatesApiV1UserActionsActionIdCandidatesGetInfiniteOptions } =
+        await import('../../src/api/@tanstack/react-query.gen')
+
+      const candidatesQueryFn = vi.fn().mockResolvedValue({ results: [], next: null })
+
+      vi.mocked(
+        getCandidatesApiV1UserActionsActionIdCandidatesGetInfiniteOptions
+      ).mockReturnValue({
+        queryKey: ['candidates-infinite'],
+        queryFn: candidatesQueryFn
+      } as never)
+
+      const queryClient = createStableClient()
+      queryClient.setQueryData(['candidates-infinite'], {
+        pages: [{
+          results: [{ cluster_id: 'c-1', confidence_score: 0.5, similarity_score: 0.5, top_entities: [] }],
+          next: 2
+        }],
+        pageParams: [1]
+      })
+
+      render(
+        <UserActionDetailPanel currentAction={mockAction as never} />,
+        { queryClient }
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('Load more candidates')).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByText('Load more candidates'))
+
+      // fetchNextPage should have invoked the queryFn for the next page
+      await waitFor(() => {
+        expect(candidatesQueryFn).toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('action change', () => {
+    it('resets entity selection back to 1 when a different action is selected', async () => {
+      const queryClient = createStableClient()
+      queryClient.setQueryData(['selected-cluster'], mockSelectedCluster)
+
+      const { rerender } = render(
+        <UserActionDetailPanel currentAction={mockAction as never} />,
+        { queryClient }
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+      })
+
+      // Navigate forward to entity 2
+      const nextBtn = document.querySelector('[aria-label="arrow-right"]')?.closest('button')
+      fireEvent.click(nextBtn!)
+      expect(screen.getByText(/Entity 2 of 2/)).toBeInTheDocument()
+
+      // Switch to a different action — selection should reset to entity 1
+      rerender(
+        <UserActionDetailPanel
+          currentAction={{ ...mockAction, id: 'action-002' } as never}
+        />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
       })
     })
   })

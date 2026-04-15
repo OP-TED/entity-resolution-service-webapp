@@ -12,6 +12,7 @@ const mockNotification = vi.hoisted(() => ({
   error: vi.fn()
 }))
 
+const mockModalConfirm = vi.hoisted(() => vi.fn())
 const mockUpdateQuery = vi.hoisted(() => vi.fn())
 const mockDeactivateMutate = vi.hoisted(() => vi.fn())
 
@@ -79,10 +80,16 @@ vi.mock('../../src/context/useAuth', () => ({
 vi.mock('antd', async (importOriginal) => {
   const antd = await importOriginal<typeof import('antd')>()
   const AppComponent = antd.App
+  const ModalComponent = antd.Modal
   return {
     ...antd,
     App: Object.assign(AppComponent, {
       useApp: () => ({ notification: mockNotification })
+    }),
+    // Modal.confirm is the imperative API; mock it so we can inspect its args
+    // and invoke its onOk callback directly in tests.
+    Modal: Object.assign(ModalComponent, {
+      confirm: mockModalConfirm
     })
   }
 })
@@ -258,6 +265,152 @@ describe('AdminPage', () => {
       // Each user row should have an edit and a deactivate button
       expect(editBtns.length).toBe(2)
       expect(deleteBtns.length).toBe(2)
+    })
+
+    it('opens Modal.confirm with the user email when deactivate is clicked', async () => {
+      render(<AdminPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('alice@example.com')).toBeInTheDocument()
+      })
+
+      const enabledDeleteBtns = Array.from(
+        document.querySelectorAll('button:not([disabled])')
+      ).filter((btn) => btn.querySelector('.anticon-delete'))
+      fireEvent.click(enabledDeleteBtns[0] as HTMLElement)
+
+      expect(mockModalConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Deactivate User',
+          content: 'Are you sure you want to deactivate alice@example.com?',
+          okText: 'Deactivate',
+          okButtonProps: { danger: true }
+        })
+      )
+    })
+
+    it('calls the deactivate mutation with is_active=false when Modal.confirm onOk fires', async () => {
+      mockDeactivateMutate.mockResolvedValueOnce({})
+
+      render(<AdminPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('alice@example.com')).toBeInTheDocument()
+      })
+
+      const enabledDeleteBtns = Array.from(
+        document.querySelectorAll('button:not([disabled])')
+      ).filter((btn) => btn.querySelector('.anticon-delete'))
+      fireEvent.click(enabledDeleteBtns[0] as HTMLElement)
+
+      // Extract onOk from the Modal.confirm call and invoke it directly —
+      // this is what clicking the "Deactivate" button would do.
+      const confirmArgs = mockModalConfirm.mock.calls[0]?.[0]
+      expect(confirmArgs?.onOk).toBeTypeOf('function')
+
+      await confirmArgs.onOk()
+
+      // mutationFn receives (variables, context) — inspect the first arg only
+      expect(mockDeactivateMutate).toHaveBeenCalled()
+      expect(mockDeactivateMutate.mock.calls[0][0]).toEqual({
+        body: { is_active: false },
+        path: { user_id: 'u1' }
+      })
+    })
+
+    it('shows a success notification after successful deactivation', async () => {
+      mockDeactivateMutate.mockResolvedValueOnce({})
+
+      render(<AdminPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('alice@example.com')).toBeInTheDocument()
+      })
+
+      const enabledDeleteBtns = Array.from(
+        document.querySelectorAll('button:not([disabled])')
+      ).filter((btn) => btn.querySelector('.anticon-delete'))
+      fireEvent.click(enabledDeleteBtns[0] as HTMLElement)
+
+      const confirmArgs = mockModalConfirm.mock.calls[0]?.[0]
+      await confirmArgs.onOk()
+
+      await waitFor(() => {
+        expect(mockNotification.success).toHaveBeenCalledWith({
+          message: 'User deactivated successfully'
+        })
+      })
+    })
+
+    it('shows an error notification when deactivation fails', async () => {
+      mockDeactivateMutate.mockRejectedValueOnce({
+        body: { detail: 'Cannot deactivate superuser' }
+      })
+
+      render(<AdminPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('alice@example.com')).toBeInTheDocument()
+      })
+
+      const enabledDeleteBtns = Array.from(
+        document.querySelectorAll('button:not([disabled])')
+      ).filter((btn) => btn.querySelector('.anticon-delete'))
+      fireEvent.click(enabledDeleteBtns[0] as HTMLElement)
+
+      const confirmArgs = mockModalConfirm.mock.calls[0]?.[0]
+      await confirmArgs.onOk().catch(() => {})
+
+      await waitFor(() => {
+        expect(mockNotification.error).toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('pagination', () => {
+    it('calls updateQuery when the page size changes', async () => {
+      // Use 11 users so pagination is visible (more than 10 per page)
+      const manyUsers: UserResponse[] = Array.from({ length: 11 }, (_, i) => ({
+        id: `u${i}`,
+        email: `user${i}@example.com`,
+        is_active: true,
+        is_superuser: false,
+        is_verified: true,
+        created_at: '2025-01-15T10:00:00Z',
+        updated_at: '2025-01-15T10:00:00Z'
+      }))
+
+      const { listUsersApiV1UsersGetOptions } = await import(
+        '../../src/api/@tanstack/react-query.gen'
+      )
+      vi.mocked(listUsersApiV1UsersGetOptions).mockReturnValueOnce({
+        queryKey: ['users'],
+        queryFn: vi.fn().mockResolvedValue({
+          count: manyUsers.length,
+          results: manyUsers,
+          next: null,
+          previous: null
+        })
+      } as never)
+
+      render(<AdminPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('user0@example.com')).toBeInTheDocument()
+      })
+
+      // Find the pagination "next page" button (arrow-right inside li)
+      const nextPageBtn = document
+        .querySelector('.ant-pagination-next')
+        ?.querySelector('button')
+      expect(nextPageBtn).toBeTruthy()
+      fireEvent.click(nextPageBtn!)
+
+      await waitFor(() => {
+        expect(mockUpdateQuery).toHaveBeenCalledWith(
+          expect.objectContaining({ page: 2 })
+        )
+      })
     })
   })
 })

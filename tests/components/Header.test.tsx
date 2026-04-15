@@ -153,5 +153,45 @@ describe('Header', () => {
         .closest('[class*="menu"]')?.querySelector('[role="switch"]')
       expect(skipAllSwitch).toBeTruthy()
     })
+
+    it('persists accept skip to sessionStorage when "Skip accept" is clicked', () => {
+      sessionStorage.clear()
+      render(<Header />)
+
+      fireEvent.click(screen.getByRole('button', { name: /user/i }))
+      fireEvent.click(screen.getByText('Skip accept'))
+
+      expect(sessionStorage.getItem('ere_skip_accept')).toBe('true')
+    })
+
+    it('persists reject skip to sessionStorage when "Skip reject" is clicked', () => {
+      sessionStorage.clear()
+      render(<Header />)
+
+      fireEvent.click(screen.getByRole('button', { name: /user/i }))
+      fireEvent.click(screen.getByText('Skip reject'))
+
+      expect(sessionStorage.getItem('ere_skip_reject')).toBe('true')
+    })
+
+    it('persists assign skip to sessionStorage when "Skip assign alternative" is clicked', () => {
+      sessionStorage.clear()
+      render(<Header />)
+
+      fireEvent.click(screen.getByRole('button', { name: /user/i }))
+      fireEvent.click(screen.getByText('Skip assign alternative'))
+
+      expect(sessionStorage.getItem('ere_skip_assign')).toBe('true')
+    })
+
+    it('removes accept skip from sessionStorage when toggling off', () => {
+      sessionStorage.setItem('ere_skip_accept', 'true')
+      render(<Header />)
+
+      fireEvent.click(screen.getByRole('button', { name: /user/i }))
+      fireEvent.click(screen.getByText('Skip accept'))
+
+      expect(sessionStorage.getItem('ere_skip_accept')).toBeNull()
+    })
   })
 })
