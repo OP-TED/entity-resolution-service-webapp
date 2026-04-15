@@ -99,33 +99,28 @@ export const UserFormModal = ({ data, onCancel }: Props) => {
         }}
       >
         {!data && (
-          <>
-            <Form.Item
-              label="Email"
-              name="email"
-              rules={[
-                { required: true, message: 'Email is required' },
-                { type: 'email', message: 'Enter a valid email' }
-              ]}
-            >
-              <Input placeholder="user@example.com" autoComplete="off" />
-            </Form.Item>
-
-            <Form.Item
-              label="Password"
-              name="password"
-              rules={[
-                { required: true, message: 'Password is required' },
-                { min: 8, message: 'Password must be at least 8 characters' }
-              ]}
-            >
-              <Input.Password
-                placeholder="••••••••"
-                autoComplete="new-password"
-              />
-            </Form.Item>
-          </>
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              { required: true, message: 'Email is required' },
+              { type: 'email', message: 'Enter a valid email' }
+            ]}
+          >
+            <Input placeholder="user@example.com" autoComplete="off" />
+          </Form.Item>
         )}
+
+        <Form.Item
+          label="Password"
+          name="password"
+          rules={[
+            { required: !data, message: 'Password is required' },
+            { min: 8, message: 'Password must be at least 8 characters' }
+          ]}
+        >
+          <Input.Password placeholder="••••••••" autoComplete="new-password" />
+        </Form.Item>
 
         <Form.Item label="Active" name="is_active" valuePropName="checked">
           <Switch />

@@ -3,9 +3,6 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { useKeyboardShortcuts } from '../../src/hooks/useKeyboardShortcuts'
 import { act, fireEvent, renderHook, screen, waitFor } from '../test-utils'
 
-const mockAcceptMutationFn = vi.hoisted(() => vi.fn().mockResolvedValue({}))
-const mockRejectMutationFn = vi.hoisted(() => vi.fn().mockResolvedValue({}))
-
 vi.mock('../../src/api/index', () => ({
   acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation: vi.fn(() => ({
     mutationFn: vi.fn()
