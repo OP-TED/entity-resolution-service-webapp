@@ -1,6 +1,6 @@
 .PHONY: up down rebuild logs help check-env \
        install lint typecheck test test-coverage check-quality check-all \
-       fetch-schema
+       fetch-schema generate
 
 COMPOSE_FILE := infra/compose.dev.yaml
 ENV_FILE := infra/.env
@@ -18,15 +18,18 @@ lint:
 typecheck:
 	npx tsc --noEmit
 
-test:
+generate: fetch-schema
+	npx openapi-ts
+
+test: generate
 	npx vitest run
 
-test-coverage:
+test-coverage: generate
 	npx vitest run --coverage
 
 check-quality: lint typecheck
 
-check-all: check-quality test
+check-all: generate check-quality test
 
 # ── Schema ──────────────────────────────────────────────────
 
@@ -64,6 +67,7 @@ help:
 	@echo ""
 	@echo "Schema:"
 	@echo "  fetch-schema   Download ERS API schema from GitHub"
+	@echo "  generate       Fetch schema and regenerate src/api/ client code"
 	@echo ""
 	@echo "Docker:"
 	@echo "  up             Start containers"
