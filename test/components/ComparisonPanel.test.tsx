@@ -1,8 +1,10 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
-import type { ReactNode } from 'react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 
 import { ComparisonPanel } from '../../src/components/ComparisonPanel'
 import { createTestQueryClient, fireEvent, render, screen, waitFor } from '../test-utils'
+
+import type { ReactNode } from 'react'
 
 const mockNotification = vi.hoisted(() => ({
   success: vi.fn(),
@@ -57,6 +59,7 @@ vi.mock('@ant-design/icons', () => {
   const icon = (name: string) => (props: Record<string, unknown>) => (
     <span aria-label={name} role="img" {...props} />
   )
+
   return {
     ArrowLeftOutlined: icon('arrow-left'),
     ArrowRightOutlined: icon('arrow-right'),

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { UserFormModal } from '../../src/components/UserFormModal'
 import { fireEvent, render, screen, waitFor } from '../test-utils'
@@ -28,6 +28,7 @@ vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
 vi.mock('antd', async (importOriginal) => {
   const antd = await importOriginal<typeof import('antd')>()
   const AppComponent = antd.App
+
   return {
     ...antd,
     App: Object.assign(AppComponent, {

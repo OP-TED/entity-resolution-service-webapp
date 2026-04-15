@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useKeyboardShortcuts } from '../../src/hooks/useKeyboardShortcuts'
 import { act, fireEvent, renderHook, screen, waitFor } from '../test-utils'

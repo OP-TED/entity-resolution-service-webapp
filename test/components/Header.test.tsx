@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { createTestQueryClient, fireEvent, render, screen } from '../test-utils'
 import { Header } from '../../src/components/Header'
+import { createTestQueryClient, fireEvent, render, screen } from '../test-utils'
 
 const mockNavigate = vi.hoisted(() => vi.fn())
 
@@ -18,6 +18,7 @@ vi.mock('../../src/context/useAuth', () => ({
 
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>()
+
   return {
     ...actual,
     useNavigate: () => mockNavigate

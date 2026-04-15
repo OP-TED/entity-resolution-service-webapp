@@ -1,5 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { act } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ConfirmationPreferenceProvider } from '../../src/context/ConfirmationPreferenceContext'
 import { useConfirmationPreference } from '../../src/context/useConfirmationPreference'
