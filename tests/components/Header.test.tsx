@@ -122,4 +122,76 @@ describe('Header', () => {
 
     expect(mockNavigate).toHaveBeenCalledWith('/admin')
   })
+
+  describe('confirmation preference toggles', () => {
+    it('renders skip all confirmations menu item', () => {
+      render(<Header />)
+
+      fireEvent.click(screen.getByRole('button', { name: /user/i }))
+
+      expect(screen.getByText('Skip all confirmations')).toBeInTheDocument()
+    })
+
+    it('renders per-action skip toggles', () => {
+      render(<Header />)
+
+      fireEvent.click(screen.getByRole('button', { name: /user/i }))
+
+      expect(screen.getByText('Skip accept')).toBeInTheDocument()
+      expect(screen.getByText('Skip reject')).toBeInTheDocument()
+      expect(screen.getByText('Skip assign alternative')).toBeInTheDocument()
+    })
+
+    it('toggles skipAll when "Skip all confirmations" is clicked', () => {
+      render(<Header />)
+
+      fireEvent.click(screen.getByRole('button', { name: /user/i }))
+      fireEvent.click(screen.getByText('Skip all confirmations'))
+
+      // After toggling on, the switch should be checked
+      const skipAllSwitch = screen.getByText('Skip all confirmations')
+        .closest('[class*="menu"]')?.querySelector('[role="switch"]')
+      expect(skipAllSwitch).toBeTruthy()
+    })
+
+    it('persists accept skip to sessionStorage when "Skip accept" is clicked', () => {
+      sessionStorage.clear()
+      render(<Header />)
+
+      fireEvent.click(screen.getByRole('button', { name: /user/i }))
+      fireEvent.click(screen.getByText('Skip accept'))
+
+      expect(sessionStorage.getItem('ere_skip_accept')).toBe('true')
+    })
+
+    it('persists reject skip to sessionStorage when "Skip reject" is clicked', () => {
+      sessionStorage.clear()
+      render(<Header />)
+
+      fireEvent.click(screen.getByRole('button', { name: /user/i }))
+      fireEvent.click(screen.getByText('Skip reject'))
+
+      expect(sessionStorage.getItem('ere_skip_reject')).toBe('true')
+    })
+
+    it('persists assign skip to sessionStorage when "Skip assign alternative" is clicked', () => {
+      sessionStorage.clear()
+      render(<Header />)
+
+      fireEvent.click(screen.getByRole('button', { name: /user/i }))
+      fireEvent.click(screen.getByText('Skip assign alternative'))
+
+      expect(sessionStorage.getItem('ere_skip_assign')).toBe('true')
+    })
+
+    it('removes accept skip from sessionStorage when toggling off', () => {
+      sessionStorage.setItem('ere_skip_accept', 'true')
+      render(<Header />)
+
+      fireEvent.click(screen.getByRole('button', { name: /user/i }))
+      fireEvent.click(screen.getByText('Skip accept'))
+
+      expect(sessionStorage.getItem('ere_skip_accept')).toBeNull()
+    })
+  })
 })

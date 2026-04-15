@@ -25,9 +25,10 @@ const baseDecision = {
 }
 
 describe('useKeyboardShortcuts', () => {
-  // antd modals render into the DOM and persist after unmount — clean them up
   beforeEach(() => {
+    // antd modals render into the DOM and persist after unmount — clean them up
     document.querySelectorAll('.ant-modal-root').forEach((el) => el.remove())
+    sessionStorage.clear()
   })
 
   it('registers a keydown listener on mount and removes it on unmount', () => {
@@ -271,5 +272,67 @@ describe('useKeyboardShortcuts', () => {
     // No modal should appear for arrow keys
     expect(screen.queryByText('Accept Decision')).not.toBeInTheDocument()
     expect(screen.queryByText('Reject Decision')).not.toBeInTheDocument()
+  })
+
+  describe('skip confirmation preference', () => {
+    it('skips accept modal when accept skip is enabled', () => {
+      sessionStorage.setItem('ere_skip_accept', 'true')
+
+      renderHook(() =>
+        useKeyboardShortcuts({ activeDecision: baseDecision as never })
+      )
+
+      act(() => {
+        fireEvent.keyDown(globalThis as unknown as Window, { code: 'KeyA' })
+      })
+
+      // No accept modal should appear
+      expect(screen.queryByText('Accept Decision')).not.toBeInTheDocument()
+    })
+
+    it('skips reject modal when reject skip is enabled', () => {
+      sessionStorage.setItem('ere_skip_reject', 'true')
+
+      renderHook(() =>
+        useKeyboardShortcuts({ activeDecision: baseDecision as never })
+      )
+
+      act(() => {
+        fireEvent.keyDown(globalThis as unknown as Window, { code: 'KeyR' })
+      })
+
+      // No reject modal should appear
+      expect(screen.queryByText('Reject Decision')).not.toBeInTheDocument()
+    })
+
+    it('skips both modals when skip-all is enabled', () => {
+      sessionStorage.setItem('ere_skip_all', 'true')
+
+      renderHook(() =>
+        useKeyboardShortcuts({ activeDecision: baseDecision as never })
+      )
+
+      act(() => {
+        fireEvent.keyDown(globalThis as unknown as Window, { code: 'KeyA' })
+        fireEvent.keyDown(globalThis as unknown as Window, { code: 'KeyR' })
+      })
+
+      expect(screen.queryByText('Accept Decision')).not.toBeInTheDocument()
+      expect(screen.queryByText('Reject Decision')).not.toBeInTheDocument()
+    })
+
+    it('still shows reject modal when only accept skip is enabled', () => {
+      sessionStorage.setItem('ere_skip_accept', 'true')
+
+      renderHook(() =>
+        useKeyboardShortcuts({ activeDecision: baseDecision as never })
+      )
+
+      act(() => {
+        fireEvent.keyDown(globalThis as unknown as Window, { code: 'KeyR' })
+      })
+
+      expect(screen.queryAllByText('Reject Decision').length).toBeGreaterThan(0)
+    })
   })
 })

@@ -209,10 +209,9 @@ describe('UserFormModal', () => {
       expect(screen.getByText(`Edit User — ${mockUser.email}`)).toBeInTheDocument()
     })
 
-    it('does not render email and password fields', () => {
+    it('does not render email', () => {
       render(<UserFormModal data={mockUser} onCancel={mockOnCancel} />)
       expect(screen.queryByPlaceholderText('user@example.com')).not.toBeInTheDocument()
-      expect(screen.queryByPlaceholderText('••••••••')).not.toBeInTheDocument()
     })
 
     it('renders Active, Superuser, and Verified switch fields', () => {

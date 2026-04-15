@@ -3,11 +3,12 @@ import {
   getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetInfiniteOptions
 } from '@api/index'
 import { ProposedCard, Text } from '@components'
+import { useConfirmationPreference } from '@context/useConfirmationPreference'
 import { useDecisionsLoadingState } from '@hooks/useDecisionsLoadingState'
 import { useRemoveDecisionFromCache } from '@hooks/useRemoveDecisionFromCache'
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query'
 import { getConfidenceStatus, getSimilarityStatus, showApiErrors } from '@utils'
-import { App, Button, Collapse, Flex, Popconfirm, Tag, Tooltip } from 'antd'
+import { App, Button, Checkbox, Collapse, Flex, Popconfirm, Tag, Tooltip } from 'antd'
 import { useMemo, useState } from 'react'
 import Skeleton from 'react-loading-skeleton'
 
@@ -19,6 +20,9 @@ type Props = {
 
 export const AlternativeClusters = ({ currentDecision }: Props) => {
   const isDecisionsMenuLoading = useDecisionsLoadingState()
+  const { shouldSkip, setActionSkip } = useConfirmationPreference()
+  const skipAssign = shouldSkip('assign')
+  const [dontShowAssign, setDontShowAssign] = useState(false)
   const { notification } = App.useApp()
   const removeDecisionFromCache = useRemoveDecisionFromCache()
 
@@ -149,18 +153,45 @@ export const AlternativeClusters = ({ currentDecision }: Props) => {
 
                   <Flex>
                     <Popconfirm
+                      disabled={skipAssign}
                       trigger="click"
                       title="This will assign the current entity to the alternative cluster instead of the proposed match. The system will learn from this decision to improve future matching."
-                      onConfirm={() =>
-                        onConfirmSwitchCluster(cluster.cluster_id)
+                      description={
+                        <Checkbox
+                          checked={dontShowAssign}
+                          onChange={(e) =>
+                            setDontShowAssign(e.target.checked)
+                          }
+                        >
+                          Don't show again
+                        </Checkbox>
                       }
+                      onConfirm={() => {
+                        if (dontShowAssign) setActionSkip('assign', true)
+                        onConfirmSwitchCluster(cluster.cluster_id)
+                      }}
+                      onCancel={() => {
+                        if (dontShowAssign) setActionSkip('assign', true)
+                      }}
+                      onOpenChange={(open) => {
+                        if (open) setDontShowAssign(false)
+                      }}
                       placement="topRight"
                     >
                       <Tooltip
                         title="You can assign only decisions that are pending manual review."
                         trigger="contextMenu"
                       >
-                        <Button variant="solid" color="orange">
+                        <Button
+                          variant="solid"
+                          color="orange"
+                          onClick={
+                            skipAssign
+                              ? () =>
+                                  onConfirmSwitchCluster(cluster.cluster_id)
+                              : undefined
+                          }
+                        >
                           Use this cluster instead
                         </Button>
                       </Tooltip>

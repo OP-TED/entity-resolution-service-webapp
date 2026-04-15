@@ -12,6 +12,7 @@ import {
   SkeletonWrapper,
   Text
 } from '@components'
+import { useConfirmationPreference } from '@context/useConfirmationPreference'
 import { useDecisionsLoadingState, useRemoveDecisionFromCache } from '@hooks'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
@@ -26,6 +27,7 @@ import {
   Alert,
   App,
   Button,
+  Checkbox,
   Col,
   Flex,
   Popconfirm,
@@ -47,6 +49,11 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
   const { styles } = useStyles()
   const [currentEntity, setCurrentEntity] = useState<number>(1)
   const [showAlert, setShowAlert] = useState<boolean>(true)
+  const { shouldSkip, setActionSkip } = useConfirmationPreference()
+  const skipAccept = shouldSkip('accept')
+  const skipReject = shouldSkip('reject')
+  const [dontShowAccept, setDontShowAccept] = useState(false)
+  const [dontShowReject, setDontShowReject] = useState(false)
   const isDecisionsMenuLoading = useDecisionsLoadingState()
   const { notification } = App.useApp()
   const removeDecisionFromCache = useRemoveDecisionFromCache()
@@ -204,8 +211,26 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
 
               <Flex gap={8} align="center">
                 <Popconfirm
+                  disabled={skipAccept}
                   title={acceptMessage}
-                  onConfirm={onClickAccept}
+                  description={
+                    <Checkbox
+                      checked={dontShowAccept}
+                      onChange={(e) => setDontShowAccept(e.target.checked)}
+                    >
+                      Don't show again
+                    </Checkbox>
+                  }
+                  onConfirm={() => {
+                    if (dontShowAccept) setActionSkip('accept', true)
+                    onClickAccept()
+                  }}
+                  onCancel={() => {
+                    if (dontShowAccept) setActionSkip('accept', true)
+                  }}
+                  onOpenChange={(open) => {
+                    if (open) setDontShowAccept(false)
+                  }}
                   trigger="click"
                   style={{ maxWidth: '200px' }}
                 >
@@ -215,13 +240,32 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
                     color="green"
                     variant="solid"
                     disabled={!currentDecisionId}
+                    onClick={skipAccept ? onClickAccept : undefined}
                   />
                 </Popconfirm>
 
                 <Popconfirm
+                  disabled={skipReject}
                   trigger="click"
                   title={rejectMessage}
-                  onConfirm={onClickReject}
+                  description={
+                    <Checkbox
+                      checked={dontShowReject}
+                      onChange={(e) => setDontShowReject(e.target.checked)}
+                    >
+                      Don't show again
+                    </Checkbox>
+                  }
+                  onConfirm={() => {
+                    if (dontShowReject) setActionSkip('reject', true)
+                    onClickReject()
+                  }}
+                  onCancel={() => {
+                    if (dontShowReject) setActionSkip('reject', true)
+                  }}
+                  onOpenChange={(open) => {
+                    if (open) setDontShowReject(false)
+                  }}
                 >
                   <Button
                     shape="circle"
@@ -229,6 +273,7 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
                     color="danger"
                     variant="solid"
                     disabled={!currentDecisionId}
+                    onClick={skipReject ? onClickReject : undefined}
                   />
                 </Popconfirm>
               </Flex>

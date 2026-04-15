@@ -2,10 +2,11 @@ import { DownOutlined, UserOutlined } from '@ant-design/icons'
 import { getStatisticsApiV1CurationStatsGetOptions } from '@api/@tanstack/react-query.gen'
 import { SkeletonWrapper, Text } from '@components'
 import { useAuth } from '@context/useAuth'
+import { useConfirmationPreference } from '@context/useConfirmationPreference'
 import { paths } from '@router/paths'
 import { useQuery } from '@tanstack/react-query'
 
-import { Avatar, Button, Dropdown, Flex, Typography } from 'antd'
+import { Avatar, Button, Dropdown, Flex, Switch, Typography } from 'antd'
 import { NavLink, useNavigate } from 'react-router-dom'
 
 import { useStyles } from './styles'
@@ -17,6 +18,8 @@ export const Header = () => {
     getStatisticsApiV1CurationStatsGetOptions()
   )
   const { user, logout } = useAuth()
+  const { skipAll, setSkipAll, actionSkips, setActionSkip } =
+    useConfirmationPreference()
   const navigate = useNavigate()
   const { styles } = useStyles()
 
@@ -46,6 +49,50 @@ export const Header = () => {
           }
         ]
       : []),
+    {
+      key: 'skip-all',
+      label: (
+        <Flex justify="space-between" align="center" gap={8}>
+          <span>Skip all confirmations</span>
+          <Switch size="small" checked={skipAll} />
+        </Flex>
+      ),
+      onClick: () => setSkipAll(!skipAll)
+    },
+    {
+      key: 'skip-accept',
+      label: (
+        <Flex justify="space-between" align="center" gap={8}>
+          <span>Skip accept</span>
+          <Switch size="small" checked={skipAll || actionSkips.accept} disabled={skipAll} />
+        </Flex>
+      ),
+      disabled: skipAll,
+      onClick: () => setActionSkip('accept', !actionSkips.accept)
+    },
+    {
+      key: 'skip-reject',
+      label: (
+        <Flex justify="space-between" align="center" gap={8}>
+          <span>Skip reject</span>
+          <Switch size="small" checked={skipAll || actionSkips.reject} disabled={skipAll} />
+        </Flex>
+      ),
+      disabled: skipAll,
+      onClick: () => setActionSkip('reject', !actionSkips.reject)
+    },
+    {
+      key: 'skip-assign',
+      label: (
+        <Flex justify="space-between" align="center" gap={8}>
+          <span>Skip assign alternative</span>
+          <Switch size="small" checked={skipAll || actionSkips.assign} disabled={skipAll} />
+        </Flex>
+      ),
+      disabled: skipAll,
+      onClick: () => setActionSkip('assign', !actionSkips.assign)
+    },
+    { type: 'divider' as const },
     {
       key: 'sign-out',
       label: 'Sign out',
