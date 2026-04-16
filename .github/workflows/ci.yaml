@@ -51,11 +51,8 @@ jobs:
         run: npm ci
 
       # Generate API client from schema
-      - name: Fetch ERS API schema
-        run: make fetch-schema
-
       - name: Generate API client
-        run: npx openapi-ts
+        run: make generate
 
       # Quality checks
       - name: Lint (ESLint)
