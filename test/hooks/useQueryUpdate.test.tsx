@@ -1,9 +1,11 @@
 import { act, renderHook } from '@testing-library/react'
-import type { ReactNode } from 'react'
+
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
 import { useQueryUpdate } from '../../src/hooks/useQueryUpdate'
+
+import type { ReactNode } from 'react'
 
 function wrapper(url: string) {
   return function Wrapper({ children }: { children: ReactNode }) {

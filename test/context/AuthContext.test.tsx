@@ -1,7 +1,9 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '../test-utils'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { AuthProvider } from '../../src/context/AuthContext'
 import { useAuth } from '../../src/context/useAuth'
+import { fireEvent, render, screen, waitFor } from '../test-utils'
 
 // Mock the API functions
 vi.mock('@api/sdk.gen', () => ({
@@ -34,6 +36,7 @@ vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>(
     'react-router-dom'
   )
+
   return {
     ...actual,
     useNavigate: () => mockNavigate
@@ -48,6 +51,7 @@ const mockUser = {
 
 const TestComponent = () => {
   const auth = useAuth()
+
   return (
     <div>
       <div>{auth.isLoading ? 'loading' : 'loaded'}</div>

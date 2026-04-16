@@ -1,4 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { setupAuthInterceptors } from '../../src/context/authInterceptor'
 import * as authTokens from '../../src/context/authTokens'

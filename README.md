@@ -84,7 +84,7 @@ npx playwright install
 npm run test:e2e
 ```
 
-Unit/component tests live in `tests/`. E2E tests are in `tests/e2e/` and mock
+Unit/component tests live in `test/`. E2E tests are in `test/e2e/` and mock
 all API calls so no backend is needed.
 
 ---

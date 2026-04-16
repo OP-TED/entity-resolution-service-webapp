@@ -1,9 +1,11 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
-import { ConfirmationPreferenceProvider } from '../../src/context/ConfirmationPreferenceContext'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render, screen, waitFor } from '@testing-library/react'
 import { App, ConfigProvider } from 'antd'
 import { MemoryRouter } from 'react-router-dom'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { ConfirmationPreferenceProvider } from '../../src/context/ConfirmationPreferenceContext'
+
 import { Router } from '../../src/router/routes'
 
 vi.setConfig({ testTimeout: 20000 })

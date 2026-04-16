@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { AdminPage } from '../../src/pages/AdminPage'
 import { fireEvent, render, screen, waitFor } from '../test-utils'
@@ -81,6 +81,7 @@ vi.mock('antd', async (importOriginal) => {
   const antd = await importOriginal<typeof import('antd')>()
   const AppComponent = antd.App
   const ModalComponent = antd.Modal
+
   return {
     ...antd,
     App: Object.assign(AppComponent, {

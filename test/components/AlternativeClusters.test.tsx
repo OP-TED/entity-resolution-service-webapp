@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { AlternativeClusters } from '../../src/components/AlternativeClusters'
 import { createTestQueryClient, fireEvent, render, screen } from '../test-utils'

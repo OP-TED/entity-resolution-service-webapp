@@ -1,10 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 
-import { ConfirmationPreferenceProvider } from '../src/context/ConfirmationPreferenceContext'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { type RenderHookOptions, type RenderOptions, render, renderHook } from '@testing-library/react'
 import { App, ConfigProvider } from 'antd'
 import { MemoryRouter } from 'react-router-dom'
+
+import { ConfirmationPreferenceProvider } from '../src/context/ConfirmationPreferenceContext'
 
 import type { ReactNode } from 'react'
 

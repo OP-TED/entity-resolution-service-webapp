@@ -1,7 +1,7 @@
-import { fireEvent, render, screen } from '../test-utils'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { UsersSelect } from '../../src/components/UsersSelect'
+import { fireEvent, render, screen } from '../test-utils'
 
 const mockUseInfiniteQuery = vi.fn()
 const mockListUsersInfiniteOptions = vi.fn()
@@ -17,6 +17,7 @@ vi.mock('@api/index', () => ({
 
 vi.mock('@tanstack/react-query', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@tanstack/react-query')>()
+
   return {
     ...actual,
     useInfiniteQuery: (...args: unknown[]) => mockUseInfiniteQuery(...args)

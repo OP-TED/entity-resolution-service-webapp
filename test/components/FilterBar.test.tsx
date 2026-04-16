@@ -2,8 +2,8 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { FilterBar } from '../../src/components/FilterBar'
-import { render, screen } from '../test-utils'
 import { useQueryUpdate } from '../../src/hooks/useQueryUpdate'
+import { render, screen } from '../test-utils'
 
 const mockUpdateQuery = vi.hoisted(() => vi.fn())
 

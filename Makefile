@@ -4,7 +4,7 @@
 
 COMPOSE_FILE := infra/compose.dev.yaml
 ENV_FILE := infra/.env
-ERS_SCHEMA_URL ?= https://raw.githubusercontent.com/meaningfy-ws/entity-resolution-service/develop/resources/curation-openapi-schema.json
+ERS_SCHEMA_URL ?= https://raw.githubusercontent.com/OP-TED/entity-resolution-service/develop/resources/curation-openapi-schema.json
 SCHEMA_FILE := infra/curation-openapi-schema.json
 
 # ── Quality checks ──────────────────────────────────────────
