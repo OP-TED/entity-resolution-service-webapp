@@ -6,7 +6,7 @@ import { defaultPlugins, defineConfig } from '@hey-api/openapi-ts'
 
 const SCHEMA_FILE = path.resolve(
   __dirname,
-  process.env.SCHEMA_FILE ?? '../infra/curation-openapi-schema.json'
+  process.env.SCHEMA_FILE ?? './infra/curation-openapi-schema.json'
 )
 
 const apiBase = (process.env.VITE_APP_MAIN_API ?? '').replace(/\/$/, '')
