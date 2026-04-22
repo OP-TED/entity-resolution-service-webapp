@@ -44,6 +44,7 @@ check-env:
 	@test -f $(ENV_FILE) || (echo "ERROR: $(ENV_FILE) not found. Run: cp src/infra/.env.example src/infra/.env" && exit 1)
 
 up: check-env
+	@ docker network create ersys-local || true
 	docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) up -d
 
 down:
