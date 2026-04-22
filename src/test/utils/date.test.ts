@@ -1,6 +1,6 @@
+import { formatTimeAgo } from '@utils/date'
 import { describe, expect, it } from 'vitest'
 
-import { formatTimeAgo } from '../../utils/date'
 
 describe('formatTimeAgo', () => {
   const now = new Date()

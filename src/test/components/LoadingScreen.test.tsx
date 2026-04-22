@@ -1,6 +1,6 @@
+import { LoadingScreen } from '@components/LoadingScreen'
 import { describe, expect, it } from 'vitest'
 
-import { LoadingScreen } from '../../components/LoadingScreen'
 import { render } from '../test-utils'
 
 describe('LoadingScreen', () => {

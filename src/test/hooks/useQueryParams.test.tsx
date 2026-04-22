@@ -1,9 +1,9 @@
+import { useQueryParams } from '@hooks/useQueryParams'
 import { renderHook } from '@testing-library/react'
 
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
-import { useQueryParams } from '../../hooks/useQueryParams'
 
 import type { ReactNode } from 'react'
 

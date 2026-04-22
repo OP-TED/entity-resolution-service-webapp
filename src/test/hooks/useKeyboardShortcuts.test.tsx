@@ -1,9 +1,9 @@
+import { useKeyboardShortcuts } from '@hooks/useKeyboardShortcuts'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import { act, fireEvent, renderHook, screen, waitFor } from '../test-utils'
 
-vi.mock('../../src/api/index', () => ({
+vi.mock('@api/index', () => ({
   acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation: vi.fn(() => ({
     mutationFn: vi.fn()
   })),

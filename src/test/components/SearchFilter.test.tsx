@@ -1,7 +1,7 @@
+import { SearchFilter } from '@components/SearchFilter'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
-import { SearchFilter } from '../../components/SearchFilter'
 import { fireEvent, render, screen } from '../test-utils'
 
 describe('SearchFilter', () => {

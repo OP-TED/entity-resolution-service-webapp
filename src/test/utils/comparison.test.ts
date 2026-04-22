@@ -1,10 +1,10 @@
-import { describe, expect, it } from 'vitest'
-
 import {
   compareEntityAttributes,
   getChangeSummary,
   stringifyValue
-} from '../../utils/comparison'
+} from '@utils/comparison'
+import { describe, expect, it } from 'vitest'
+
 
 describe('stringifyValue', () => {
   it('returns empty string for null', () => {

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { setupAuthInterceptors } from '../../context/authInterceptor'
-import * as authTokens from '../../context/authTokens'
+import { setupAuthInterceptors } from '@context/authInterceptor'
+import * as authTokens from '@context/authTokens'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { axiosInstance } = vi.hoisted(() => {
   const instance = vi.fn() as unknown as {
@@ -39,7 +39,7 @@ vi.mock('@api/sdk.gen', () => ({
   refreshApiV1AuthRefreshPost: vi.fn()
 }))
 
-vi.mock('../../src/context/authTokens', () => ({
+vi.mock('@context/authTokens', () => ({
   getAccessToken: vi.fn(),
   getRefreshToken: vi.fn(),
   storeTokens: vi.fn(),

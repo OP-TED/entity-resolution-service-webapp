@@ -1,11 +1,11 @@
-import { afterEach, describe, expect, it } from 'vitest'
-
 import {
   clearTokens,
   getAccessToken,
   getRefreshToken,
   storeTokens
-} from '../../context/authTokens'
+} from '@context/authTokens'
+import { afterEach, describe, expect, it } from 'vitest'
+
 
 afterEach(() => localStorage.clear())
 

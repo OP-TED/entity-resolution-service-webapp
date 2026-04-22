@@ -1,6 +1,6 @@
+import { showApiErrors } from '@utils/showApiErrors'
 import { describe, expect, it, vi } from 'vitest'
 
-import { showApiErrors } from '../../utils/showApiErrors'
 
 describe('showApiErrors', () => {
   it('does nothing for non-object errors', () => {

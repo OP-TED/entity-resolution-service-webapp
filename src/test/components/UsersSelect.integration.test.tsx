@@ -1,6 +1,6 @@
+import { UsersSelect } from '@components/UsersSelect'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { UsersSelect } from '../../components/UsersSelect'
 import { fireEvent, render, screen, waitFor } from '../test-utils'
 
 type User = { id: string; email: string }

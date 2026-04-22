@@ -1,9 +1,9 @@
+import { useRemoveDecisionFromCache } from '@hooks/useRemoveDecisionFromCache'
 import { describe, expect, it, vi } from 'vitest'
 
-import { useRemoveDecisionFromCache } from '../../hooks/useRemoveDecisionFromCache'
 import { createTestQueryClient, renderHook } from '../test-utils'
 
-vi.mock('../../src/api/index', () => ({
+vi.mock('@api/index', () => ({
   listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey: vi.fn(() => ['decisions-infinite']),
   getStatisticsApiV1CurationStatsGetQueryKey: vi.fn(() => ['stats'])
 }))

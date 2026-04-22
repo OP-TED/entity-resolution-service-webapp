@@ -1,11 +1,11 @@
+import { LoginPage } from '@pages/LoginPage'
 import { describe, expect, it, vi } from 'vitest'
 
-import { LoginPage } from '../../pages/LoginPage'
 import { fireEvent, render, screen, waitFor } from '../test-utils'
 
 const mockLogin = vi.fn()
 
-vi.mock('../../src/context/useAuth', () => ({
+vi.mock('@context/useAuth', () => ({
   useAuth: () => ({ login: mockLogin, user: null, isLoading: false, logout: vi.fn() })
 }))
 

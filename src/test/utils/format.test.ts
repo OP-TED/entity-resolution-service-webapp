@@ -1,6 +1,6 @@
+import { formatLabel } from '@utils/format'
 import { describe, expect, it } from 'vitest'
 
-import { formatLabel } from '../../utils/format'
 
 describe('formatLabel', () => {
   it('converts snake_case to Title Case', () => {

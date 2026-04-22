@@ -1,9 +1,9 @@
+import { useQueryUpdate } from '@hooks/useQueryUpdate'
 import { act, renderHook } from '@testing-library/react'
 
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
-import { useQueryUpdate } from '../../hooks/useQueryUpdate'
 
 import type { ReactNode } from 'react'
 

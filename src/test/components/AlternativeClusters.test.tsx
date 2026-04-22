@@ -1,13 +1,13 @@
+import { AlternativeClusters } from '@components/AlternativeClusters'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { AlternativeClusters } from '../../components/AlternativeClusters'
 import { createTestQueryClient, fireEvent, render, screen } from '../test-utils'
 
 beforeEach(() => {
   sessionStorage.clear()
 })
 
-vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
+vi.mock('@api/@tanstack/react-query.gen', () => ({
   getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetInfiniteOptions:
     vi.fn(() => ({
       queryKey: ['alternative-clusters'],
@@ -20,7 +20,7 @@ vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
   getStatisticsApiV1CurationStatsGetQueryKey: vi.fn(() => ['stats'])
 }))
 
-vi.mock('../../src/hooks/useDecisionsLoadingState', () => ({
+vi.mock('@hooks/useDecisionsLoadingState', () => ({
   useDecisionsLoadingState: () => false
 }))
 

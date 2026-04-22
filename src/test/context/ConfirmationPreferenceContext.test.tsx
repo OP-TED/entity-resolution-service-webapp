@@ -1,8 +1,9 @@
+import { ConfirmationPreferenceProvider } from '@context/ConfirmationPreferenceContext'
+import { useConfirmationPreference } from '@context/useConfirmationPreference'
 import { act } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { ConfirmationPreferenceProvider } from '../../context/ConfirmationPreferenceContext'
-import { useConfirmationPreference } from '../../context/useConfirmationPreference'
+
 import { renderHook } from '../test-utils'
 
 beforeEach(() => {

@@ -1,11 +1,12 @@
+
+import { AttributeValue } from '@components/EntityAttributes/AttributeValue'
+import { DiffIcon } from '@components/EntityAttributes/DiffIcon '
+import { EntityAttributes } from '@components/EntityAttributes/EntityAttributes'
 import { describe, expect, it } from 'vitest'
 
-import { AttributeValue } from '../../components/EntityAttributes/AttributeValue'
-import { DiffIcon } from '../../components/EntityAttributes/DiffIcon '
-import { EntityAttributes } from '../../components/EntityAttributes/EntityAttributes'
 import { render, screen } from '../test-utils'
 
-import type { AttributeDiff } from '../../utils/comparison'
+import type { AttributeDiff } from '@utils/comparison'
 
 // ─── EntityAttributes ────────────────────────────────────────────────────────
 

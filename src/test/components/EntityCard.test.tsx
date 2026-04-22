@@ -1,9 +1,9 @@
+import { EntityCard } from '@components/EntityCard'
 import { describe, expect, it, vi } from 'vitest'
 
-import { EntityCard } from '../../components/EntityCard'
 import { render, screen } from '../test-utils'
 
-vi.mock('../../src/hooks/useDecisionsLoadingState', () => ({
+vi.mock('@hooks/useDecisionsLoadingState', () => ({
   useDecisionsLoadingState: () => false
 }))
 

@@ -41,7 +41,8 @@ export default defineConfig({
         'styles/theme.ts',
         'types/**',
         'vite.config.ts',
-        'openapi-ts.config.ts'
+        'openapi-ts.config.ts',
+        'test/e2e/**'
       ]
     }
   }

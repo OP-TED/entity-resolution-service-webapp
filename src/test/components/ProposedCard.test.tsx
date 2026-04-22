@@ -1,11 +1,11 @@
+import { ProposedCard } from '@components/ProposedCard'
 import { describe, expect, it, vi } from 'vitest'
 
-import { ProposedCard } from '../../components/ProposedCard'
 import { render, screen } from '../test-utils'
 
-import type { CanonicalEntityPreview } from '../../api/types.gen'
+import type { CanonicalEntityPreview } from '@api/types.gen'
 
-vi.mock('../../src/hooks/useDecisionsLoadingState', () => ({
+vi.mock('@hooks/useDecisionsLoadingState', () => ({
   useDecisionsLoadingState: () => false
 }))
 

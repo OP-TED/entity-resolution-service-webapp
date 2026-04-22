@@ -1,6 +1,6 @@
+import { HistoryPage } from '@pages/HistoryPage'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { HistoryPage } from '../../pages/HistoryPage'
 import { fireEvent, render, screen } from '../test-utils'
 
 const detailPanelPropsSpy = vi.fn()

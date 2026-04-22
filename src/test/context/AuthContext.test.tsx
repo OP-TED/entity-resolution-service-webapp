@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { AuthProvider } from '@context/AuthContext'
+import { useAuth } from '@context/useAuth'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { AuthProvider } from '../../context/AuthContext'
-import { useAuth } from '../../context/useAuth'
 import { fireEvent, render, screen, waitFor } from '../test-utils'
 
 // Mock the API functions
@@ -19,11 +20,11 @@ vi.mock('@api/client.gen', () => ({
   }
 }))
 
-vi.mock('../../src/context/authInterceptor', () => ({
+vi.mock('@context/authInterceptor', () => ({
   setupAuthInterceptors: vi.fn(() => vi.fn())
 }))
 
-vi.mock('../../src/context/authTokens', () => ({
+vi.mock('@context/authTokens', () => ({
   getAccessToken: vi.fn(),
   getRefreshToken: vi.fn(),
   storeTokens: vi.fn(),
@@ -78,7 +79,7 @@ describe('AuthContext', () => {
   describe('AuthProvider bootstrap', () => {
     it('sets isLoading to false when no token is stored', async () => {
       const { getCurrentUserApiV1UsersMeGet } = await import('@api/sdk.gen')
-      const { getAccessToken } = await import('../../src/context/authTokens')
+      const { getAccessToken } = await import('@context/authTokens')
 
       vi.mocked(getAccessToken).mockReturnValue(null)
 
@@ -97,7 +98,7 @@ describe('AuthContext', () => {
 
     it('fetches current user when access token exists', async () => {
       const { getCurrentUserApiV1UsersMeGet } = await import('@api/sdk.gen')
-      const { getAccessToken } = await import('../../src/context/authTokens')
+      const { getAccessToken } = await import('@context/authTokens')
 
       vi.mocked(getAccessToken).mockReturnValue('valid-token')
       vi.mocked(getCurrentUserApiV1UsersMeGet).mockResolvedValue({
@@ -119,7 +120,7 @@ describe('AuthContext', () => {
 
     it('handles bootstrap error gracefully', async () => {
       const { getCurrentUserApiV1UsersMeGet } = await import('@api/sdk.gen')
-      const { getAccessToken } = await import('../../src/context/authTokens')
+      const { getAccessToken } = await import('@context/authTokens')
 
       vi.mocked(getAccessToken).mockReturnValue('invalid-token')
       vi.mocked(getCurrentUserApiV1UsersMeGet).mockRejectedValue(
@@ -141,7 +142,7 @@ describe('AuthContext', () => {
 
     it('sets Authorization header when token exists', async () => {
       const { client } = await import('@api/client.gen')
-      const { getAccessToken } = await import('../../src/context/authTokens')
+      const { getAccessToken } = await import('@context/authTokens')
 
       vi.mocked(getAccessToken).mockReturnValue('test-token')
       vi.mocked((await import('@api/sdk.gen')).getCurrentUserApiV1UsersMeGet).mockResolvedValue(
@@ -168,7 +169,7 @@ describe('AuthContext', () => {
     it('stores tokens and fetches user on successful login', async () => {
       const { loginApiV1AuthLoginPost, getCurrentUserApiV1UsersMeGet } =
         await import('@api/sdk.gen')
-      const { storeTokens, getAccessToken } = await import('../../src/context/authTokens')
+      const { storeTokens, getAccessToken } = await import('@context/authTokens')
 
       vi.mocked(getAccessToken).mockReturnValue(null)
       vi.mocked(loginApiV1AuthLoginPost).mockResolvedValue({
@@ -216,7 +217,7 @@ describe('AuthContext', () => {
       const { client } = await import('@api/client.gen')
       const { loginApiV1AuthLoginPost, getCurrentUserApiV1UsersMeGet } =
         await import('@api/sdk.gen')
-      const { getAccessToken } = await import('../../src/context/authTokens')
+      const { getAccessToken } = await import('@context/authTokens')
 
       vi.mocked(getAccessToken).mockReturnValue(null)
       vi.mocked(loginApiV1AuthLoginPost).mockResolvedValue({
@@ -249,7 +250,7 @@ describe('AuthContext', () => {
 
     it('handles login error', async () => {
       const { loginApiV1AuthLoginPost } = await import('@api/sdk.gen')
-      const { getAccessToken } = await import('../../src/context/authTokens')
+      const { getAccessToken } = await import('@context/authTokens')
 
       vi.mocked(getAccessToken).mockReturnValue(null)
       vi.mocked(loginApiV1AuthLoginPost).mockRejectedValue(
@@ -275,8 +276,8 @@ describe('AuthContext', () => {
 
   describe('logout', () => {
     it('clears tokens and navigates to login on logout', async () => {
-      const { getAccessToken } = await import('../../src/context/authTokens')
-      const { clearTokens } = await import('../../src/context/authTokens')
+      const { getAccessToken } = await import('@context/authTokens')
+      const { clearTokens } = await import('@context/authTokens')
       const { client } = await import('@api/client.gen')
       const { getCurrentUserApiV1UsersMeGet } = await import('@api/sdk.gen')
 
@@ -304,7 +305,7 @@ describe('AuthContext', () => {
     })
 
     it('clears user state on logout', async () => {
-      const { getAccessToken } = await import('../../src/context/authTokens')
+      const { getAccessToken } = await import('@context/authTokens')
       const { getCurrentUserApiV1UsersMeGet } = await import('@api/sdk.gen')
 
       vi.mocked(getAccessToken).mockReturnValue('valid-token')

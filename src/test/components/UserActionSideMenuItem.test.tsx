@@ -1,9 +1,9 @@
+import { UserActionSideMenuItem } from '@components/UserActionSideMenuItem'
 import { describe, expect, it, vi } from 'vitest'
 
-import { UserActionSideMenuItem } from '../../components/UserActionSideMenuItem'
 import { render, screen } from '../test-utils'
 
-import type { UserActionSummary } from '../../api/types.gen'
+import type { UserActionSummary } from '@api/types.gen'
 
 const baseAction: UserActionSummary = {
   id: 'action-001',

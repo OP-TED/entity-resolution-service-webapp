@@ -1,11 +1,11 @@
-import { describe, expect, it } from 'vitest'
-
 import {
   getConfidenceStatus,
   getScoreLabel,
   getScoreLevelMapping,
   getSimilarityStatus
-} from '../../utils/confidence'
+} from '@utils/confidence'
+import { describe, expect, it } from 'vitest'
+
 
 describe('getConfidenceStatus', () => {
   it('returns error when score is undefined', () => {

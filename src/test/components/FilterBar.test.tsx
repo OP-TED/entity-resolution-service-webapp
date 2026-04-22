@@ -1,13 +1,14 @@
+import { FilterBar } from '@components/FilterBar'
+import { useQueryUpdate } from '@hooks/useQueryUpdate'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { FilterBar } from '../../components/FilterBar'
-import { useQueryUpdate } from '../../hooks/useQueryUpdate'
+
 import { render, screen } from '../test-utils'
 
 const mockUpdateQuery = vi.hoisted(() => vi.fn())
 
-vi.mock('../../src/hooks/useQueryUpdate', () => ({
+vi.mock('@hooks/useQueryUpdate', () => ({
   useQueryUpdate: vi.fn(() => ({ params: {}, updateQuery: mockUpdateQuery }))
 }))
 

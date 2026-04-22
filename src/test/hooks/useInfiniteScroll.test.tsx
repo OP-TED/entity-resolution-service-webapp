@@ -1,7 +1,7 @@
+import { useInfiniteScroll } from '@hooks/useInfiniteScroll'
 import { act, fireEvent } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import { useInfiniteScroll } from '../../hooks/useInfiniteScroll'
 import { render, renderHook, screen } from '../test-utils'
 
 // Helper component that attaches the scroll ref to a div

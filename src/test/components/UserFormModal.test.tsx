@@ -1,9 +1,9 @@
+import { UserFormModal } from '@components/UserFormModal'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { UserFormModal } from '../../components/UserFormModal'
 import { fireEvent, render, screen, waitFor } from '../test-utils'
 
-import type { UserResponse } from '../../api/types.gen'
+import type { UserResponse } from '@api/types.gen'
 
 vi.setConfig({ testTimeout: 20000 })
 
@@ -15,7 +15,7 @@ const mockNotification = vi.hoisted(() => ({
 const mockCreateMutate = vi.hoisted(() => vi.fn())
 const mockPatchMutate = vi.hoisted(() => vi.fn())
 
-vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
+vi.mock('@api/@tanstack/react-query.gen', () => ({
   createUserApiV1UsersPostMutation: vi.fn(() => ({
     mutationFn: mockCreateMutate
   })),

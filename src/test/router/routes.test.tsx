@@ -1,12 +1,12 @@
+import { ConfirmationPreferenceProvider } from '@context/ConfirmationPreferenceContext'
+import { Router } from '@router/routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import { App, ConfigProvider } from 'antd'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { ConfirmationPreferenceProvider } from '../../context/ConfirmationPreferenceContext'
 
-import { Router } from '../../router/routes'
 
 vi.setConfig({ testTimeout: 20000 })
 
@@ -14,7 +14,7 @@ const mockUser = vi.hoisted(() => ({
   current: null as { id: string; email: string; is_superuser: boolean; is_active: boolean; is_verified: boolean } | null
 }))
 
-vi.mock('../../src/context/useAuth', () => ({
+vi.mock('@context/useAuth', () => ({
   useAuth: () => ({
     user: mockUser.current,
     isLoading: false,
@@ -23,7 +23,7 @@ vi.mock('../../src/context/useAuth', () => ({
   })
 }))
 
-vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
+vi.mock('@api/@tanstack/react-query.gen', () => ({
   getStatisticsApiV1CurationStatsGetOptions: vi.fn(() => ({
     queryKey: ['stats'],
     queryFn: vi.fn().mockResolvedValue({
@@ -68,7 +68,7 @@ vi.mock('../../src/api/@tanstack/react-query.gen', () => ({
   }))
 }))
 
-vi.mock('../../src/hooks/useQueryUpdate', () => ({
+vi.mock('@hooks/useQueryUpdate', () => ({
   useQueryUpdate: () => ({
     params: { page: 1, per_page: 10 },
     updateQuery: vi.fn()

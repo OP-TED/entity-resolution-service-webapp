@@ -1,7 +1,7 @@
+import { UserActionsFilterBar } from '@components/UserActionsFilterBar'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import { UserActionsFilterBar } from '../../components/UserActionsFilterBar'
 import { render, screen } from '../test-utils'
 
 // Mock antd Select to use native select for reliable testing

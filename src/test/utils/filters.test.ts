@@ -1,6 +1,6 @@
+import { defaultFilters,  } from '@utils/filters'
 import { describe, expect, it } from 'vitest'
 
-import { defaultFilters,  } from '../../utils/filters'
 
 describe('defaultFilters', () => {
   it('has page starting at 1', () => {

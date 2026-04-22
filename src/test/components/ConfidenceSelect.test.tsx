@@ -1,7 +1,7 @@
+import { ConfidenceSelect } from '@components/ConfidenceSelect'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import { ConfidenceSelect } from '../../components/ConfidenceSelect'
 import { render, screen } from '../test-utils'
 
 // antd's virtual-list only renders ~2 items in happy-dom (no real viewport),

@@ -1,9 +1,9 @@
+import { useDecisionsLoadingState } from '@hooks/useDecisionsLoadingState'
 import { describe, expect, it, vi } from 'vitest'
 
-import { useDecisionsLoadingState } from '../../hooks/useDecisionsLoadingState'
 import { createTestQueryClient, renderHook } from '../test-utils'
 
-vi.mock('../../src/api/index', () => ({
+vi.mock('@api/index', () => ({
   listDecisionsApiV1CurationDecisionsGetQueryKey: vi.fn(() => ['decisions'])
 }))
 

@@ -1,6 +1,6 @@
+import { UsersSelect } from '@components/UsersSelect'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { UsersSelect } from '../../components/UsersSelect'
 import { fireEvent, render, screen } from '../test-utils'
 
 const mockUseInfiniteQuery = vi.fn()

@@ -1,6 +1,6 @@
+import { UserActionsSideMenuTitle } from '@components/UserActionsSideMenuTitle'
 import { describe, expect, it } from 'vitest'
 
-import { UserActionsSideMenuTitle } from '../../components/UserActionsSideMenuTitle'
 import { render, screen } from '../test-utils'
 
 describe('UserActionsSideMenuTitle', () => {

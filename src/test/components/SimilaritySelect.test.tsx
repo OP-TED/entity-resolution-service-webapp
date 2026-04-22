@@ -1,7 +1,7 @@
+import { SimilaritySelect } from '@components/SimilaritySelect'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import { SimilaritySelect } from '../../components/SimilaritySelect'
 import { render, screen } from '../test-utils'
 
 // Mock antd Select to use native select for reliable testing

@@ -1,6 +1,6 @@
+import { Text } from '@components/Text'
 import { describe, expect, it } from 'vitest'
 
-import { Text } from '../../components/Text'
 import { render, screen } from '../test-utils'
 
 describe('Text', () => {

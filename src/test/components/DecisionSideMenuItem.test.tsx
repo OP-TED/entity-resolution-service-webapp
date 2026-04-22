@@ -1,9 +1,9 @@
+import { DecisionSideMenuItem } from '@components/DecisionSideMenuItem'
 import { describe, expect, it, vi } from 'vitest'
 
-import { DecisionSideMenuItem } from '../../components/DecisionSideMenuItem'
 import { render, screen } from '../test-utils'
 
-import type { DecisionSummary } from '../../api/types.gen'
+import type { DecisionSummary } from '@api/types.gen'
 
 const baseDecision: DecisionSummary = {
   id: 'decision-001',
