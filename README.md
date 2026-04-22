@@ -27,8 +27,10 @@ cp src/infra/.env.example src/infra/.env
 Edit `src/infra/.env` and set the backend address:
 
 ```env
-API_BACKEND_URL=localhost:8000
+API_BACKEND_URL=http://curation-api:8000
 ```
+
+Note: use `http://curation-api:8000` when running in Docker, and `http://localhost:8000` when running with Node.js (`npm run dev`).
 
 ### 3. Start the stack
 
@@ -36,6 +38,9 @@ API_BACKEND_URL=localhost:8000
 make up      # build image and start Nginx container
 make logs    # follow container logs
 make down    # stop
+
+Note: `make up` creates a shared external network `ersys-local` used for cross-component communication.
+To remove it manually: `docker network rm ersys-local`
 ```
 
 The app will be available at `http://localhost:8080`.

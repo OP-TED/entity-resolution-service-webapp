@@ -8,6 +8,8 @@ services:
         ENVIRONMENT: development
     ports:
       - '8080:8080'
+    networks:
+      - ersys-local
     environment:
       - API_BACKEND_URL=${API_BACKEND_URL}
     healthcheck:
@@ -15,3 +17,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
+networks:
+  ersys-local:
+    external: true
