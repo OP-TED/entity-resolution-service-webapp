@@ -6,26 +6,27 @@ COMPOSE_FILE := infra/compose.dev.yaml
 ENV_FILE := infra/.env
 ERS_SCHEMA_URL ?= https://raw.githubusercontent.com/OP-TED/entity-resolution-service/develop/resources/curation-openapi-schema.json
 SCHEMA_FILE := infra/curation-openapi-schema.json
+APP_DIR := src
 
 # ── Quality checks ──────────────────────────────────────────
 
 install:
-	npm ci
+	npm --prefix $(APP_DIR) ci
 
 lint:
-	npx eslint .
+	npm --prefix $(APP_DIR) run lint
 
 typecheck:
-	npx tsc --noEmit
+	cd $(APP_DIR) && npx tsc --noEmit
 
 generate: fetch-schema
-	npx openapi-ts
+	cd $(APP_DIR) && npx openapi-ts
 
 test: generate
-	npx vitest run
+	npm --prefix $(APP_DIR) test
 
 test-coverage: generate
-	npx vitest run --coverage
+	npm --prefix $(APP_DIR) run test:coverage
 
 check-quality: lint typecheck
 

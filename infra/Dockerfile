@@ -1,7 +1,7 @@
 # --- Stage 1: Schema Fetcher ---
 # This stage isolates the network dependency and tool installation
 FROM alpine:latest AS fetcher
-# Default URL points to the main Meaningfy backend repo. 
+# Default URL points to the main Meaningfy backend repo.
 # This can be overridden via --build-arg ERS_SCHEMA_URL=...
 ARG ERS_SCHEMA_URL=https://raw.githubusercontent.com/OP-TED/entity-resolution-service/develop/resources/curation-openapi-schema.json
 RUN apk add --no-cache curl && \
@@ -13,22 +13,24 @@ WORKDIR /usr/app
 
 ARG ENVIRONMENT
 
-COPY package.json package-lock.json tsconfig.json tsconfig.app.json tsconfig.node.json ./
+# Install dependencies first for better layer caching
+COPY src/package.json src/package-lock.json ./
 
 RUN npm ci
 
-COPY . .
+# Copy the rest of the application source
+COPY src/ ./
 
-# Copy schema from fetcher if it was successfully retrieved.
-# If the file exists in the local context (infra/curation-openapi-schema.json), 
-# it will be overwritten by the fetched one, ensuring the latest version is used.
-COPY --from=fetcher /tmp/schema.json* infra/curation-openapi-schema.json
+# Copy schema from fetcher (used by openapi-ts via SCHEMA_FILE env var)
+COPY --from=fetcher /tmp/schema.json /tmp/schema.json
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm run build -- --mode=$ENVIRONMENT
+# Regenerate the API client from the fetched schema, then build
+RUN SCHEMA_FILE=/tmp/schema.json npx openapi-ts && \
+    npm run build -- --mode=$ENVIRONMENT
 
-# --- Stage 3: Production ---
+    # --- Stage 3: Production ---
 FROM nginx:1.27-alpine AS production
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup \

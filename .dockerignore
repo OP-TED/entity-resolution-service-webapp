@@ -5,23 +5,31 @@
 
 # Dependencies (installed fresh via npm ci)
 node_modules
+src/node_modules
 
 # Build output
 dist
+src/dist
 dist-ssr
 coverage
+src/coverage
 playwright-report
 test-results
 
-# Config and docs not needed in build
+# Tests (not needed for runtime)
+src/test
+
+# Dev tooling / configs not needed in build
 docs
 *.md
 .commitlintrc
 .prettierrc
 .prettierignore
-commitlint.config.cjs
-eslint.config.js
+src/commitlint.config.cjs
+src/eslint.config.js
 playwright.config.ts
+Makefile
+sonar-project.properties
 
 # Environment
 .env
@@ -37,4 +45,3 @@ playwright.config.ts
 infra
 !infra/nginx.conf
 !infra/25-set-resolver.sh
-!infra/curation-openapi-schema.json
