@@ -1,2 +1,1 @@
-npx --no-install commitlint --config commitlint.config.cjs --edit "$1"
-
+./src/node_modules/.bin/commitlint --config src/commitlint.config.cjs --edit "$1"

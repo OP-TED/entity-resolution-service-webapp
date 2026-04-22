@@ -18,7 +18,7 @@ env
 src/api/
 
 # Fetched API schema (not committed, pulled at build time)
-infra/curation-openapi-schema.json
+src/infra/curation-openapi-schema.json
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
