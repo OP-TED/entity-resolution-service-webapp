@@ -30,7 +30,7 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN SCHEMA_FILE=/tmp/schema.json npx openapi-ts && \
     npm run build -- --mode=$ENVIRONMENT
 
-    # --- Stage 3: Production ---
+# --- Stage 3: Production ---
 FROM nginx:1.27-alpine AS production
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
@@ -44,8 +44,8 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
  && chown appuser:appgroup /var/run/nginx.pid
 
 COPY --from=builder /usr/app/dist /usr/share/nginx/html
-COPY --chmod=644 infra/nginx.conf /etc/nginx/templates/default.conf.template
-COPY --chmod=755 infra/25-set-resolver.sh /docker-entrypoint.d/25-set-resolver.sh
+COPY --chmod=644 src/infra/nginx.conf /etc/nginx/templates/default.conf.template
+COPY --chmod=755 src/infra/25-set-resolver.sh /docker-entrypoint.d/25-set-resolver.sh
 
 USER appuser
 

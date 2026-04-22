@@ -2,8 +2,8 @@ services:
   app:
     container_name: ers-webapp
     build:
-      context: ..
-      dockerfile: infra/Dockerfile
+      context: ../..
+      dockerfile: src/infra/Dockerfile
       args:
         ENVIRONMENT: development
     ports:

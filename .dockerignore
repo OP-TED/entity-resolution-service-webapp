@@ -41,7 +41,7 @@ sonar-project.properties
 .idea
 .DS_Store
 
-# Infra (re-include only what the Dockerfile needs)
-infra
-!infra/nginx.conf
-!infra/25-set-resolver.sh
+# Infra (re-include only what the Dockerfile needs at runtime)
+src/infra
+!src/infra/nginx.conf
+!src/infra/25-set-resolver.sh
