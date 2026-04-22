@@ -1,1 +1,1 @@
-npx lint-staged
+cd src && npx lint-staged

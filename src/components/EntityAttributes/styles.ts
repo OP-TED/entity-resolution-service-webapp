@@ -14,15 +14,6 @@ export const useStyles = createStyles(({ token }) => {
       textAlign: 'center'
     },
 
-    diffSummary: {
-      padding: `${token.paddingSM}px ${token.padding}px`,
-      background: token.colorFillTertiary,
-      borderRadius: token.borderRadius,
-      marginBottom: token.marginSM,
-      flexWrap: 'wrap',
-      border: `1px solid ${token.colorBorder}`
-    },
-
     summaryBadge: {
       margin: 0,
       fontWeight: 600,
@@ -89,7 +80,6 @@ export const useStyles = createStyles(({ token }) => {
       color: token.colorSuccess,
       opacity: 0.5
     },
-
     alert: {
       '& .ant-alert-title': {
         fontSize: 11,

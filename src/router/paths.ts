@@ -1,3 +1,6 @@
 export const paths = {
-  root: '/'
+  root: '/',
+  history: '/history',
+  login: '/login',
+  admin: '/admin'
 }

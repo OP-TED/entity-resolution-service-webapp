@@ -4,40 +4,57 @@ The dedicated web application (frontend) for the Entity Resolution Service. It p
 
 ---
 
-## Quick Start
+## Getting Started
 
 ### Prerequisites
 
 - Node.js 22+
 - npm 10+
+- Docker + Docker Compose
 
 ### 1. Install dependencies
 
 ```bash
-npm install
+make install
 ```
 
-### 2. Configure the API URL
-
-Copy the default environment file and set your API URL:
+### 2. Configure the environment
 
 ```bash
-cp .env .env.example
+cp src/infra/.env.example src/infra/.env
 ```
 
-Edit `.env.example`:
+Edit `src/infra/.env` and set the backend address:
 
 ```env
-VITE_APP_MAIN_API=https://your-api-host/
+API_BACKEND_URL=http://curation-api:8000
 ```
 
-### 3. Start the local development server
+Note: use `http://curation-api:8000` when running in Docker, and `http://localhost:8000` when running with Node.js (`npm run dev`).
+
+### 3. Start the stack
 
 ```bash
-npm run dev
+make up      # build image and start Nginx container
+make logs    # follow container logs
+make down    # stop
+
+Note: `make up` creates a shared external network `ersys-local` used for cross-component communication.
+To remove it manually: `docker network rm ersys-local`
 ```
 
-The app will be available at `http://localhost:5173`.
+The app will be available at `http://localhost:8080`.
+
+### What this stack does NOT include
+
+This repo starts only the web UI (served via Nginx). It does **not** include the ERS backend or the Entity Resolution Engine.
+
+Without the ERS Curation API running and reachable at `API_BACKEND_URL`, the UI will start but all API calls will fail.
+
+- To add the ERS backend: follow the Getting Started section in [entity-resolution-service](https://github.com/OP-TED/entity-resolution-service#getting-started).
+- To add the ERE engine: follow the Getting Started section in [entity-resolution-engine-basic](https://github.com/OP-TED/entity-resolution-engine-basic#getting-started).
+
+> **Note on `API_BACKEND_URL`:** This variable is injected at container **runtime** by Nginx — not baked into the bundle at build time. You can change it in `src/infra/.env` and run `make rebuild` without a full frontend rebuild.
 
 ---
 
@@ -46,7 +63,7 @@ The app will be available at `http://localhost:5173`.
 The TypeScript client under `src/api/` is auto-generated from the backend's OpenAPI schema. Run this command whenever the API changes:
 
 ```bash
-npm run openapi:meaningfy
+make generate
 ```
 
 > Never edit `*.gen.ts` files manually — they are overwritten on every run.
@@ -56,17 +73,11 @@ npm run openapi:meaningfy
 ## Running with Docker
 
 ```bash
-# Build and start (served on http://localhost:8080)
-make up
-
-# Stop
-make down
-
-# Rebuild after code or config changes
-make rebuild
+make up       # build and start (served on http://localhost:8080)
+make down     # stop
+make rebuild  # rebuild and restart after code or config changes
+make logs     # follow container logs
 ```
-
-> `VITE_APP_MAIN_API` is baked into the bundle at build time. After changing it, run `make rebuild`.
 
 ---
 
@@ -74,17 +85,17 @@ make rebuild
 
 ```bash
 # Unit & component tests (Vitest)
-npm test
+make test
 
 # With coverage
-npm run test:coverage
+make test-coverage
 
 # End-to-end tests (Playwright) — install browsers once first
 npx playwright install
 npm run test:e2e
 ```
 
-Unit/component tests live in `tests/`. E2E tests are in `tests/e2e/` and mock
+Unit/component tests live in `src/test/`. E2E tests are in `src/test/e2e/` and mock
 all API calls so no backend is needed.
 
 ---

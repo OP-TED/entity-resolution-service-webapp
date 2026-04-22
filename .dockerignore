@@ -1,2 +1,47 @@
-infra
-!infra/docker
+# Version control
+.git
+.github
+.husky
+
+# Dependencies (installed fresh via npm ci)
+node_modules
+src/node_modules
+
+# Build output
+dist
+src/dist
+dist-ssr
+coverage
+src/coverage
+playwright-report
+test-results
+
+# Tests (not needed for runtime)
+src/test
+
+# Dev tooling / configs not needed in build
+docs
+*.md
+.commitlintrc
+.prettierrc
+.prettierignore
+src/commitlint.config.cjs
+src/eslint.config.js
+playwright.config.ts
+Makefile
+sonar-project.properties
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editor
+.vscode
+.idea
+.DS_Store
+
+# Infra (re-include only what the Dockerfile needs at runtime)
+src/infra
+!src/infra/nginx.conf
+!src/infra/25-set-resolver.sh

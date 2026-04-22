@@ -1,7 +1,8 @@
 import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import { EntityAttributes, SkeletonWrapper, Text } from '@components'
 import { useDecisionsLoadingState } from '@hooks'
-import { Button, Card, Flex } from 'antd'
+import { Button, Card, Flex, Space } from 'antd'
+import { useMemo } from 'react'
 
 import { useStyles } from './styles'
 
@@ -10,6 +11,7 @@ import type { CanonicalEntityPreview } from '@api/types.gen'
 type Props = {
   currentEntity: number
   data?: CanonicalEntityPreview
+  referenceEntityData?: unknown
   title?: string
   isAlternative?: boolean
   isLoading: boolean
@@ -20,6 +22,7 @@ type Props = {
 export const ProposedCard = ({
   currentEntity,
   data,
+  referenceEntityData,
   isLoading,
   onPrevious,
   onNext,
@@ -29,24 +32,54 @@ export const ProposedCard = ({
   const { styles } = useStyles({ alternative: isAlternative })
   const isDecisionsMenuLoading = useDecisionsLoadingState()
 
-  const currentEntityLength = data?.top_alignment_links?.length
+  const currentEntityLength = data?.top_entities?.length ?? 0
 
   const isLoadingContent = isLoading || isDecisionsMenuLoading
 
+  const displayEntityData = useMemo(() => {
+    const proposedRaw =
+      data?.top_entities?.[currentEntity - 1]?.parsed_representation
+
+    if (!proposedRaw || typeof proposedRaw !== 'object') {
+      return proposedRaw
+    }
+
+    if (!referenceEntityData || typeof referenceEntityData !== 'object') {
+      return proposedRaw
+    }
+
+    const proposed = proposedRaw as Record<string, unknown>
+    const reference = referenceEntityData as Record<string, unknown>
+
+    const merged: Record<string, unknown> = { ...proposed }
+    for (const key of Object.keys(reference)) {
+      if (!(key in merged)) {
+        merged[key] = ''
+      }
+    }
+
+    return merged
+  }, [currentEntity, data, referenceEntityData])
+
   return (
     <Card
+      data-testid={isAlternative ? 'alternative-proposed-card' : 'proposed-match-card'}
       className={styles.proposedCard}
       title={
-        <Flex className={styles.proposedCardHeader} vertical gap={4}>
-          <Text
-            size={16}
-            weight={500}
-            color={isAlternative ? 'colorWarning' : 'colorPrimaryActive'}
-          >
-            {title}
-          </Text>
+        <Flex
+          className={styles.proposedCardHeader}
+          justify="space-between"
+          align="center"
+          gap={8}
+        >
+          <Space size={10}>
+            <Text
+              weight={500}
+              color={isAlternative ? 'colorWarning' : 'colorPrimaryActive'}
+            >
+              {title}
+            </Text>
 
-          <Flex justify="space-between" align="center" gap={8}>
             <SkeletonWrapper
               isLoading={isLoadingContent}
               count={1}
@@ -54,43 +87,39 @@ export const ProposedCard = ({
               width="120px"
             >
               <Text
-                size={14}
                 color={isAlternative ? 'colorWarning' : 'colorPrimaryActive'}
               >
                 Entity {currentEntity} of {currentEntityLength} in cluster
               </Text>
             </SkeletonWrapper>
+          </Space>
 
-            <Flex gap={8} align="center">
-              <Button
-                type="primary"
-                disabled={currentEntity === 1}
-                onClick={onPrevious}
-                icon={<ArrowLeftOutlined />}
-              />
+          <Flex gap={8} align="center">
+            <Button
+              type="primary"
+              disabled={currentEntity === 1}
+              onClick={onPrevious}
+              icon={<ArrowLeftOutlined />}
+            />
 
-              <Button
-                type="primary"
-                disabled={currentEntity === currentEntityLength}
-                onClick={onNext}
-                icon={<ArrowRightOutlined />}
-              />
-            </Flex>
+            <Button
+              type="primary"
+              disabled={currentEntity === currentEntityLength}
+              onClick={onNext}
+              icon={<ArrowRightOutlined />}
+            />
           </Flex>
         </Flex>
       }
     >
       <SkeletonWrapper
         isLoading={isLoadingContent}
-        count={7}
-        height={30}
-        width="60%"
+        count={5}
+        height={40}
+        marginBottom={2}
       >
         <EntityAttributes
-          parsedData={
-            data?.top_alignment_links?.[currentEntity - 1]?.entity_mention
-              ?.parsed_data
-          }
+          parsedData={displayEntityData}
         />
       </SkeletonWrapper>
     </Card>

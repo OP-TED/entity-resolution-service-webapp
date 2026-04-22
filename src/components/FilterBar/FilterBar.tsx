@@ -1,11 +1,10 @@
-import { DecisionStatusEnum, TypeEnum } from '@api/types.gen'
-import { ConfidenceSelect, SearchFilter, Text } from '@components'
+import { listEntityTypesApiV1CurationEntityTypesGetOptions } from '@api/@tanstack/react-query.gen'
+import { DecisionOrdering } from '@api/types.gen'
+import { ConfidenceSelect, SearchFilter, SimilaritySelect, Text } from '@components'
 import { useQueryUpdate } from '@hooks'
+import { useQuery } from '@tanstack/react-query'
 
-import { formatLabel } from '@utils/format'
 import { Flex, Select } from 'antd'
-
-import { useEffect } from 'react'
 
 import { useStyles } from './styles'
 
@@ -13,30 +12,23 @@ export const FilterBar = () => {
   const { updateQuery, params } = useQueryUpdate()
   const { styles } = useStyles()
 
-  const typeOptions = Object.values(TypeEnum).map((type) => ({
-    label: formatLabel(type),
-    value: type
-  }))
+  const { data: entityTypes } = useQuery(
+    listEntityTypesApiV1CurationEntityTypesGetOptions()
+  )
 
-  const statusOptions = Object.values(DecisionStatusEnum).map((status) => ({
-    label: formatLabel(status),
-    value: status
-  }))
-
-  const orderingOptions = [
-    { label: 'Created At (Newest)', value: '+created_at' },
-    { label: 'Created At (Oldest)', value: '-created_at' },
-    { label: 'Updated At (Newest)', value: '+updated_at' },
-    { label: 'Updated At (Oldest)', value: '-updated_at' },
-    { label: 'Confidence (Low to High)', value: '+confidence_score' },
-    { label: 'Confidence (High to Low)', value: '-confidence_score' }
+  const entityTypeOptions = [
+    { label: 'All Entity Types', value: '' },
+    ...(entityTypes?.map((t) => ({ label: t, value: t })) ?? [])
   ]
 
-  useEffect(() => {
-    if (!params?.status) {
-      updateQuery({ status: DecisionStatusEnum.PENDING_MANUAL_REVIEW })
-    }
-  }, [params?.status, updateQuery])
+  const orderingOptions = [
+    { label: 'Created At (Newest)', value: DecisionOrdering['-CREATED_AT'] },
+    { label: 'Created At (Oldest)', value: DecisionOrdering.CREATED_AT },
+    { label: 'Updated At (Newest)', value: DecisionOrdering.UPDATED_AT },
+    { label: 'Updated At (Oldest)', value: DecisionOrdering['-UPDATED_AT'] },
+    { label: 'Confidence (Low to High)', value: DecisionOrdering.CONFIDENCE_SCORE },
+    { label: 'Confidence (High to Low)', value: DecisionOrdering['-CONFIDENCE_SCORE'] }
+  ]
 
   return (
     <Flex className={styles.filterBar} align="center" gap={16} wrap>
@@ -44,13 +36,11 @@ export const FilterBar = () => {
         <Text weight={500}>Entity Type:</Text>
 
         <Select
-          allowClear
-          value={params?.entity_type ? String(params.entity_type) : undefined}
+          value={params?.entity_type ? String(params.entity_type) : ''}
           className="select-min-width"
-          options={typeOptions}
-          placeholder="Select Type"
-          onChange={(value) => updateQuery({ entity_type: value })}
-          aria-label="Select Entity Type"
+          options={entityTypeOptions}
+          onChange={(value) => updateQuery({ entity_type: value || undefined })}
+          aria-label="Filter by entity type"
         />
       </Flex>
 
@@ -69,15 +59,16 @@ export const FilterBar = () => {
       </Flex>
 
       <Flex align="center" gap={8}>
-        <Text weight={500}>Status:</Text>
+        <Text weight={500}>Similarity:</Text>
 
-        <Select
-          value={params?.status ? String(params.status) : undefined}
-          className="select-min-width"
-          options={statusOptions}
-          placeholder="Select Status"
-          onChange={(value) => updateQuery({ status: value })}
-          aria-label="Select Status"
+        <SimilaritySelect
+          onChange={(value) => updateQuery(value)}
+          similarityMin={
+            params?.similarity_min ? Number(params.similarity_min) : undefined
+          }
+          similarityMax={
+            params?.similarity_max ? Number(params.similarity_max) : undefined
+          }
         />
       </Flex>
 

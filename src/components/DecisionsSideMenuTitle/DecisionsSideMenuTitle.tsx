@@ -1,50 +1,48 @@
+import { DecisionOrdering } from '@api/types.gen'
 import { Text } from '@components'
 import { useQueryParams } from '@hooks/useQueryParams'
+import { Flex } from 'antd'
 import { useMemo } from 'react'
 
 import { useStyles } from './styles'
 
-const statusLabels: Record<string, string> = {
-  ALL_STATUSES: 'All Statuses',
-  AUTOMATIC_CONFIDENT: 'Automatic Confident',
-  PENDING_MANUAL_REVIEW: 'Pending Review',
-  MANUALLY_REVIEWED: 'Reviewed'
+const orderingLabels: Record<DecisionOrdering, string> = {
+  [DecisionOrdering.CREATED_AT]: 'created at newest',
+  [DecisionOrdering['-CREATED_AT']]: 'created at oldest',
+  [DecisionOrdering.UPDATED_AT]: 'updated at newest',
+  [DecisionOrdering['-UPDATED_AT']]: 'updated at oldest',
+  [DecisionOrdering.CONFIDENCE_SCORE]: 'confidence low to high',
+  [DecisionOrdering['-CONFIDENCE_SCORE']]: 'confidence high to low'
 }
 
-const orderingLabels: Record<string, string> = {
-  '+created_at': 'created at newest',
-  '-created_at': 'created at oldest',
-  '+updated_at': 'updated at newest',
-  '-updated_at': 'updated at oldest',
-  '+confidence_score': 'confidence low to high',
-  '-confidence_score': 'confidence high to low'
+type Props = {
+  count?: number
 }
 
-export const DecisionsSideMenuTitle = () => {
+export const DecisionsSideMenuTitle = ({ count }: Props) => {
   const params = useQueryParams()
   const { styles } = useStyles()
 
-  const statusLabel = useMemo(() => {
-    const status = params?.status as string | undefined
-    if (!status) {
-      return statusLabels.ALL_STATUSES
-    }
-    return statusLabels[status] || status
-  }, [params?.status])
-
   const orderingLabel = useMemo(() => {
-    const ordering = params?.ordering as string | undefined
+    const ordering = params?.ordering
     if (!ordering) {
-      return orderingLabels?.['+created_at']
+      return orderingLabels?.[DecisionOrdering.CREATED_AT]
     }
-    return orderingLabels[ordering] || ordering
+    return orderingLabels?.[ordering as DecisionOrdering] || ordering
   }, [params?.ordering])
 
   return (
     <div className={styles.header}>
-      <Text color="colorTextSecondary" isEllipsis weight={600} size={16}>
-        {statusLabel} (sorted by {orderingLabel})
-      </Text>
+      <Flex vertical gap={4}>
+        <Text color="colorTextSecondary" isEllipsis weight={600} size={16}>
+          (sorted by {orderingLabel})
+        </Text>
+        {count !== undefined && (
+          <Text color="colorTextSecondary" size={14}>
+            {count} decisions
+          </Text>
+        )}
+      </Flex>
     </div>
   )
 }

@@ -1,24 +1,53 @@
 import { Text } from '@components'
-import { formatTimeAgo, getConfidenceStatus } from '@utils'
-import { type MenuItemProps, Flex, Tag } from 'antd'
+import { formatTimeAgo, getConfidenceStatus, getSimilarityStatus } from '@utils'
+import { type MenuItemProps, Flex, Tag, Tooltip } from 'antd'
 
-import type { Decision } from '@api/types.gen'
+import type { DecisionSummary } from '@api/types.gen'
 
 type Props = {
-  decision: Decision
+  decision: DecisionSummary
 } & MenuItemProps
 
 export const DecisionSideMenuItem = ({ decision }: Props) => {
-  const confidenceScore =
-    decision?.decision_context?.alignment_options?.[0]?.confidence_score
-  const confidenceClass = getConfidenceStatus(confidenceScore)
+  const confidenceScore = decision?.current_placement?.confidence_score
+  const similarityScore = decision?.current_placement?.similarity_score
+
+  const confidenceScoreFormatted = confidenceScore
+    ? confidenceScore.toFixed(2)
+    : 'N/A'
+  const similarityScoreFormatted = similarityScore
+    ? similarityScore.toFixed(2)
+    : 'N/A'
+
+  const entityName =
+    (
+      decision?.about_entity_mention?.parsed_representation as {
+        name?: string
+      } | null
+    )?.name ?? decision?.about_entity_mention?.identified_by?.request_id
 
   return (
     <Flex vertical gap={8}>
       <Flex justify="space-between">
-        <Tag variant="solid" color={confidenceClass}>
-          {confidenceScore?.toFixed(2)}
-        </Tag>
+        <Flex gap={8} align="center">
+          <Tooltip title="Confidence">
+            <Tag variant="solid" color={getConfidenceStatus(confidenceScore)}>
+              <Text size={12} color="colorWhite">
+                C: {confidenceScoreFormatted}
+              </Text>
+            </Tag>
+          </Tooltip>
+
+          {similarityScoreFormatted && (
+            <Tooltip title="Similarity">
+              <Tag variant="solid" color={getSimilarityStatus(similarityScore)}>
+                <Text size={12} color="colorWhite">
+                  S: {similarityScoreFormatted}
+                </Text>
+              </Tag>
+            </Tooltip>
+          )}
+        </Flex>
 
         <Text size={13} color="colorTextSecondary">
           {formatTimeAgo(decision?.created_at)}
@@ -26,7 +55,7 @@ export const DecisionSideMenuItem = ({ decision }: Props) => {
       </Flex>
 
       <Text isEllipsis size={14} weight={600} color="colorTextSecondary">
-        {decision?.decision_context?.subject_entity_display_name}
+        {entityName}
       </Text>
     </Flex>
   )

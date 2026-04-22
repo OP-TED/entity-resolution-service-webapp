@@ -32,7 +32,7 @@ export const useQueryUpdate = () => {
         }
       )
 
-      if (pathname + search + hash !== pushURL.replace(/\?+$/g, '')) {
+      if (pathname + search + hash !== pushURL.replace(/\?$/, '')) {
         push(pushURL)
       }
     },

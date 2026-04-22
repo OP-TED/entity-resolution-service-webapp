@@ -1,7 +1,5 @@
-import { curationDecisionsRetrieveInfiniteQueryKey } from '@api/index'
+import { listDecisionsApiV1CurationDecisionsGetQueryKey } from '@api/index'
 import { useQueryClient } from '@tanstack/react-query'
-
-import { defaultFiltersMenu } from '@utils'
 
 import { useQueryParams } from './useQueryParams'
 
@@ -11,8 +9,8 @@ export const useDecisionsLoadingState = () => {
 
   const isDecisionsMenuLoading =
     queryClient.getQueryState(
-      curationDecisionsRetrieveInfiniteQueryKey({
-        query: { ...params, per_page: defaultFiltersMenu.page_size }
+      listDecisionsApiV1CurationDecisionsGetQueryKey({
+        query: { ...params }
       })
     )?.status === 'pending'
 

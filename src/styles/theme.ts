@@ -92,5 +92,6 @@ export const antdTheme = {
       marginLG: 8,
       marginXS: 8
     }
+    ,
   }
 }
