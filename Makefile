@@ -4,7 +4,7 @@
 
 COMPOSE_FILE := src/infra/compose.dev.yaml
 ENV_FILE := src/infra/.env
-ERS_SCHEMA_URL ?= https://raw.githubusercontent.com/OP-TED/entity-resolution-service/develop/resources/curation-openapi-schema.json
+ERS_SCHEMA_URL ?= https://raw.githubusercontent.com/OP-TED/entity-resolution-service/release/1.0.0/resources/curation-openapi-schema.json
 SCHEMA_FILE := src/infra/curation-openapi-schema.json
 APP_DIR := src
 

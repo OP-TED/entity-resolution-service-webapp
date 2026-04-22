@@ -51,8 +51,8 @@ This repo starts only the web UI (served via Nginx). It does **not** include the
 
 Without the ERS Curation API running and reachable at `API_BACKEND_URL`, the UI will start but all API calls will fail.
 
-- To add the ERS backend: follow the Getting Started section in [entity-resolution-service](https://github.com/meaningfy-ws/entity-resolution-service#getting-started).
-- To add the ERE engine: follow the Getting Started section in [entity-resolution-engine-basic](https://github.com/meaningfy-ws/entity-resolution-engine-basic#getting-started).
+- To add the ERS backend: follow the Getting Started section in [entity-resolution-service](https://github.com/OP-TED/entity-resolution-service#getting-started).
+- To add the ERE engine: follow the Getting Started section in [entity-resolution-engine-basic](https://github.com/OP-TED/entity-resolution-engine-basic#getting-started).
 
 > **Note on `API_BACKEND_URL`:** This variable is injected at container **runtime** by Nginx — not baked into the bundle at build time. You can change it in `src/infra/.env` and run `make rebuild` without a full frontend rebuild.
 

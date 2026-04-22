@@ -8,7 +8,7 @@ The build process requires the ERS Backend OpenAPI schema.
 
 - **File:** `infra/curation-openapi-schema.json`
 - **Local acquisition:** Run `make fetch-schema` from the root directory.
-- **Automated acquisition:** The `Dockerfile` automatically fetches the schema from the Meaningfy repository during build. This can be overridden by providing the `ERS_SCHEMA_URL` build argument.
+- **Automated acquisition:** The `Dockerfile` automatically fetches the schema from the [entity-resolution-service](https://github.com/OP-TED/entity-resolution-service) repository during build. This can be overridden by providing the `ERS_SCHEMA_URL` build argument.
 
 ## Structure
 
