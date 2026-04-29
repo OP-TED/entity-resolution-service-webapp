@@ -58,9 +58,9 @@ All targets that start containers require `infra/.env` (copy from `infra/.env.ex
 
 ## Environment variables
 
-| Variable            | Used at    | Description                                                              |
-| ------------------- | ---------- | ------------------------------------------------------------------------ |
-| `API_BACKEND_URL`   | Runtime    | Curation API address (`host:port`), resolved by nginx via envsubst       |
-| `ENVIRONMENT`       | Build time | Vite build mode (`development`, `staging`, `production`)                 |
-| `ERS_SCHEMA_URL`    | Build time | URL to fetch the OpenAPI schema. Defaults to the Meaningfy backend repo. |
-| `VITE_APP_MAIN_API` | Build time | Live API URL for local openapi-ts generation (optional, for dev)         |
+| Variable            | Used at    | Description                                                        |
+| ------------------- | ---------- | ------------------------------------------------------------------ |
+| `API_BACKEND_URL`   | Runtime    | Curation API address (`host:port`), resolved by nginx via envsubst |
+| `ENVIRONMENT`       | Build time | Vite build mode (`development`, `staging`, `production`)           |
+| `ERS_SCHEMA_URL`    | Build time | URL to fetch the OpenAPI schema. Defaults to the backend repo.     |
+| `VITE_APP_MAIN_API` | Build time | Live API URL for local openapi-ts generation (optional, for dev)   |
