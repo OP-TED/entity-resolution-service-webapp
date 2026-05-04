@@ -1,32 +1,36 @@
 .PHONY: up down rebuild logs help check-env \
        install lint typecheck test test-coverage check-quality check-all \
-       fetch-schema
+       fetch-schema generate
 
-COMPOSE_FILE := infra/compose.dev.yaml
-ENV_FILE := infra/.env
-ERS_SCHEMA_URL ?= https://raw.githubusercontent.com/meaningfy-ws/entity-resolution-service/develop/resources/curation-openapi-schema.json
-SCHEMA_FILE := infra/curation-openapi-schema.json
+COMPOSE_FILE := src/infra/compose.dev.yaml
+ENV_FILE := src/infra/.env
+ERS_SCHEMA_URL ?= https://raw.githubusercontent.com/OP-TED/entity-resolution-service/release/1.0.0/resources/curation-openapi-schema.json
+SCHEMA_FILE := src/infra/curation-openapi-schema.json
+APP_DIR := src
 
 # ── Quality checks ──────────────────────────────────────────
 
 install:
-	npm ci
+	npm --prefix $(APP_DIR) ci
 
 lint:
-	npx eslint .
+	npm --prefix $(APP_DIR) run lint
 
 typecheck:
-	npx tsc --noEmit
+	cd $(APP_DIR) && npx tsc --noEmit
 
-test:
-	npx vitest run
+generate: fetch-schema
+	cd $(APP_DIR) && npx openapi-ts
 
-test-coverage:
-	npx vitest run --coverage
+test: generate
+	npm --prefix $(APP_DIR) test
+
+test-coverage: generate
+	npm --prefix $(APP_DIR) run test:coverage
 
 check-quality: lint typecheck
 
-check-all: check-quality test
+check-all: generate check-quality test
 
 # ── Schema ──────────────────────────────────────────────────
 
@@ -37,9 +41,10 @@ fetch-schema:
 # ── Docker ──────────────────────────────────────────────────
 
 check-env:
-	@test -f $(ENV_FILE) || (echo "ERROR: $(ENV_FILE) not found. Run: cp infra/.env.example infra/.env" && exit 1)
+	@test -f $(ENV_FILE) || (echo "ERROR: $(ENV_FILE) not found. Run: cp src/infra/.env.example src/infra/.env" && exit 1)
 
 up: check-env
+	@ docker network create ersys-local || true
 	docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) up -d
 
 down:
@@ -64,6 +69,7 @@ help:
 	@echo ""
 	@echo "Schema:"
 	@echo "  fetch-schema   Download ERS API schema from GitHub"
+	@echo "  generate       Fetch schema and regenerate src/api/ client code"
 	@echo ""
 	@echo "Docker:"
 	@echo "  up             Start containers"

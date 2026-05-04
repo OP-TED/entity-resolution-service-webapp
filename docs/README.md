@@ -105,7 +105,7 @@ VITE_APP_MAIN_API=https://your-api-host/ make up
 
 ### Unit & Component Tests (Vitest)
 
-Tests live in `tests/` and are organized by category.
+Tests live in `test/` and are organized by category.
 
 ```bash
 # Run all unit/component tests once
@@ -122,7 +122,7 @@ Coverage is collected for `src/**` (excluding auto-generated `src/api/`).
 
 ### End-to-End Tests (Playwright)
 
-E2E tests live in `tests/e2e/` and run against the live dev server. All API
+E2E tests live in `test/e2e/` and run against the live dev server. All API
 calls are intercepted with mock responses so no real backend is required.
 
 ```bash
@@ -154,7 +154,7 @@ entity-resolution-service-webapp/
 │   ├── styles/         # Global styles and theme
 │   ├── types/          # Shared TypeScript types
 │   └── utils/          # Pure utility functions
-├── tests/              # Unit tests
+├── test/               # Unit tests
 │   └── utils/
 ├── docker-compose.yml  # Local Docker Compose config
 ├── Makefile            # Shortcuts: up / down / rebuild
