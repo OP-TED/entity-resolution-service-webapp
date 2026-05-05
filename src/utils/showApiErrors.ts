@@ -72,6 +72,18 @@ const extractMessages = (errorData: unknown): string[] => {
         else if (isObject(item) && 'msg' in item) out.push(String(item.msg))
       }
     }
+
+    return out
+  }
+
+  // Curation API standardized on { error_code, message } in place of { detail }.
+  // Fall back to `message` only when `detail` is absent so older endpoints keep
+  // working unchanged.
+  if (isObject(errorData) && 'message' in errorData) {
+    const message = errorData.message
+    if (typeof message === 'string') {
+      out.push(message)
+    }
   }
 
   return out
