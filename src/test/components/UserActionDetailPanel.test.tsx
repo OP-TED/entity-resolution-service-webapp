@@ -27,7 +27,11 @@ vi.mock('@api/@tanstack/react-query.gen', () => ({
       queryKey: ['candidates-infinite'],
       queryFn: vi.fn().mockResolvedValue({ results: [], next: null })
     })
-  )
+  ),
+  listEntityTypesApiV1CurationEntityTypesGetOptions: vi.fn(() => ({
+    queryKey: ['entity-types'],
+    queryFn: vi.fn().mockResolvedValue([])
+  }))
 }))
 
 vi.mock('@hooks/useDecisionsLoadingState', () => ({

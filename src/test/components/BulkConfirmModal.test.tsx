@@ -16,7 +16,11 @@ vi.mock('@api/index', () => ({
     vi.fn(({ path }: { path: { decision_id: string } }) => [
       'proposed',
       path.decision_id
-    ])
+    ]),
+  listEntityTypesApiV1CurationEntityTypesGetOptions: vi.fn(() => ({
+    queryKey: ['entity-types'],
+    queryFn: vi.fn().mockResolvedValue([])
+  }))
 }))
 
 const makeClient = () =>

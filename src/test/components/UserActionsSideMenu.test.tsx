@@ -9,6 +9,10 @@ vi.mock('@api/@tanstack/react-query.gen', () => ({
   listUserActionsApiV1UserActionsGetInfiniteOptions: vi.fn(() => ({
     queryKey: ['user-actions-infinite'],
     queryFn: vi.fn().mockResolvedValue({ results: [], next_cursor: null })
+  })),
+  listEntityTypesApiV1CurationEntityTypesGetOptions: vi.fn(() => ({
+    queryKey: ['entity-types'],
+    queryFn: vi.fn().mockResolvedValue([])
   }))
 }))
 

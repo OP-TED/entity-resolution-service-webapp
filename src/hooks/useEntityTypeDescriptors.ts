@@ -19,6 +19,5 @@ export const useEntityTypeDescriptors = () => {
     return m
   }, [data])
 
-  console.log(map, data)
   return map
 }

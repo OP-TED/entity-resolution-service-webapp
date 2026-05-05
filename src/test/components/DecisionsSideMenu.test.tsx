@@ -19,7 +19,11 @@ vi.mock('@api/@tanstack/react-query.gen', () => ({
   ),
   bulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostMutation: vi.fn(
     () => ({ mutationFn: vi.fn() })
-  )
+  ),
+  listEntityTypesApiV1CurationEntityTypesGetOptions: vi.fn(() => ({
+    queryKey: ['entity-types'],
+    queryFn: vi.fn().mockResolvedValue([])
+  }))
 }))
 
 vi.mock('@hooks/useInfiniteScroll', () => ({

@@ -41,7 +41,11 @@ vi.mock('@api/index', () => ({
   listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey: vi.fn(() => [
     'decisions-infinite'
   ]),
-  getStatisticsApiV1CurationStatsGetQueryKey: vi.fn(() => ['stats'])
+  getStatisticsApiV1CurationStatsGetQueryKey: vi.fn(() => ['stats']),
+  listEntityTypesApiV1CurationEntityTypesGetOptions: vi.fn(() => ({
+    queryKey: ['entity-types'],
+    queryFn: vi.fn().mockResolvedValue([])
+  }))
 }))
 
 const makeDecision = (id: string, name = `Entity ${id}`) => ({
