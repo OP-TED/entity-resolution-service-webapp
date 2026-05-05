@@ -11,11 +11,12 @@ import {
 } from '@api/types.gen'
 import { useBulkSelection } from '@context/useBulkSelection'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { showApiErrors } from '@utils'
+import { getEntityDisplayName, showApiErrors } from '@utils'
 
 import { App } from 'antd'
 import { useState } from 'react'
 
+import { useEntityTypeDescriptors } from './useEntityTypeDescriptors'
 import { useRemoveDecisionFromCache } from './useRemoveDecisionFromCache'
 
 export type BulkAction = 'accept' | 'reject'
@@ -78,20 +79,10 @@ const buildResultTitle = (
     : `Bulk ${action} completed`
 }
 
-const getDecisionLabel = (decision?: DecisionSummary)=> {
-  if (!decision) return undefined
-  const parsed = decision.about_entity_mention?.parsed_representation as
-    | { name?: string }
-    | null
-
-  return (
-    parsed?.name ?? decision.about_entity_mention?.identified_by?.request_id
-  )
-}
-
 const renderResultBreakdown = (
   results: BulkItemResult[],
-  snapshot: Map<string, DecisionSummary>
+  snapshot: Map<string, DecisionSummary>,
+  descriptors: Record<string, string>
 ): React.ReactNode => {
   const buckets = new Map<BulkItemStatus, BulkItemResult[]>()
   for (const r of results) {
@@ -110,8 +101,10 @@ const renderResultBreakdown = (
           <ul style={{ marginTop: 4, paddingLeft: 20 }}>
             {items.map((it) => {
               const label =
-                getDecisionLabel(snapshot.get(it.decision_id)) ??
-                it.decision_id
+                getEntityDisplayName(
+                  snapshot.get(it.decision_id)?.about_entity_mention,
+                  descriptors
+                ) ?? it.decision_id
               const suffix =
                 status !== BulkItemStatus.SUCCESS && it.detail
                   ? ` — ${it.detail}`
@@ -148,6 +141,7 @@ export const useBulkDecisionActions = () => {
   const queryClient = useQueryClient()
   const removeDecisionFromCache = useRemoveDecisionFromCache()
   const { selectedIds, removeIds, exitSelectionMode } = useBulkSelection()
+  const descriptors = useEntityTypeDescriptors()
   const [pendingAction, setPendingAction] = useState<BulkAction | null>(null)
 
   const bulkAccept = useMutation(
@@ -194,7 +188,7 @@ export const useBulkDecisionActions = () => {
     modal.info({
       title: buildResultTitle(action, response.results),
       width: 520,
-      content: renderResultBreakdown(response.results, snapshot),
+      content: renderResultBreakdown(response.results, snapshot, descriptors),
       okText: 'Close',
       onOk: exitSelectionMode
     })

@@ -93,16 +93,19 @@ export const compareEntityAttributes = (
     return []
   }
 
+  const current = currentData as Record<string, unknown>
+  const proposed =
+    proposedData && typeof proposedData === 'object'
+      ? (proposedData as Record<string, unknown>)
+      : {}
+
   const allKeys = Array.from(
-    new Set([
-      ...Object.keys(currentData as Record<string, unknown>),
-      ...Object.keys(proposedData as Record<string, unknown>)
-    ])
+    new Set([...Object.keys(current), ...Object.keys(proposed)])
   )
 
   const diffs: AttributeDiff[] = allKeys.map((key) => {
-    const currentValue = (currentData as Record<string, unknown>)[key]
-    const proposedValue = (proposedData as Record<string, unknown>)[key]
+    const currentValue = current[key]
+    const proposedValue = proposed[key]
 
     const currentHas = hasValue(currentValue)
     const proposedHas = hasValue(proposedValue)

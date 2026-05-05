@@ -10,8 +10,14 @@ import {
 } from '@api/types.gen'
 import { Text } from '@components'
 import { useBulkSelection } from '@context/useBulkSelection'
+import { useEntityTypeDescriptors } from '@hooks'
 import { useQueryClient } from '@tanstack/react-query'
-import { getConfidenceStatus, getSimilarityStatus } from '@utils'
+import {
+  getConfidenceStatus,
+  getDisplayNameFromParsed,
+  getEntityDisplayName,
+  getSimilarityStatus
+} from '@utils'
 
 import { Button, Empty, Flex, Modal, Tag, Tooltip } from 'antd'
 import { useEffect, useMemo } from 'react'
@@ -39,17 +45,6 @@ const ACTION_META: Record<BulkAction, { verb: string; danger: boolean }> = {
   reject: { verb: 'Reject', danger: true }
 }
 
-const getEntityName = (decision?: DecisionSummary) => {
-  if (!decision) return undefined
-  const parsed = decision.about_entity_mention?.parsed_representation as {
-    name?: string
-  } | null
-
-  return (
-    parsed?.name ?? decision.about_entity_mention?.identified_by?.request_id
-  )
-}
-
 export const BulkConfirmModal = ({
   action,
   isPending,
@@ -59,6 +54,7 @@ export const BulkConfirmModal = ({
   const { styles } = useStyles()
   const queryClient = useQueryClient()
   const { selectedIds, removeIds } = useBulkSelection()
+  const descriptors = useEntityTypeDescriptors()
   const open = action !== null
 
   // Snapshot decisions from the cache so the row list renders even if the
@@ -97,16 +93,19 @@ export const BulkConfirmModal = ({
   const { verb, danger } = ACTION_META[action]
   const count = items.length
 
-  const getProposedName = (decisionId: string) => {
+  const getProposedName = (decision: DecisionSummary) => {
     const data = queryClient.getQueryData<ProposedResponse>(
       getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetQueryKey(
-        { path: { decision_id: decisionId } }
+        { path: { decision_id: decision.id } }
       )
     )
     const entity = data?.top_entities?.[0]
-    const parsed = entity?.parsed_representation as { name?: string } | null
 
-    return parsed?.name
+    return getDisplayNameFromParsed(
+      entity?.parsed_representation as Record<string, unknown> | null | undefined,
+      decision.about_entity_mention?.identified_by?.entity_type,
+      descriptors
+    )
   }
 
   return (
@@ -139,8 +138,9 @@ export const BulkConfirmModal = ({
         <>
           <div className={styles.list}>
             {items.map((d) => {
-              const entityName = getEntityName(d) ?? d.id
-              const proposedName = getProposedName(d.id)
+              const entityName =
+                getEntityDisplayName(d.about_entity_mention, descriptors) ?? d.id
+              const proposedName = getProposedName(d)
               const clusterId = (
                 d.current_placement as { cluster_id?: string } | null
               )?.cluster_id

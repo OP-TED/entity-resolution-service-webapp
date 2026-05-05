@@ -18,7 +18,7 @@ export const FilterBar = () => {
 
   const entityTypeOptions = [
     { label: 'All Entity Types', value: '' },
-    ...(entityTypes?.map((t) => ({ label: t, value: t })) ?? [])
+    ...(entityTypes?.map((t) => ({ label: t.name, value: t.name })) ?? [])
   ]
 
   const orderingOptions = [

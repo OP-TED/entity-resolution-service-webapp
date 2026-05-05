@@ -1,5 +1,11 @@
 import { Text } from '@components'
-import { actionTypeColor, actionTypeLabel, formatTimeAgo } from '@utils'
+import { useEntityTypeDescriptors } from '@hooks'
+import {
+  actionTypeColor,
+  actionTypeLabel,
+  formatTimeAgo,
+  getEntityDisplayName
+} from '@utils'
 import { Flex, Tag } from 'antd'
 
 import type { UserActionSummary } from '@api/types.gen'
@@ -9,12 +15,11 @@ type Props = {
 }
 
 export const UserActionSideMenuItem = ({ action }: Props) => {
-  const entityName =
-    (
-      action?.about_entity_mention?.parsed_representation as {
-        name?: string
-      } | null
-    )?.name ?? action?.about_entity_mention?.identified_by?.request_id
+  const descriptors = useEntityTypeDescriptors()
+  const entityName = getEntityDisplayName(
+    action?.about_entity_mention,
+    descriptors
+  )
 
   return (
     <Flex vertical gap={8}>
