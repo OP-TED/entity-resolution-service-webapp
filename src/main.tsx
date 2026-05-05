@@ -1,4 +1,5 @@
 import { AuthProvider } from '@context/AuthContext'
+import { BulkSelectionProvider } from '@context/BulkSelectionContext'
 import { ConfirmationPreferenceProvider } from '@context/ConfirmationPreferenceContext'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { App, ConfigProvider } from 'antd'
@@ -33,7 +34,9 @@ createRoot(document.getElementById('root')!).render(
         <App>
           <AuthProvider>
             <ConfirmationPreferenceProvider>
-              <Router />
+              <BulkSelectionProvider>
+                <Router />
+              </BulkSelectionProvider>
             </ConfirmationPreferenceProvider>
           </AuthProvider>
         </App>

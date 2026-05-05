@@ -9,7 +9,17 @@ vi.mock('@api/@tanstack/react-query.gen', () => ({
   listDecisionsApiV1CurationDecisionsGetInfiniteOptions: vi.fn(() => ({
     queryKey: ['decisions-infinite'],
     queryFn: vi.fn().mockResolvedValue({ results: [], next_cursor: null })
-  }))
+  })),
+  listDecisionsApiV1CurationDecisionsGetInfiniteQueryKey: vi.fn(() => [
+    'decisions-infinite'
+  ]),
+  getStatisticsApiV1CurationStatsGetQueryKey: vi.fn(() => ['stats']),
+  bulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostMutation: vi.fn(
+    () => ({ mutationFn: vi.fn() })
+  ),
+  bulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostMutation: vi.fn(
+    () => ({ mutationFn: vi.fn() })
+  )
 }))
 
 vi.mock('@hooks/useInfiniteScroll', () => ({
