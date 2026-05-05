@@ -3,8 +3,16 @@ import {
   getSelectedClusterApiV1UserActionsActionIdSelectedClusterGetOptions
 } from '@api/index'
 import { EntityCard, ProposedCard, SkeletonWrapper, Text } from '@components'
+import { useEntityTypeDescriptors } from '@hooks'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { actionTypeColor, actionTypeLabel, formatTimeAgo, getConfidenceStatus, getSimilarityStatus } from '@utils'
+import {
+  actionTypeColor,
+  actionTypeLabel,
+  formatTimeAgo,
+  getConfidenceStatus,
+  getEntityDisplayName,
+  getSimilarityStatus
+} from '@utils'
 import { Card, Col, Collapse, Flex, Row, Tag } from 'antd'
 import { useMemo, useState } from 'react'
 import Skeleton from 'react-loading-skeleton'
@@ -23,6 +31,7 @@ export const UserActionDetailPanel = ({ currentAction }: Props) => {
   const [candidateEntityIndices, setCandidateEntityIndices] = useState<
     Record<number, number>
   >({})
+  const descriptors = useEntityTypeDescriptors()
 
   const actionId = currentAction?.id
 
@@ -85,9 +94,10 @@ export const UserActionDetailPanel = ({ currentAction }: Props) => {
   }
 
   const entityData = currentAction.about_entity_mention?.parsed_representation
-  const entityDisplayName =
-    (entityData as { name?: string } | null)?.name ??
-    currentAction.about_entity_mention?.identified_by?.request_id
+  const entityDisplayName = getEntityDisplayName(
+    currentAction.about_entity_mention,
+    descriptors
+  )
 
   return (
     <section className={styles.detailPanel}>

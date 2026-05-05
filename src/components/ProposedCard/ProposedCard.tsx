@@ -12,6 +12,7 @@ type Props = {
   currentEntity: number
   data?: CanonicalEntityPreview
   referenceEntityData?: unknown
+  orderedKeys?: string[]
   title?: string
   isAlternative?: boolean
   isLoading: boolean
@@ -23,6 +24,7 @@ export const ProposedCard = ({
   currentEntity,
   data,
   referenceEntityData,
+  orderedKeys,
   isLoading,
   onPrevious,
   onNext,
@@ -120,6 +122,7 @@ export const ProposedCard = ({
       >
         <EntityAttributes
           parsedData={displayEntityData}
+          orderedKeys={orderedKeys}
         />
       </SkeletonWrapper>
     </Card>

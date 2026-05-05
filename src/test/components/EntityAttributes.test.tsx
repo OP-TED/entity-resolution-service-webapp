@@ -63,6 +63,64 @@ describe('EntityAttributes', () => {
     render(<EntityAttributes compareWith={undefined} />)
     expect(screen.getByText('No attributes available')).toBeInTheDocument()
   })
+
+  describe('orderedKeys', () => {
+    it('renders attributes in the order specified by orderedKeys (non-comparison mode)', () => {
+      render(
+        <EntityAttributes
+          parsedData={{ first_name: 'Alice', age: 30, city: 'Paris' }}
+          orderedKeys={['city', 'first_name', 'age']}
+        />
+      )
+
+      const labels = screen.getAllByText(/:$/).map((el) => el.textContent)
+      expect(labels).toEqual(['City:', 'First name:', 'Age:'])
+    })
+
+    it('skips orderedKeys entries that are absent from the diff result (comparison mode)', () => {
+      render(
+        <EntityAttributes
+          parsedData={{ name: 'Alice' }}
+          compareWith={{ name: 'Bob', email: 'bob@example.com' }}
+          orderedKeys={['email', 'phantom', 'name']}
+        />
+      )
+
+      const labels = screen.getAllByText(/:$/).map((el) => el.textContent)
+      expect(labels).toEqual(['Email:', 'Name:'])
+      expect(screen.queryByText('Phantom:')).not.toBeInTheDocument()
+    })
+
+    it('falls back to natural key order when orderedKeys is empty', () => {
+      render(
+        <EntityAttributes
+          parsedData={{ a: '1', b: '2' }}
+          orderedKeys={[]}
+        />
+      )
+
+      expect(screen.getByText('A:')).toBeInTheDocument()
+      expect(screen.getByText('B:')).toBeInTheDocument()
+    })
+
+    it('shows "No attributes available" when orderedKeys is empty and parsedData is empty', () => {
+      render(<EntityAttributes parsedData={{}} orderedKeys={[]} />)
+      expect(screen.getByText('No attributes available')).toBeInTheDocument()
+    })
+
+    it('renders only the listed keys when orderedKeys is a subset (non-comparison mode)', () => {
+      render(
+        <EntityAttributes
+          parsedData={{ a: '1', b: '2', c: '3' }}
+          orderedKeys={['b']}
+        />
+      )
+
+      expect(screen.getByText('B:')).toBeInTheDocument()
+      expect(screen.queryByText('A:')).not.toBeInTheDocument()
+      expect(screen.queryByText('C:')).not.toBeInTheDocument()
+    })
+  })
 })
 
 // ─── AttributeValue ──────────────────────────────────────────────────────────

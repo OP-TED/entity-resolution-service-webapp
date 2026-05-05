@@ -1,5 +1,11 @@
 import { Text } from '@components'
-import { formatTimeAgo, getConfidenceStatus, getSimilarityStatus } from '@utils'
+import { useEntityTypeDescriptors } from '@hooks'
+import {
+  formatTimeAgo,
+  getConfidenceStatus,
+  getEntityDisplayName,
+  getSimilarityStatus
+} from '@utils'
 import { type MenuItemProps, Checkbox, Flex, Tag, Tooltip } from 'antd'
 
 import type { DecisionSummary } from '@api/types.gen'
@@ -25,12 +31,11 @@ export const DecisionSideMenuItem = ({
     ? similarityScore.toFixed(2)
     : 'N/A'
 
-  const entityName =
-    (
-      decision?.about_entity_mention?.parsed_representation as {
-        name?: string
-      } | null
-    )?.name ?? decision?.about_entity_mention?.identified_by?.request_id
+  const descriptors = useEntityTypeDescriptors()
+  const entityName = getEntityDisplayName(
+    decision?.about_entity_mention,
+    descriptors
+  )
 
   return (
     <Flex gap={12} align="center">

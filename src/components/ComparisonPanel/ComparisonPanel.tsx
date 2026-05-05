@@ -14,11 +14,18 @@ import {
 } from '@components'
 import { useBulkSelection } from '@context/useBulkSelection'
 import { useConfirmationPreference } from '@context/useConfirmationPreference'
-import { useDecisionsLoadingState, useRemoveDecisionFromCache } from '@hooks'
+import {
+  useDecisionsLoadingState,
+  useEntityTypeDescriptors,
+  useRemoveDecisionFromCache
+} from '@hooks'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
+  compareEntityAttributes,
   formatTimeAgo,
   getConfidenceStatus,
+  getDisplayNameFromParsed,
+  getEntityDisplayName,
   getScoreLabel,
   getSimilarityStatus,
   showApiErrors
@@ -36,7 +43,7 @@ import {
   Tag,
   Tooltip
 } from 'antd'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useStyles } from './styles'
 
@@ -59,6 +66,7 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
   const { notification } = App.useApp()
   const removeDecisionFromCache = useRemoveDecisionFromCache()
   const { isSelectionMode, selectedCount } = useBulkSelection()
+  const descriptors = useEntityTypeDescriptors()
 
   const currentDecisionId = currentDecision?.id
 
@@ -112,9 +120,10 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
   const entityData =
     currentDecision?.about_entity_mention?.parsed_representation
 
-  const entityDisplayName =
-    (entityData as { name?: string } | null)?.name ??
-    currentDecision?.about_entity_mention?.identified_by?.request_id
+  const entityDisplayName = getEntityDisplayName(
+    currentDecision?.about_entity_mention,
+    descriptors
+  )
 
   const currentProposedEntity = data?.top_entities?.[currentEntity - 1]
   const confidenceScore = data?.confidence_score
@@ -124,11 +133,24 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
   )?.similarity_score
   const similarityScoreFormatted = similarityScore?.toFixed(2)
 
-  const currentProposedEntityName = (
-    currentProposedEntity?.parsed_representation as { name?: string } | null
-  )?.name
+  const currentProposedEntityName = getDisplayNameFromParsed(
+    currentProposedEntity?.parsed_representation as
+      | Record<string, unknown>
+      | null
+      | undefined,
+    currentDecision?.about_entity_mention?.identified_by?.entity_type,
+    descriptors
+  )
 
   const proposedEntityData = currentProposedEntity?.parsed_representation
+
+  // Single source of truth for row order so the left and right cards line up
+  // row-by-row. Computed from the current → proposed direction; both sides
+  // render their own values in this exact sequence.
+  const orderedKeys = useMemo(
+    () => compareEntityAttributes(entityData, proposedEntityData).map((d) => d.key),
+    [entityData, proposedEntityData]
+  )
 
   const onClickAccept = () => {
     if (!currentDecisionId) return
@@ -347,6 +369,7 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
               <EntityCard
                 entityData={entityData}
                 compareWith={proposedEntityData}
+                orderedKeys={orderedKeys}
               />
             </Col>
 
@@ -354,6 +377,7 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
               <ProposedCard
                 data={data}
                 referenceEntityData={entityData}
+                orderedKeys={orderedKeys}
                 isLoading={isLoading}
                 currentEntity={currentEntity}
                 onPrevious={onPreviousEntity}
