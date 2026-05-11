@@ -325,6 +325,21 @@ describe('showApiErrors', () => {
       expect(notify).toHaveBeenCalledWith(SERVER_ERROR_MESSAGE, 'error')
     })
 
+    it('shows the server-error message when a 5xx response body is HTML (e.g. nginx 504 page)', () => {
+      const notify = vi.fn()
+      showApiErrors(
+        {
+          response: {
+            status: 504,
+            data: '<html><head><title>504 Gateway Time-out</title></head><body><center><h1>504 Gateway Time-out</h1></center></body></html>'
+          }
+        },
+        notify
+      )
+      expect(notify).toHaveBeenCalledOnce()
+      expect(notify).toHaveBeenCalledWith(SERVER_ERROR_MESSAGE, 'error')
+    })
+
     it('does not emit a connectivity message for a 4xx response with no parseable data', () => {
       const notify = vi.fn()
       showApiErrors(
