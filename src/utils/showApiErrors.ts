@@ -48,7 +48,10 @@ const extractMessages = (errorData: unknown): string[] => {
   const out: string[] = []
 
   if (typeof errorData === 'string') {
-    if (errorData) out.push(errorData)
+    // Reverse proxies (nginx, etc.) return HTML for 5xx — don't surface that
+    // verbatim; fall through so the connectivity fallback can show a friendly
+    // 5xx message instead.
+    if (errorData && !/^\s*</.test(errorData)) out.push(errorData)
 
     return out
   }

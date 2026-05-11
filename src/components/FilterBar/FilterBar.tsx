@@ -24,8 +24,8 @@ export const FilterBar = () => {
   const orderingOptions = [
     { label: 'Created At (Newest)', value: DecisionOrdering['-CREATED_AT'] },
     { label: 'Created At (Oldest)', value: DecisionOrdering.CREATED_AT },
-    { label: 'Updated At (Newest)', value: DecisionOrdering.UPDATED_AT },
-    { label: 'Updated At (Oldest)', value: DecisionOrdering['-UPDATED_AT'] },
+    { label: 'Updated At (Newest)', value: DecisionOrdering['-UPDATED_AT'] },
+    { label: 'Updated At (Oldest)', value: DecisionOrdering.UPDATED_AT },
     { label: 'Confidence (Low to High)', value: DecisionOrdering.CONFIDENCE_SCORE },
     { label: 'Confidence (High to Low)', value: DecisionOrdering['-CONFIDENCE_SCORE'] }
   ]
