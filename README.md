@@ -6,6 +6,10 @@ The dedicated web application (frontend) for the Entity Resolution Service. It p
 
 ## Getting Started
 
+> **To set up the complete ERSys stack** (ERS + ERE + Webapp), see the
+> [Installation Guide](https://github.com/OP-TED/entity-resolution-service/blob/develop/INSTALL.md).
+> The instructions below cover this component only.
+
 ### Prerequisites
 
 - Node.js 22+
