@@ -1,7 +1,7 @@
 {
   "name": "entity-resolution-service-webapp",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "scripts": {
     "postinstall": "npm --prefix src install",
     "dev": "npm --prefix src run dev",
