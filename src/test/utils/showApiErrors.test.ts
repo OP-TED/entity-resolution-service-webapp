@@ -1,4 +1,9 @@
-import { showApiErrors } from '@utils/showApiErrors'
+import {
+  NETWORK_ERROR_MESSAGE,
+  SERVER_ERROR_MESSAGE,
+  showApiErrors,
+  TIMEOUT_ERROR_MESSAGE
+} from '@utils/showApiErrors'
 import { describe, expect, it, vi } from 'vitest'
 
 
@@ -230,5 +235,154 @@ describe('showApiErrors', () => {
     expect(notify).toHaveBeenNthCalledWith(1, 'String error', 'error')
     expect(notify).toHaveBeenNthCalledWith(2, 'Object error', 'error')
     expect(notify).toHaveBeenNthCalledWith(3, 'Another string', 'error')
+  })
+
+  describe('curation API { error_code, message } shape', () => {
+    it('extracts message when detail is absent', () => {
+      const notify = vi.fn()
+      showApiErrors(
+        {
+          response: {
+            data: { error_code: 'INVALID_ARG', message: 'Bad request payload' }
+          }
+        },
+        notify
+      )
+      expect(notify).toHaveBeenCalledOnce()
+      expect(notify).toHaveBeenCalledWith('Bad request payload', 'error')
+    })
+
+    it('prefers detail over message when both are present', () => {
+      const notify = vi.fn()
+      showApiErrors(
+        {
+          response: {
+            data: {
+              detail: 'Detail wins',
+              message: 'Should not appear'
+            }
+          }
+        },
+        notify
+      )
+      expect(notify).toHaveBeenCalledOnce()
+      expect(notify).toHaveBeenCalledWith('Detail wins', 'error')
+    })
+
+    it('ignores non-string message field', () => {
+      const notify = vi.fn()
+      showApiErrors(
+        { response: { data: { message: 123 } } },
+        notify
+      )
+      expect(notify).not.toHaveBeenCalled()
+    })
+
+    it('extracts message from body shape', () => {
+      const notify = vi.fn()
+      showApiErrors(
+        { body: { error_code: 'X', message: 'From body' } },
+        notify
+      )
+      expect(notify).toHaveBeenCalledWith('From body', 'error')
+    })
+  })
+
+  describe('connectivity fallbacks', () => {
+    it('shows the timeout message when error.code is ECONNABORTED', () => {
+      const notify = vi.fn()
+      showApiErrors({ code: 'ECONNABORTED', message: 'timeout of 5000ms' }, notify)
+      expect(notify).toHaveBeenCalledOnce()
+      expect(notify).toHaveBeenCalledWith(TIMEOUT_ERROR_MESSAGE, 'error')
+    })
+
+    it('shows the timeout message when message contains "timeout" and there is no response', () => {
+      const notify = vi.fn()
+      showApiErrors({ message: 'Request timeout' }, notify)
+      expect(notify).toHaveBeenCalledWith(TIMEOUT_ERROR_MESSAGE, 'error')
+    })
+
+    it('shows the network message when error.code is ERR_NETWORK', () => {
+      const notify = vi.fn()
+      showApiErrors({ code: 'ERR_NETWORK', message: 'Network Error' }, notify)
+      expect(notify).toHaveBeenCalledOnce()
+      expect(notify).toHaveBeenCalledWith(NETWORK_ERROR_MESSAGE, 'error')
+    })
+
+    it('shows the network message when message contains "Network Error"', () => {
+      const notify = vi.fn()
+      showApiErrors({ message: 'Network Error' }, notify)
+      expect(notify).toHaveBeenCalledWith(NETWORK_ERROR_MESSAGE, 'error')
+    })
+
+    it('shows the server-error message for 5xx responses without parseable data', () => {
+      const notify = vi.fn()
+      showApiErrors(
+        { response: { status: 503, data: { unrelated: 'shape' } } },
+        notify
+      )
+      expect(notify).toHaveBeenCalledOnce()
+      expect(notify).toHaveBeenCalledWith(SERVER_ERROR_MESSAGE, 'error')
+    })
+
+    it('shows the server-error message when a 5xx response body is HTML (e.g. nginx 504 page)', () => {
+      const notify = vi.fn()
+      showApiErrors(
+        {
+          response: {
+            status: 504,
+            data: '<html><head><title>504 Gateway Time-out</title></head><body><center><h1>504 Gateway Time-out</h1></center></body></html>'
+          }
+        },
+        notify
+      )
+      expect(notify).toHaveBeenCalledOnce()
+      expect(notify).toHaveBeenCalledWith(SERVER_ERROR_MESSAGE, 'error')
+    })
+
+    it('does not emit a connectivity message for a 4xx response with no parseable data', () => {
+      const notify = vi.fn()
+      showApiErrors(
+        { response: { status: 404, data: {} } },
+        notify
+      )
+      expect(notify).not.toHaveBeenCalled()
+    })
+
+    it('prefers backend-supplied detail over the connectivity fallback', () => {
+      const notify = vi.fn()
+      showApiErrors(
+        {
+          code: 'ERR_NETWORK',
+          message: 'Network Error',
+          response: { data: { detail: 'Backend says no' } }
+        },
+        notify
+      )
+      expect(notify).toHaveBeenCalledOnce()
+      expect(notify).toHaveBeenCalledWith('Backend says no', 'error')
+    })
+
+    it('prefers backend-supplied 5xx detail over the SERVER_ERROR_MESSAGE fallback', () => {
+      const notify = vi.fn()
+      showApiErrors(
+        { response: { status: 500, data: { message: 'kaboom' } } },
+        notify
+      )
+      expect(notify).toHaveBeenCalledOnce()
+      expect(notify).toHaveBeenCalledWith('kaboom', 'error')
+    })
+
+    it('emits no notification for an unrecognizable error with no signal', () => {
+      const notify = vi.fn()
+      showApiErrors({ foo: 'bar' }, notify)
+      expect(notify).not.toHaveBeenCalled()
+    })
+
+    it('treats "fetch failed" as a network error', () => {
+      const notify = vi.fn()
+      showApiErrors({ message: 'fetch failed' }, notify)
+      expect(notify).toHaveBeenCalledWith(NETWORK_ERROR_MESSAGE, 'error')
+    })
   })
 })

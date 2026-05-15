@@ -10,6 +10,7 @@ import { useStyles } from './styles'
 export type Props = {
   entityData?: unknown
   compareWith?: unknown
+  orderedKeys?: string[]
 }
 
 const formatFieldName = (key: string): string =>
@@ -21,7 +22,8 @@ const formatFieldName = (key: string): string =>
 
 export const EntityCard = ({
   entityData,
-  compareWith
+  compareWith,
+  orderedKeys
 }: Props) => {
   const { styles } = useStyles()
   const isDecisionsMenuLoading = useDecisionsLoadingState()
@@ -103,6 +105,7 @@ export const EntityCard = ({
         <EntityAttributes
           parsedData={entityData}
           compareWith={compareWith}
+          orderedKeys={orderedKeys}
         />
       </SkeletonWrapper>
     </Card>

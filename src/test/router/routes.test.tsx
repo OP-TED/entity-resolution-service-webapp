@@ -1,3 +1,4 @@
+import { BulkSelectionProvider } from '@context/BulkSelectionContext'
 import { ConfirmationPreferenceProvider } from '@context/ConfirmationPreferenceContext'
 import { Router } from '@router/routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -65,7 +66,13 @@ vi.mock('@api/@tanstack/react-query.gen', () => ({
   listUsersApiV1UsersGetQueryKey: vi.fn(() => ['users']),
   patchUserApiV1UsersUserIdPatchMutation: vi.fn(() => ({
     mutationFn: vi.fn()
-  }))
+  })),
+  bulkAcceptDecisionsApiV1CurationDecisionsBulkAcceptPostMutation: vi.fn(
+    () => ({ mutationFn: vi.fn() })
+  ),
+  bulkRejectDecisionsApiV1CurationDecisionsBulkRejectPostMutation: vi.fn(
+    () => ({ mutationFn: vi.fn() })
+  )
 }))
 
 vi.mock('@hooks/useQueryUpdate', () => ({
@@ -89,7 +96,9 @@ function renderWithRouter(initialEntries: string[]) {
         <ConfigProvider>
           <App>
             <ConfirmationPreferenceProvider>
-              <Router />
+              <BulkSelectionProvider>
+                <Router />
+              </BulkSelectionProvider>
             </ConfirmationPreferenceProvider>
           </App>
         </ConfigProvider>

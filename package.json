@@ -1,7 +1,7 @@
 {
   "name": "entity-resolution-service-webapp",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "scripts": {
     "postinstall": "npm --prefix src install",
     "dev": "npm --prefix src run dev",
@@ -19,8 +19,8 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "husky": "^9.1.7",
-    "@playwright/test": "^1.52.0",
-    "dotenv": "^16.5.0"
+    "husky": "9.1.7",
+    "@playwright/test": "1.58.2",
+    "dotenv": "16.6.1"
   }
 }
