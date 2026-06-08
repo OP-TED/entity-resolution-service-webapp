@@ -131,7 +131,7 @@ export const UserActionDetailPanel = ({ currentAction }: Props) => {
             <SkeletonWrapper
               isLoading={isSelectedClusterLoading}
               count={1}
-              height={400}
+              height={430}
               width="100%"
             >
               {selectedClusterData ? (

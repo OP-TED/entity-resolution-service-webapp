@@ -1,8 +1,8 @@
 import {
-  DeleteOutlined,
   EditOutlined,
   PlusOutlined,
-  SearchOutlined
+  SearchOutlined,
+  UserDeleteOutlined
 } from '@ant-design/icons'
 import {
   listUsersApiV1UsersGetOptions,
@@ -13,7 +13,17 @@ import { Header, UserFormModal } from '@components'
 import { useQueryUpdate } from '@hooks/useQueryUpdate'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { defaultFilters, showApiErrors } from '@utils'
-import { App, Button, Flex, Input, Modal, Table, Tag, Typography } from 'antd'
+import {
+  App,
+  Button,
+  Flex,
+  Input,
+  Modal,
+  Table,
+  Tag,
+  Tooltip,
+  Typography
+} from 'antd'
 import { useState } from 'react'
 
 import { useStyles } from './styles'
@@ -134,13 +144,16 @@ export const AdminPage = () => {
             icon={<EditOutlined />}
             onClick={() => setModalState({ isOpen: true, user: record })}
           />
-          <Button
-            type="text"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => onDeactivate(record)}
-            disabled={!record.is_active}
-          />
+          <Tooltip title="Deactivate user">
+            <Button
+              type="text"
+              danger
+              aria-label="Deactivate user"
+              icon={<UserDeleteOutlined />}
+              onClick={() => onDeactivate(record)}
+              disabled={!record.is_active}
+            />
+          </Tooltip>
         </Flex>
       )
     }

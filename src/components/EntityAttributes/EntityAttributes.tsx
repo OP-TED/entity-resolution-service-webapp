@@ -70,13 +70,13 @@ export const EntityAttributes = ({
     return (
       <div className={styles.list}>
         {keys.map((key) => (
-          <Flex key={key} gap={8} className={styles.row}>
-            <Text size={14} weight={600} className={styles.labelContainer}>
-              {formatLabel(key)}:
-            </Text>
-            <Text size={14} weight={400}>
-              {stringifyValue(data[key])}
-            </Text>
+          <Flex key={key} className={styles.row}>
+            <Flex align="center" className={styles.labelContainer}>
+              <Text size={14} weight={600}>
+                {formatLabel(key)}:
+              </Text>
+            </Flex>
+            <div className={styles.value}>{stringifyValue(data[key])}</div>
           </Flex>
         ))}
       </div>
@@ -107,7 +107,9 @@ export const EntityAttributes = ({
               </Text>
             </Flex>
 
-            <AttributeValue diff={diff} />
+            <div className={styles.value}>
+              <AttributeValue diff={diff} />
+            </div>
           </Flex>
         ))}
       </div>

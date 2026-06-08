@@ -1,4 +1,9 @@
-import { EntityAttributes, SkeletonWrapper, Text } from '@components'
+import {
+  EntityAttributes,
+  EntityMetadata,
+  SkeletonWrapper,
+  Text
+} from '@components'
 import { useDecisionsLoadingState } from '@hooks'
 import { compareEntityAttributes, getChangeSummary } from '@utils'
 
@@ -7,10 +12,13 @@ import { useMemo } from 'react'
 
 import { useStyles } from './styles'
 
+import type { EntityMentionIdentifier } from '@api/types.gen'
+
 export type Props = {
   entityData?: unknown
   compareWith?: unknown
   orderedKeys?: string[]
+  identifier?: EntityMentionIdentifier | null
 }
 
 const formatFieldName = (key: string): string =>
@@ -23,7 +31,8 @@ const formatFieldName = (key: string): string =>
 export const EntityCard = ({
   entityData,
   compareWith,
-  orderedKeys
+  orderedKeys,
+  identifier
 }: Props) => {
   const { styles } = useStyles()
   const isDecisionsMenuLoading = useDecisionsLoadingState()
@@ -70,29 +79,38 @@ export const EntityCard = ({
       data-testid="current-entity-card"
       className={styles.entityCard}
       title={
-        <Flex className={styles.entityCardHeader} align="center" gap={8} wrap>
-          <Text weight={600}>Current Entity</Text>
-          {modifiedCount > 0 && (
-            <Tooltip title={modifiedFields.join(', ')}>
-              <Tag color="orange" data-testid="diff-badge-modified" data-color="orange">
-                {modifiedCount} Modified
-              </Tag>
-            </Tooltip>
-          )}
-          {removedCount > 0 && (
-            <Tooltip title={removedFields.join(', ')}>
-              <Tag color="red" data-testid="diff-badge-removed" data-color="red">
-                {removedCount} Removed
-              </Tag>
-            </Tooltip>
-          )}
-          {addedCount > 0 && (
-            <Tooltip title={addedFields.join(', ')}>
-              <Tag color="green" data-testid="diff-badge-added" data-color="green">
-                {addedCount} Added
-              </Tag>
-            </Tooltip>
-          )}
+        <Flex
+          className={styles.entityCardHeader}
+          align="center"
+          gap={8}
+          justify="space-between"
+        >
+          <Flex align="center" gap={8} wrap style={{ minWidth: 0 }}>
+            <Text weight={600}>Current Entity</Text>
+            {modifiedCount > 0 && (
+              <Tooltip title={modifiedFields.join(', ')}>
+                <Tag color="orange" data-testid="diff-badge-modified" data-color="orange">
+                  {modifiedCount} Modified
+                </Tag>
+              </Tooltip>
+            )}
+            {removedCount > 0 && (
+              <Tooltip title={removedFields.join(', ')}>
+                <Tag color="red" data-testid="diff-badge-removed" data-color="red">
+                  {removedCount} Removed
+                </Tag>
+              </Tooltip>
+            )}
+            {addedCount > 0 && (
+              <Tooltip title={addedFields.join(', ')}>
+                <Tag color="green" data-testid="diff-badge-added" data-color="green">
+                  {addedCount} Added
+                </Tag>
+              </Tooltip>
+            )}
+          </Flex>
+
+          <EntityMetadata identifier={identifier} />
         </Flex>
       }
     >

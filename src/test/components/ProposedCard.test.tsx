@@ -13,6 +13,7 @@ const mockData: CanonicalEntityPreview = {
   cluster_id: 'cluster-1',
   confidence_score: 0.9,
   similarity_score: 0.85,
+  cluster_size: 12,
   top_entities: [
     {
       identified_by: { source_id: 'src-1', request_id: 'e1', entity_type: 'Person' },
@@ -64,7 +65,9 @@ describe('ProposedCard', () => {
         onNext={vi.fn()}
       />
     )
-    expect(screen.getByText(/Entity 1 of 2 in cluster/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/Entity 1 of 2 loaded entities/)
+    ).toBeInTheDocument()
   })
 
   it('disables previous button when on first entity', () => {
@@ -77,8 +80,10 @@ describe('ProposedCard', () => {
         onNext={vi.fn()}
       />
     )
-    const buttons = screen.getAllByRole('button')
-    expect(buttons[0]).toBeDisabled()
+    const prevBtn = document
+      .querySelector('[aria-label="arrow-left"]')
+      ?.closest('button')
+    expect(prevBtn).toBeDisabled()
   })
 
   it('disables next button when on last entity', () => {
@@ -91,8 +96,10 @@ describe('ProposedCard', () => {
         onNext={vi.fn()}
       />
     )
-    const buttons = screen.getAllByRole('button')
-    expect(buttons[1]).toBeDisabled()
+    const nextBtn = document
+      .querySelector('[aria-label="arrow-right"]')
+      ?.closest('button')
+    expect(nextBtn).toBeDisabled()
   })
 
   it('calls onPrevious when previous button is clicked', async () => {
@@ -106,8 +113,10 @@ describe('ProposedCard', () => {
         onNext={vi.fn()}
       />
     )
-    const buttons = screen.getAllByRole('button')
-    buttons[0].click()
+    const prevBtn = document
+      .querySelector('[aria-label="arrow-left"]')
+      ?.closest('button')
+    prevBtn?.click()
     expect(onPrevious).toHaveBeenCalledOnce()
   })
 
@@ -122,8 +131,10 @@ describe('ProposedCard', () => {
         onNext={onNext}
       />
     )
-    const buttons = screen.getAllByRole('button')
-    buttons[1].click()
+    const nextBtn = document
+      .querySelector('[aria-label="arrow-right"]')
+      ?.closest('button')
+    nextBtn?.click()
     expect(onNext).toHaveBeenCalledOnce()
   })
 
