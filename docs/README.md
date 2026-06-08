@@ -65,7 +65,7 @@ The TypeScript API client in `src/api/` is auto-generated from the backend's Ope
 3. Run the generator:
 
 ```bash
-npm run openapi:meaningfy
+npm run openapi:generate
 ```
 
 This fetches the latest OpenAPI schema and regenerates all `*.gen.ts` files under `src/api/`.

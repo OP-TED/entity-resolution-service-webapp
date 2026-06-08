@@ -10,7 +10,7 @@
     "lint": "npm --prefix src run lint",
     "lint:fix": "npm --prefix src run lint:fix",
     "prettier": "npm --prefix src run prettier",
-    "openapi:meaningfy": "npm --prefix src run openapi:meaningfy",
+    "openapi:generate": "npm --prefix src run openapi:generate",
     "test": "npm --prefix src test",
     "test:watch": "npm --prefix src run test:watch",
     "test:coverage": "npm --prefix src run test:coverage",

@@ -107,3 +107,11 @@ all API calls so no backend is needed.
 ## Docs
 
 Full developer documentation is in [docs/README.md](./docs/README.md).
+
+---
+
+## License & Attribution
+
+This project was developed as open source for the Publications Office of the European Union.
+
+It is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
