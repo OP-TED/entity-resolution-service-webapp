@@ -71,7 +71,7 @@ describe('DecisionSideMenuItem', () => {
       expect(screen.getByText('S: 0.80')).toBeInTheDocument()
     })
 
-    it('shows N/A for missing confidence score', () => {
+    it('shows a numeric 0.00 for a zero/missing confidence score (TEDSWS-515)', () => {
       const decision: DecisionSummary = {
         ...baseDecision,
         current_placement: {
@@ -81,7 +81,7 @@ describe('DecisionSideMenuItem', () => {
         }
       }
       render(<DecisionSideMenuItem decision={decision} />)
-      expect(screen.getByText('C: N/A')).toBeInTheDocument()
+      expect(screen.getByText('C: 0.00')).toBeInTheDocument()
     })
 
     it('renders confidence tag with success color for high score', () => {
@@ -108,6 +108,34 @@ describe('DecisionSideMenuItem', () => {
       render(<DecisionSideMenuItem decision={decision} />)
       const confidenceTag = screen.getByText('C: 0.20').closest('.ant-tag')
       expect(confidenceTag).toHaveClass('ant-tag-error')
+    })
+  })
+
+  describe('review status indicator (TEDSWS-522)', () => {
+    it('shows no badge for a never-reviewed decision', () => {
+      render(<DecisionSideMenuItem decision={baseDecision} />)
+      expect(screen.queryByText('Reviewed')).not.toBeInTheDocument()
+      expect(screen.queryByText('Needs re-review')).not.toBeInTheDocument()
+    })
+
+    it('shows a "Reviewed" badge when reviewed since placement', () => {
+      const decision: DecisionSummary = {
+        ...baseDecision,
+        previous_review_count: 1,
+        reviewed_since_placement: true
+      }
+      render(<DecisionSideMenuItem decision={decision} />)
+      expect(screen.getByText('Reviewed')).toBeInTheDocument()
+    })
+
+    it('shows a "Needs re-review" badge when reviewed before but not since placement', () => {
+      const decision: DecisionSummary = {
+        ...baseDecision,
+        previous_review_count: 3,
+        reviewed_since_placement: false
+      }
+      render(<DecisionSideMenuItem decision={decision} />)
+      expect(screen.getByText('Needs re-review')).toBeInTheDocument()
     })
   })
 

@@ -59,6 +59,17 @@ export const useStyles = createStyles(({ token }) => {
       flexShrink: 0
     },
 
+    // Shared value cell so the Current and Proposed panes wrap identically.
+    value: {
+      flex: 1,
+      minWidth: 0,
+      fontSize: 14,
+      fontWeight: 400,
+      whiteSpace: 'pre-wrap',
+      wordBreak: 'break-word',
+      overflowWrap: 'anywhere'
+    },
+
     diffIcon: {
       fontSize: 16,
       flexShrink: 0

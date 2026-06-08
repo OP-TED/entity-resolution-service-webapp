@@ -1,9 +1,20 @@
+import { AccountAccessError } from '@context/authErrors'
 import { LoginPage } from '@pages/LoginPage'
 import { describe, expect, it, vi } from 'vitest'
 
 import { fireEvent, render, screen, waitFor } from '../test-utils'
 
 const mockLogin = vi.fn()
+
+const submitCredentials = () => {
+  fireEvent.change(screen.getByPlaceholderText('you@example.com'), {
+    target: { value: 'user@example.com' }
+  })
+  fireEvent.change(screen.getByPlaceholderText('••••••••'), {
+    target: { value: 'secret123' }
+  })
+  fireEvent.click(screen.getByRole('button', { name: /Sign in/i }))
+}
 
 vi.mock('@context/useAuth', () => ({
   useAuth: () => ({ login: mockLogin, user: null, isLoading: false, logout: vi.fn() })
@@ -93,5 +104,35 @@ describe('LoginPage', () => {
       expect(screen.getByText(/Email is required/i)).toBeInTheDocument()
     })
     expect(mockLogin).not.toHaveBeenCalled()
+  })
+
+  it('shows an inline alert when the account is inactive (TEDSWS-527)', async () => {
+    mockLogin.mockRejectedValueOnce(new AccountAccessError('inactive'))
+    render(<LoginPage />)
+
+    submitCredentials()
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'The user account is inactive. Please contact your administrator.'
+        )
+      ).toBeInTheDocument()
+    })
+  })
+
+  it('shows an inline alert when the account is unverified (TEDSWS-527)', async () => {
+    mockLogin.mockRejectedValueOnce(new AccountAccessError('unverified'))
+    render(<LoginPage />)
+
+    submitCredentials()
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'The user account is unverified. Please contact your administrator.'
+        )
+      ).toBeInTheDocument()
+    })
   })
 })

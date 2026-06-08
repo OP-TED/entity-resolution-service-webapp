@@ -72,6 +72,7 @@ vi.mock('@ant-design/icons', () => {
     CloseCircleOutlined: icon('close-circle'),
     CloseOutlined: icon('close'),
     EditOutlined: icon('edit'),
+    InfoCircleOutlined: icon('info-circle'),
     PlusCircleOutlined: icon('plus-circle')
   }
 })
@@ -117,12 +118,14 @@ vi.mock('antd', () => {
     </div>
   )
 
-  const Alert = ({ closable, title }: { closable?: { onClose?: () => void }; title?: ReactNode }) => (
+  const Alert = ({ closable, title, message }: { closable?: { onClose?: () => void }; title?: ReactNode; message?: ReactNode }) => (
     <div>
-      <div>{title}</div>
-      <button type="button" aria-label="close-alert" onClick={() => closable?.onClose?.()}>
-        close
-      </button>
+      <div>{title}{message}</div>
+      {closable && (
+        <button type="button" aria-label="close-alert" onClick={() => closable?.onClose?.()}>
+          close
+        </button>
+      )}
     </div>
   )
 
@@ -144,6 +147,7 @@ vi.mock('antd', () => {
 
   const Tag = ({ children }: { children?: ReactNode }) => <span>{children}</span>
   const Tooltip = ({ children }: { children?: ReactNode }) => <>{children}</>
+  const Popover = ({ children }: { children?: ReactNode }) => <>{children}</>
   const Typography = { Text: ({ children }: { children?: ReactNode }) => <span>{children}</span> }
 
   const AppComponent = ({ children }: { children?: ReactNode }) => <>{children}</>
@@ -154,7 +158,7 @@ vi.mock('antd', () => {
   return {
     Alert, App, Button, Card, Checkbox,
     Col: Pass, Collapse, ConfigProvider: Pass, Flex: Pass,
-    Popconfirm, Row: Pass, Space: Pass,
+    Popconfirm, Popover, Row: Pass, Space: Pass,
     Tag, Tooltip, Typography
   }
 })
@@ -248,6 +252,62 @@ describe('ComparisonPanel', () => {
       fireEvent.click(prevBtn!)
 
       expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+    })
+  })
+
+  describe('cluster size + review annotation', () => {
+    it('shows the true cluster_size, not the loaded subset count', () => {
+      const queryClient = createTestQueryClient()
+      queryClient.setQueryData(['proposed-entity'], {
+        cluster_id: 'cluster-1',
+        confidence_score: 0.9,
+        similarity_score: 0.8,
+        cluster_size: 42,
+        top_entities: [
+          {
+            identified_by: { source_id: 's1', request_id: 'e1', entity_type: 'Person' },
+            parsed_representation: { name: 'Entity A' }
+          },
+          {
+            identified_by: { source_id: 's1', request_id: 'e2', entity_type: 'Person' },
+            parsed_representation: { name: 'Entity B' }
+          }
+        ]
+      })
+      render(<ComparisonPanel currentDecision={mockDecision as never} />, { queryClient })
+
+      expect(screen.getByText(/42 entities/)).toBeInTheDocument()
+    })
+
+    it('does not annotate a never-reviewed decision (TEDSWS-522)', () => {
+      render(<ComparisonPanel currentDecision={mockDecision as never} />)
+      expect(
+        screen.queryByText(/already been reviewed by a curator/i)
+      ).not.toBeInTheDocument()
+    })
+
+    it('annotates a reviewed decision in the detail view (TEDSWS-522)', () => {
+      const reviewed = {
+        ...mockDecision,
+        previous_review_count: 1,
+        reviewed_since_placement: true
+      }
+      render(<ComparisonPanel currentDecision={reviewed as never} />)
+      expect(
+        screen.getByText('This decision has already been reviewed by a curator.')
+      ).toBeInTheDocument()
+    })
+
+    it('annotates a decision that needs re-review', () => {
+      const needsReview = {
+        ...mockDecision,
+        previous_review_count: 2,
+        reviewed_since_placement: false
+      }
+      render(<ComparisonPanel currentDecision={needsReview as never} />)
+      expect(
+        screen.getByText(/returned for curation after a backend update/i)
+      ).toBeInTheDocument()
     })
   })
 

@@ -1,4 +1,5 @@
 import {
+  formatScore,
   getConfidenceStatus,
   getScoreLabel,
   getScoreLevelMapping,
@@ -44,6 +45,21 @@ describe('getSimilarityStatus', () => {
     expect(getSimilarityStatus(0.4)).toBe('warning')
     expect(getSimilarityStatus(0.69)).toBe('warning')
     expect(getSimilarityStatus(0.7)).toBe('success')
+  })
+})
+
+describe('formatScore (TEDSWS-515)', () => {
+  it('always renders a number, falling back to 0.00 for missing values', () => {
+    expect(formatScore()).toBe('0.00')
+    expect(formatScore(null)).toBe('0.00')
+    expect(formatScore(Number.NaN)).toBe('0.00')
+    expect(formatScore(0)).toBe('0.00')
+  })
+
+  it('formats present scores to two decimals', () => {
+    expect(formatScore(0.8)).toBe('0.80')
+    expect(formatScore(0.125)).toBe('0.13')
+    expect(formatScore(1)).toBe('1.00')
   })
 })
 

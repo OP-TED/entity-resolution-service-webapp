@@ -22,12 +22,15 @@ import {
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   compareEntityAttributes,
+  formatScore,
   formatTimeAgo,
   getConfidenceStatus,
   getDisplayNameFromParsed,
   getEntityDisplayName,
+  getReviewState,
   getScoreLabel,
   getSimilarityStatus,
+  reviewBadges,
   showApiErrors
 } from '@utils'
 
@@ -127,11 +130,11 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
 
   const currentProposedEntity = data?.top_entities?.[currentEntity - 1]
   const confidenceScore = data?.confidence_score
-  const confidenceScoreFormatted = confidenceScore?.toFixed(2)
+  const confidenceScoreFormatted = formatScore(confidenceScore)
   const similarityScore = (
     currentDecision?.current_placement as { similarity_score?: number } | null
   )?.similarity_score
-  const similarityScoreFormatted = similarityScore?.toFixed(2)
+  const similarityScoreFormatted = formatScore(similarityScore)
 
   const currentProposedEntityName = getDisplayNameFromParsed(
     currentProposedEntity?.parsed_representation as
@@ -163,6 +166,9 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
   }
 
   const isLoadingContent = isLoading || isDecisionsMenuLoading
+
+  const reviewState = getReviewState(currentDecision)
+  const reviewBadge = reviewState === 'never' ? null : reviewBadges[reviewState]
 
   const acceptMessage =
     'This will confirm the match and assign the current entity to the proposed cluster. The system will learn from this decision to improve future matching.'
@@ -243,18 +249,16 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
                     </Tag>
                   </Tooltip>
 
-                  {similarityScoreFormatted && (
-                    <Tooltip title="Similarity">
-                      <Tag
-                        variant="solid"
-                        color={getSimilarityStatus(similarityScore)}
-                      >
-                        <Text size={12} color="colorWhite">
-                          S: {similarityScoreFormatted}
-                        </Text>
-                      </Tag>
-                    </Tooltip>
-                  )}
+                  <Tooltip title="Similarity">
+                    <Tag
+                      variant="solid"
+                      color={getSimilarityStatus(similarityScore)}
+                    >
+                      <Text size={12} color="colorWhite">
+                        S: {similarityScoreFormatted}
+                      </Text>
+                    </Tag>
+                  </Tooltip>
                 </Flex>
               </SkeletonWrapper>
 
@@ -351,7 +355,7 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
                   <Text weight={600}>Cluster size: </Text>
 
                   <Text color="colorTextSecondary">
-                    {data?.top_entities?.length} entities •
+                    {data?.cluster_size ?? 0} entities •
                   </Text>
 
                   <Text weight={600}>Last updated: </Text>
@@ -364,12 +368,24 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
             />
           )}
 
+          {reviewBadge && (
+            <Alert
+              showIcon
+              type={reviewState === 'reviewed' ? 'success' : 'warning'}
+              title={reviewBadge.detail}
+              data-testid={`review-annotation-${reviewState}`}
+            />
+          )}
+
           <Row gutter={32}>
             <Col xs={24} lg={12}>
               <EntityCard
                 entityData={entityData}
                 compareWith={proposedEntityData}
                 orderedKeys={orderedKeys}
+                identifier={
+                  currentDecision?.about_entity_mention?.identified_by
+                }
               />
             </Col>
 
