@@ -2,6 +2,7 @@ import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
 
 import {
   acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation,
+  getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetOptions,
   getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetOptions,
   rejectDecisionApiV1CurationDecisionsDecisionIdRejectPostMutation
 } from '@api/index'
@@ -27,8 +28,8 @@ import {
   getConfidenceStatus,
   getDisplayNameFromParsed,
   getEntityDisplayName,
+  getReviewExplanation,
   getReviewState,
-  getScoreLabel,
   getSimilarityStatus,
   reviewBadges,
   showApiErrors
@@ -77,6 +78,17 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
     ...getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetOptions(
       {
         path: { decision_id: String(currentDecisionId) }
+      }
+    ),
+    enabled: !!currentDecisionId
+  })
+
+  // Only the alternative-cluster count is needed for the review explanation.
+  const { data: alternativeClusters } = useQuery({
+    ...getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetOptions(
+      {
+        path: { decision_id: String(currentDecisionId) },
+        query: { per_page: 1 }
       }
     ),
     enabled: !!currentDecisionId
@@ -135,6 +147,13 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
     currentDecision?.current_placement as { similarity_score?: number } | null
   )?.similarity_score
   const similarityScoreFormatted = formatScore(similarityScore)
+
+  const reviewExplanation = getReviewExplanation({
+    similarity: similarityScore,
+    confidence: confidenceScore,
+    clusterSize: data?.cluster_size,
+    alternativeCount: alternativeClusters?.count
+  })
 
   const currentProposedEntityName = getDisplayNameFromParsed(
     currentProposedEntity?.parsed_representation as
@@ -336,20 +355,17 @@ export const ComparisonPanel = ({ currentDecision }: Props) => {
           {/* Closable alert */}
           {showAlert && (
             <Alert
-              type="warning"
+              type={reviewExplanation.tone}
               closable={{
                 closeIcon: true,
                 onClose: () => setShowAlert(false)
               }}
               title={
                 <Flex gap={4} align="center" wrap>
-                  <Text weight={600}>Why review needed: </Text>
+                  <Text weight={600}>{reviewExplanation.header}: </Text>
 
                   <Text color="colorTextSecondary">
-                    <strong> {getScoreLabel(similarityScore ?? 0)} </strong>
-                    similarity but{' '}
-                    <strong>{getScoreLabel(confidenceScore ?? 0)}</strong>{' '}
-                    confidence due to multiple competing alternatives •
+                    {reviewExplanation.message} •
                   </Text>
 
                   <Text weight={600}>Cluster size: </Text>

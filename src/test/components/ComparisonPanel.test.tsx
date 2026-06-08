@@ -22,12 +22,17 @@ vi.mock('@api/@tanstack/react-query.gen', () => ({
   getProposedCanonicalEntityApiV1CurationDecisionsDecisionIdProposedCanonicalEntityGetOptions:
     vi.fn(() => ({
       queryKey: ['proposed-entity'],
-      queryFn: vi.fn().mockResolvedValue({ top_entities: [], confidence_score: 0.9, cluster_id: 'c1', similarity_score: 0.8 })
+      queryFn: vi.fn().mockResolvedValue({ top_entities: [], confidence_score: 0.5, cluster_id: 'c1', similarity_score: 0.8, cluster_size: 1 })
     })),
   getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetInfiniteOptions:
     vi.fn(() => ({
       queryKey: ['alt-clusters'],
       queryFn: vi.fn().mockResolvedValue({ results: [], next: null })
+    })),
+  getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetOptions:
+    vi.fn(() => ({
+      queryKey: ['alt-clusters-count'],
+      queryFn: vi.fn().mockResolvedValue({ count: 0, results: [], next: null, previous: null })
     })),
   assignDecisionApiV1CurationDecisionsDecisionIdAssignPostMutation: vi.fn(() => ({
     mutationFn: vi.fn()
@@ -252,6 +257,60 @@ describe('ComparisonPanel', () => {
       fireEvent.click(prevBtn!)
 
       expect(screen.getByText(/Entity 1 of 2/)).toBeInTheDocument()
+    })
+  })
+
+  describe('why-review explanation banner (TEDSWS-518)', () => {
+    it('shows "Review advisable" for a high-similarity, high-confidence decision', () => {
+      const queryClient = createTestQueryClient()
+      queryClient.setQueryData(['proposed-entity'], {
+        cluster_id: 'c1',
+        confidence_score: 0.95,
+        similarity_score: 0.9,
+        cluster_size: 3,
+        top_entities: []
+      })
+      const highDecision = {
+        ...mockDecision,
+        current_placement: {
+          cluster_id: 'c1',
+          confidence_score: 0.9,
+          similarity_score: 0.9
+        }
+      }
+      render(<ComparisonPanel currentDecision={highDecision as never} />, {
+        queryClient
+      })
+
+      expect(screen.getByText(/Review advisable/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/High similarity and high confidence/)
+      ).toBeInTheDocument()
+      expect(screen.queryByText(/Why review needed/)).not.toBeInTheDocument()
+    })
+
+    it('mentions an available alternative cluster when one exists', () => {
+      const queryClient = createTestQueryClient()
+      queryClient.setQueryData(['proposed-entity'], {
+        cluster_id: 'c1',
+        confidence_score: 0.5,
+        similarity_score: 0.8,
+        cluster_size: 1,
+        top_entities: []
+      })
+      queryClient.setQueryData(['alt-clusters-count'], {
+        count: 2,
+        results: [],
+        next: null,
+        previous: null
+      })
+      render(<ComparisonPanel currentDecision={mockDecision as never} />, {
+        queryClient
+      })
+
+      expect(
+        screen.getByText(/At least one alternative cluster is available/)
+      ).toBeInTheDocument()
     })
   })
 
