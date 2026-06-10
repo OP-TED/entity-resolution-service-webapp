@@ -199,7 +199,7 @@ describe('AdminPage', () => {
       // bob is inactive — his delete button should be disabled
       const disabledDeleteBtns = Array.from(
         document.querySelectorAll('button[disabled]')
-      ).filter((btn) => btn.querySelector('.anticon-delete'))
+      ).filter((btn) => btn.querySelector('.anticon-user-delete'))
       expect(disabledDeleteBtns.length).toBeGreaterThanOrEqual(1)
     })
 
@@ -213,7 +213,7 @@ describe('AdminPage', () => {
       // Find all delete buttons that are NOT disabled
       const enabledDeleteBtns = Array.from(
         document.querySelectorAll('button:not([disabled])')
-      ).filter((btn) => btn.querySelector('.anticon-delete'))
+      ).filter((btn) => btn.querySelector('.anticon-user-delete'))
       expect(enabledDeleteBtns.length).toBeGreaterThanOrEqual(1)
     })
 
@@ -261,7 +261,7 @@ describe('AdminPage', () => {
       })
 
       const editBtns = document.querySelectorAll('.anticon-edit')
-      const deleteBtns = document.querySelectorAll('.anticon-delete')
+      const deleteBtns = document.querySelectorAll('.anticon-user-delete')
 
       // Each user row should have an edit and a deactivate button
       expect(editBtns.length).toBe(2)
@@ -277,7 +277,7 @@ describe('AdminPage', () => {
 
       const enabledDeleteBtns = Array.from(
         document.querySelectorAll('button:not([disabled])')
-      ).filter((btn) => btn.querySelector('.anticon-delete'))
+      ).filter((btn) => btn.querySelector('.anticon-user-delete'))
       fireEvent.click(enabledDeleteBtns[0] as HTMLElement)
 
       expect(mockModalConfirm).toHaveBeenCalledWith(
@@ -301,7 +301,7 @@ describe('AdminPage', () => {
 
       const enabledDeleteBtns = Array.from(
         document.querySelectorAll('button:not([disabled])')
-      ).filter((btn) => btn.querySelector('.anticon-delete'))
+      ).filter((btn) => btn.querySelector('.anticon-user-delete'))
       fireEvent.click(enabledDeleteBtns[0] as HTMLElement)
 
       // Extract onOk from the Modal.confirm call and invoke it directly —
@@ -330,7 +330,7 @@ describe('AdminPage', () => {
 
       const enabledDeleteBtns = Array.from(
         document.querySelectorAll('button:not([disabled])')
-      ).filter((btn) => btn.querySelector('.anticon-delete'))
+      ).filter((btn) => btn.querySelector('.anticon-user-delete'))
       fireEvent.click(enabledDeleteBtns[0] as HTMLElement)
 
       const confirmArgs = mockModalConfirm.mock.calls[0]?.[0]
@@ -356,7 +356,7 @@ describe('AdminPage', () => {
 
       const enabledDeleteBtns = Array.from(
         document.querySelectorAll('button:not([disabled])')
-      ).filter((btn) => btn.querySelector('.anticon-delete'))
+      ).filter((btn) => btn.querySelector('.anticon-user-delete'))
       fireEvent.click(enabledDeleteBtns[0] as HTMLElement)
 
       const confirmArgs = mockModalConfirm.mock.calls[0]?.[0]

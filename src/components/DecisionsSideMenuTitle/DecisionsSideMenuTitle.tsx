@@ -14,7 +14,9 @@ const orderingLabels: Record<DecisionOrdering, string> = {
   [DecisionOrdering.UPDATED_AT]: 'updated at newest',
   [DecisionOrdering['-UPDATED_AT']]: 'updated at oldest',
   [DecisionOrdering.CONFIDENCE_SCORE]: 'confidence low to high',
-  [DecisionOrdering['-CONFIDENCE_SCORE']]: 'confidence high to low'
+  [DecisionOrdering['-CONFIDENCE_SCORE']]: 'confidence high to low',
+  [DecisionOrdering.CLUSTER_SIZE]: 'cluster size smallest',
+  [DecisionOrdering['-CLUSTER_SIZE']]: 'cluster size largest'
 }
 
 type Props = {

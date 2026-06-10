@@ -3,6 +3,11 @@ import { DecisionOrdering } from '@api/types.gen'
 import { ConfidenceSelect, SearchFilter, SimilaritySelect, Text } from '@components'
 import { useQueryUpdate } from '@hooks'
 import { useQuery } from '@tanstack/react-query'
+import {
+  type ReviewFilter,
+  queryToReviewFilter,
+  reviewFilterToQuery
+} from '@utils'
 
 import { Flex, Select } from 'antd'
 
@@ -27,8 +32,22 @@ export const FilterBar = () => {
     { label: 'Updated At (Newest)', value: DecisionOrdering['-UPDATED_AT'] },
     { label: 'Updated At (Oldest)', value: DecisionOrdering.UPDATED_AT },
     { label: 'Confidence (Low to High)', value: DecisionOrdering.CONFIDENCE_SCORE },
-    { label: 'Confidence (High to Low)', value: DecisionOrdering['-CONFIDENCE_SCORE'] }
+    { label: 'Confidence (High to Low)', value: DecisionOrdering['-CONFIDENCE_SCORE'] },
+    { label: 'Cluster Size (Smallest)', value: DecisionOrdering.CLUSTER_SIZE },
+    { label: 'Cluster Size (Largest)', value: DecisionOrdering['-CLUSTER_SIZE'] }
   ]
+
+  const reviewStatusOptions: { label: string; value: ReviewFilter }[] = [
+    { label: 'All Statuses', value: '' },
+    { label: 'Never reviewed', value: 'never' },
+    { label: 'Needs re-review', value: 'needs-rereview' },
+    { label: 'Reviewed', value: 'reviewed' }
+  ]
+
+  const reviewStatusValue = queryToReviewFilter({
+    ever_reviewed: params?.ever_reviewed,
+    reviewed_since_placement: params?.reviewed_since_placement
+  })
 
   return (
     <Flex className={styles.filterBar} align="center" gap={16} wrap>
@@ -69,6 +88,20 @@ export const FilterBar = () => {
           similarityMax={
             params?.similarity_max ? Number(params.similarity_max) : undefined
           }
+        />
+      </Flex>
+
+      <Flex align="center" gap={8}>
+        <Text weight={500}>Review status:</Text>
+
+        <Select
+          value={reviewStatusValue}
+          className="select-min-width"
+          options={reviewStatusOptions}
+          onChange={(value) =>
+            updateQuery(reviewFilterToQuery(value as ReviewFilter))
+          }
+          aria-label="Filter by review status"
         />
       </Flex>
 

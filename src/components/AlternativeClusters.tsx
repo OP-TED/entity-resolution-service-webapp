@@ -7,7 +7,12 @@ import { useConfirmationPreference } from '@context/useConfirmationPreference'
 import { useDecisionsLoadingState } from '@hooks/useDecisionsLoadingState'
 import { useRemoveDecisionFromCache } from '@hooks/useRemoveDecisionFromCache'
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query'
-import { getConfidenceStatus, getSimilarityStatus, showApiErrors } from '@utils'
+import {
+  formatScore,
+  getConfidenceStatus,
+  getSimilarityStatus,
+  showApiErrors
+} from '@utils'
 import { App, Button, Checkbox, Collapse, Flex, Popconfirm, Tag, Tooltip } from 'antd'
 import { useMemo, useState } from 'react'
 import Skeleton from 'react-loading-skeleton'
@@ -114,23 +119,21 @@ export const AlternativeClusters = ({ currentDecision }: Props) => {
                         color={getConfidenceStatus(cluster.confidence_score)}
                       >
                         <Text size={12} color="colorWhite">
-                          C: {cluster.confidence_score?.toFixed(2)}
+                          C: {formatScore(cluster.confidence_score)}
                         </Text>
                       </Tag>
                     </Tooltip>
 
-                    {cluster?.similarity_score !== undefined && (
-                      <Tooltip title="Similarity">
-                        <Tag
-                          variant="solid"
-                          color={getSimilarityStatus(cluster?.similarity_score)}
-                        >
-                          <Text size={12} color="colorWhite">
-                            S: {cluster?.similarity_score?.toFixed(2)}
-                          </Text>
-                        </Tag>
-                      </Tooltip>
-                    )}
+                    <Tooltip title="Similarity">
+                      <Tag
+                        variant="solid"
+                        color={getSimilarityStatus(cluster?.similarity_score)}
+                      >
+                        <Text size={12} color="colorWhite">
+                          S: {formatScore(cluster?.similarity_score)}
+                        </Text>
+                      </Tag>
+                    </Tooltip>
                   </Flex>
                 </Flex>
               ),

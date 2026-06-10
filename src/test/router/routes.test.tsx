@@ -39,6 +39,10 @@ vi.mock('@api/@tanstack/react-query.gen', () => ({
     queryKey: ['alt-clusters'],
     queryFn: vi.fn().mockResolvedValue({ results: [], next: null })
   })),
+  getAlternativeCanonicalEntitiesApiV1CurationDecisionsDecisionIdAlternativeCanonicalEntitiesGetOptions: vi.fn(() => ({
+    queryKey: ['alt-clusters-count'],
+    queryFn: vi.fn().mockResolvedValue({ count: 0, results: [], next: null, previous: null })
+  })),
   acceptDecisionApiV1CurationDecisionsDecisionIdAcceptPostMutation: vi.fn(() => ({
     mutationFn: vi.fn()
   })),
