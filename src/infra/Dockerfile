@@ -3,7 +3,7 @@
 FROM alpine:3.23.3 AS fetcher
 # Default URL points to the ers backend repo.
 # This can be overridden via --build-arg ERS_SCHEMA_URL=...
-ARG ERS_SCHEMA_URL=https://raw.githubusercontent.com/meaningfy-ws/entity-resolution-service/develop/resources/curation-openapi-schema.json
+ARG ERS_SCHEMA_URL=https://raw.githubusercontent.com/OP-TED/entity-resolution-service/release/1.1.0/resources/curation-openapi-schema.json
 RUN apk add --no-cache curl && \
     curl -fsSL "$ERS_SCHEMA_URL" -o /tmp/schema.json
 
@@ -17,7 +17,7 @@ ARG ENVIRONMENT
 COPY src/package.json src/package-lock.json ./
 
 RUN npm ci
-
+RUN ls
 # Copy the rest of the application source
 COPY src/ ./
 

@@ -6,7 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-## [1.1.0] - 2026-05-15
+## [1.1.0-rc.3] - 2026-06-10
+
+### Added
+- Review-status filter on the decision list (Never reviewed / Needs re-review / Reviewed)
+- "Reviewed" and "Needs re-review" badges on list items and detail view
+- Entity metadata popover (source ID, request ID, entity type) per cluster member and current entity
+- Contextual explanation messages when a decision needs re-review
+- Apache 2.0 LICENSE file and attribution to the Publications Office of the EU
+
+### Changed
+- Decision list sorted by cluster size
+- Review state derived from live API fields so a page refresh reflects the current filter and indicators
+- Numeric confidence score always rendered (shows `0.00` instead of blank or N/A)
+- Current and Proposed attribute panes use unified wrapping and flex-fill card bodies
+- User-row deactivation action relabelled to "Deactivate user" with a non-destructive icon
+- Dockerfile schema URL and npm `openapi:generate` script updated to OP-TED organisation
+
+### Fixed
+- Inactive or unverified accounts blocked at login with a clear inline alert; blocked sessions are not silently restored on bootstrap
+- True cluster size shown in the detail header; proposed-pane member count labelled as "Entity X of Y loaded entities"
+
+## [1.1.0-rc.2] - 2026-05-15
 
 ### Added
 - Bulk accept and reject for curation decisions with per-item result breakdown

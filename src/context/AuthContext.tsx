@@ -8,6 +8,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { AuthContext } from './authContextDef'
+import {
+  AccountAccessError,
+  accountAccessReasonFromLoginError,
+  getAccountAccessReason
+} from './authErrors'
 import { setupAuthInterceptors } from './authInterceptor'
 import { clearTokens, getAccessToken, storeTokens } from './authTokens'
 
@@ -46,7 +51,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       try {
         const { data } = await getCurrentUserApiV1UsersMeGet({ throwOnError: true })
-        setUser(data)
+        // An inactive/unverified account must not hold a usable session.
+        if (getAccountAccessReason(data)) {
+          clearTokens()
+          delete client.instance.defaults.headers.common['Authorization']
+          setUser(null)
+        } else {
+          setUser(data)
+        }
       } catch {
         // Interceptor handled 401 → refresh + retry, or called logout on failure
       } finally {
@@ -59,15 +71,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = useCallback(
     async (email: string, password: string) => {
-      const { data: tokens } = await loginApiV1AuthLoginPost({
-        body: { email, password },
-        throwOnError: true
-      })
+      let tokens
+      try {
+        const res = await loginApiV1AuthLoginPost({
+          body: { email, password },
+          throwOnError: true
+        })
+        tokens = res.data
+      } catch (e) {
+        // The backend rejects inactive/unverified accounts at login (e.g. 403).
+        // Surface that as a typed error so the LoginPage shows an inline alert.
+        const reason = accountAccessReasonFromLoginError(e)
+        if (reason) throw new AccountAccessError(reason)
+        throw e
+      }
 
       storeTokens(tokens.access_token, tokens.refresh_token)
       client.instance.defaults.headers.common.Authorization = `Bearer ${tokens.access_token}`
 
       const { data: me } = await getCurrentUserApiV1UsersMeGet({ throwOnError: true })
+
+      // Block inactive/unverified accounts: tear the session back down and let
+      // the LoginPage explain why (TEDSWS-527).
+      const accessReason = getAccountAccessReason(me)
+      if (accessReason) {
+        clearTokens()
+        delete client.instance.defaults.headers.common['Authorization']
+        setUser(null)
+        throw new AccountAccessError(accessReason)
+      }
+
       setUser(me)
       navigate(paths.root, { replace: true })
     },

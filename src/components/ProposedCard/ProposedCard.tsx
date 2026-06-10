@@ -1,5 +1,5 @@
 import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons'
-import { EntityAttributes, SkeletonWrapper, Text } from '@components'
+import { EntityAttributes, EntityMetadata, SkeletonWrapper, Text } from '@components'
 import { useDecisionsLoadingState } from '@hooks'
 import { Button, Card, Flex, Space } from 'antd'
 import { useMemo } from 'react'
@@ -35,6 +35,8 @@ export const ProposedCard = ({
   const isDecisionsMenuLoading = useDecisionsLoadingState()
 
   const currentEntityLength = data?.top_entities?.length ?? 0
+  const currentMemberIdentifier =
+    data?.top_entities?.[currentEntity - 1]?.identified_by
 
   const isLoadingContent = isLoading || isDecisionsMenuLoading
 
@@ -91,12 +93,14 @@ export const ProposedCard = ({
               <Text
                 color={isAlternative ? 'colorWarning' : 'colorPrimaryActive'}
               >
-                Entity {currentEntity} of {currentEntityLength} in cluster
+                Entity {currentEntity} of {currentEntityLength} loaded entities
               </Text>
             </SkeletonWrapper>
           </Space>
 
           <Flex gap={8} align="center">
+            <EntityMetadata identifier={currentMemberIdentifier} />
+
             <Button
               type="primary"
               disabled={currentEntity === 1}

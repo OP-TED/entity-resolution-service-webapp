@@ -47,7 +47,10 @@ vi.mock('react-router-dom', async () => {
 const mockUser = {
   id: 'user-123',
   email: 'test@example.com',
-  roles: ['admin']
+  roles: ['admin'],
+  is_active: true,
+  is_superuser: true,
+  is_verified: true
 }
 
 const TestComponent = () => {
@@ -163,6 +166,28 @@ describe('AuthContext', () => {
         'Bearer test-token'
       )
     })
+
+    it('does not restore a session for an inactive account on refresh (TEDSWS-512/527)', async () => {
+      const { getCurrentUserApiV1UsersMeGet } = await import('@api/sdk.gen')
+      const { getAccessToken, clearTokens } = await import('@context/authTokens')
+
+      vi.mocked(getAccessToken).mockReturnValue('valid-token')
+      vi.mocked(getCurrentUserApiV1UsersMeGet).mockResolvedValue({
+        data: { ...mockUser, is_active: false }
+      } as any)
+
+      render(
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('loaded')).toBeInTheDocument()
+      })
+      expect(screen.getByText('no-user')).toBeInTheDocument()
+      expect(vi.mocked(clearTokens)).toHaveBeenCalled()
+    })
   })
 
   describe('login', () => {
@@ -271,6 +296,94 @@ describe('AuthContext', () => {
       await waitFor(() => {
         expect(screen.getByText('no-user')).toBeInTheDocument()
       })
+    })
+
+    it('blocks an inactive account: no user, no navigate, tokens cleared (TEDSWS-527)', async () => {
+      const { loginApiV1AuthLoginPost, getCurrentUserApiV1UsersMeGet } =
+        await import('@api/sdk.gen')
+      const { clearTokens, getAccessToken } = await import('@context/authTokens')
+
+      vi.mocked(getAccessToken).mockReturnValue(null)
+      vi.mocked(loginApiV1AuthLoginPost).mockResolvedValue({
+        data: { access_token: 'a', refresh_token: 'r' }
+      } as any)
+      vi.mocked(getCurrentUserApiV1UsersMeGet).mockResolvedValue({
+        data: { ...mockUser, is_active: false }
+      } as any)
+
+      render(
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      )
+
+      await waitFor(() => screen.getByText('Login'))
+      fireEvent.click(screen.getByText('Login'))
+
+      await waitFor(() => {
+        expect(vi.mocked(clearTokens)).toHaveBeenCalled()
+      })
+      expect(screen.getByText('no-user')).toBeInTheDocument()
+      expect(mockNavigate).not.toHaveBeenCalledWith('/', { replace: true })
+    })
+
+    it('blocks an unverified account on login', async () => {
+      const { loginApiV1AuthLoginPost, getCurrentUserApiV1UsersMeGet } =
+        await import('@api/sdk.gen')
+      const { getAccessToken } = await import('@context/authTokens')
+
+      vi.mocked(getAccessToken).mockReturnValue(null)
+      vi.mocked(loginApiV1AuthLoginPost).mockResolvedValue({
+        data: { access_token: 'a', refresh_token: 'r' }
+      } as any)
+      vi.mocked(getCurrentUserApiV1UsersMeGet).mockResolvedValue({
+        data: { ...mockUser, is_verified: false }
+      } as any)
+
+      render(
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      )
+
+      await waitFor(() => screen.getByText('Login'))
+      fireEvent.click(screen.getByText('Login'))
+
+      await waitFor(() => {
+        expect(screen.getByText('no-user')).toBeInTheDocument()
+      })
+      expect(mockNavigate).not.toHaveBeenCalledWith('/', { replace: true })
+    })
+
+    it('maps a 403 login rejection to a blocked account (TEDSWS-527)', async () => {
+      const { loginApiV1AuthLoginPost, getCurrentUserApiV1UsersMeGet } =
+        await import('@api/sdk.gen')
+      const { getAccessToken } = await import('@context/authTokens')
+
+      vi.mocked(getAccessToken).mockReturnValue(null)
+      // Backend rejects the login itself for a deactivated account.
+      vi.mocked(loginApiV1AuthLoginPost).mockRejectedValue({
+        response: {
+          status: 403,
+          data: { error_code: 'AUTHORIZATION_ERROR', message: 'User account is deactivated' }
+        }
+      } as any)
+
+      render(
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      )
+
+      await waitFor(() => screen.getByText('Login'))
+      fireEvent.click(screen.getByText('Login'))
+
+      await waitFor(() => {
+        expect(screen.getByText('no-user')).toBeInTheDocument()
+      })
+      // Never fetched the user or navigated into the app.
+      expect(vi.mocked(getCurrentUserApiV1UsersMeGet)).not.toHaveBeenCalled()
+      expect(mockNavigate).not.toHaveBeenCalledWith('/', { replace: true })
     })
   })
 

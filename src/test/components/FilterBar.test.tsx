@@ -107,6 +107,56 @@ describe('FilterBar', () => {
     })
   })
 
+  it('offers cluster-size ordering options (TEDSWS-524)', async () => {
+    render(<FilterBar />)
+    await userEvent.selectOptions(
+      screen.getByLabelText('Sort by'),
+      'Cluster Size (Largest)'
+    )
+    expect(mockUpdateQuery).toHaveBeenCalledWith({ ordering: '-cluster_size' })
+  })
+
+  it('renders the Review status filter', () => {
+    render(<FilterBar />)
+    expect(screen.getByText('Review status:')).toBeInTheDocument()
+    expect(screen.getByLabelText('Filter by review status')).toBeInTheDocument()
+  })
+
+  it('maps "Never reviewed" to ever_reviewed=false (TEDSWS-524)', async () => {
+    render(<FilterBar />)
+    await userEvent.selectOptions(
+      screen.getByLabelText('Filter by review status'),
+      'Never reviewed'
+    )
+    expect(mockUpdateQuery).toHaveBeenCalledWith({
+      ever_reviewed: false,
+      reviewed_since_placement: undefined
+    })
+  })
+
+  it('maps "Needs re-review" to ever_reviewed=true + reviewed_since_placement=false', async () => {
+    render(<FilterBar />)
+    await userEvent.selectOptions(
+      screen.getByLabelText('Filter by review status'),
+      'Needs re-review'
+    )
+    expect(mockUpdateQuery).toHaveBeenCalledWith({
+      ever_reviewed: true,
+      reviewed_since_placement: false
+    })
+  })
+
+  it('reflects the current review-status filter from params', () => {
+    vi.mocked(useQueryUpdate).mockReturnValueOnce({
+      params: { ever_reviewed: 'true', reviewed_since_placement: 'false' },
+      updateQuery: mockUpdateQuery
+    })
+    render(<FilterBar />)
+    expect(screen.getByLabelText('Filter by review status')).toHaveValue(
+      'needs-rereview'
+    )
+  })
+
   it('shows the current ordering value from params', () => {
     vi.mocked(useQueryUpdate).mockReturnValueOnce({
       params: { ordering: '-confidence_score' },
