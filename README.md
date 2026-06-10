@@ -31,10 +31,12 @@ cp src/infra/.env.example src/infra/.env
 Edit `src/infra/.env` and set the backend address:
 
 ```env
-API_BACKEND_URL=http://curation-api:8000
+API_BACKEND_URL=curation-api:8000
 ```
 
-Note: use `http://curation-api:8000` when running in Docker, and `http://localhost:8000` when running with Node.js (`npm run dev`).
+The value must be `host:port` only — without a protocol prefix. Nginx prepends `http://`
+internally when proxying API requests. Use `curation-api:8000` when running in Docker
+(shared `ersys-local` network) and `localhost:8000` when running with Node.js (`npm run dev`).
 
 ### 3. Start the stack
 
@@ -82,6 +84,14 @@ make down     # stop
 make rebuild  # rebuild and restart after code or config changes
 make logs     # follow container logs
 ```
+
+> **Rebuilding with a clean cache:** The Webapp image embeds the built frontend bundle.
+> If you need to discard Docker layer cache (e.g. after upgrading dependencies or the
+> OpenAPI schema), run:
+> ```bash
+> docker compose -f src/infra/compose.dev.yaml --env-file src/infra/.env build --no-cache
+> docker compose -f src/infra/compose.dev.yaml --env-file src/infra/.env up -d
+> ```
 
 ---
 
