@@ -1,6 +1,6 @@
 # --- Stage 1: Schema Fetcher ---
 # This stage isolates the network dependency and tool installation
-FROM alpine:3.23.3 AS fetcher
+FROM docker.io/library/alpine:3.23.3 AS fetcher
 # Default URL points to the ers backend repo.
 # This can be overridden via --build-arg ERS_SCHEMA_URL=...
 ARG ERS_SCHEMA_URL=https://raw.githubusercontent.com/OP-TED/entity-resolution-service/release/1.1.0/resources/curation-openapi-schema.json
@@ -8,7 +8,7 @@ RUN apk add --no-cache curl && \
     curl -fsSL "$ERS_SCHEMA_URL" -o /tmp/schema.json
 
 # --- Stage 2: Builder ---
-FROM node:22.22.2-slim AS builder
+FROM docker.io/library/node:22.22.2-slim AS builder
 WORKDIR /usr/app
 
 ARG ENVIRONMENT
@@ -31,7 +31,7 @@ RUN SCHEMA_FILE=/tmp/schema.json npx openapi-ts && \
     npm run build -- --mode=$ENVIRONMENT
 
 # --- Stage 3: Production ---
-FROM nginx:1.27.5-alpine AS production
+FROM docker.io/library/nginx:1.27.5-alpine AS production
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
  && mkdir -p /usr/share/nginx/html /etc/nginx/templates \
