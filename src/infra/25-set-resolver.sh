@@ -6,5 +6,7 @@ RESOLVERS=$(awk '/^nameserver/{print $2}' /etc/resolv.conf | tr '\n' ' ' | sed '
 if [ -z "$RESOLVERS" ]; then
   RESOLVERS="127.0.0.11"
 fi
-sed -i "s/__RESOLVERS__/$RESOLVERS/g" /etc/nginx/conf.d/default.conf
-echo "25-set-resolver.sh: resolver set to: $RESOLVERS"
+# Support both read-only rootfs (/tmp/nginx) and writable rootfs (/etc/nginx/conf.d)
+CONF_FILE="${NGINX_ENVSUBST_OUTPUT_DIR:-/etc/nginx/conf.d}/default.conf"
+sed -i "s/__RESOLVERS__/$RESOLVERS/g" "$CONF_FILE"
+echo "25-set-resolver.sh: resolver set to: $RESOLVERS (in $CONF_FILE)"

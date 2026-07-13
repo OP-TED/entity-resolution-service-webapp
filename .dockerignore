@@ -44,4 +44,6 @@ sonar-project.properties
 # Infra (re-include only what the Dockerfile needs at runtime)
 src/infra
 !src/infra/nginx.conf
+!src/infra/nginx-main.conf
+!src/infra/15-create-tmpfs-dirs.sh
 !src/infra/25-set-resolver.sh

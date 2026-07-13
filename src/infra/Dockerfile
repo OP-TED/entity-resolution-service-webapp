@@ -44,8 +44,16 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
  && chown appuser:appgroup /var/run/nginx.pid
 
 COPY --from=builder /usr/app/dist /usr/share/nginx/html
+
+# Custom main nginx.conf that includes from /tmp/nginx/ (read-only rootfs support)
+COPY --chmod=644 src/infra/nginx-main.conf /etc/nginx/nginx.conf
 COPY --chmod=644 src/infra/nginx.conf /etc/nginx/templates/default.conf.template
+COPY --chmod=755 src/infra/15-create-tmpfs-dirs.sh /docker-entrypoint.d/15-create-tmpfs-dirs.sh
 COPY --chmod=755 src/infra/25-set-resolver.sh /docker-entrypoint.d/25-set-resolver.sh
+
+# Read-only rootfs support: redirect config output to writable /tmp
+# Directory created at runtime by 15-create-tmpfs-dirs.sh (handles tmpfs overlay)
+ENV NGINX_ENVSUBST_OUTPUT_DIR=/tmp/nginx
 
 USER appuser
 
