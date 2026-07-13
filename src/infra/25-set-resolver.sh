@@ -6,7 +6,14 @@ RESOLVERS=$(awk '/^nameserver/{print $2}' /etc/resolv.conf | tr '\n' ' ' | sed '
 if [ -z "$RESOLVERS" ]; then
   RESOLVERS="127.0.0.11"
 fi
-# Support both read-only rootfs (/tmp/nginx) and writable rootfs (/etc/nginx/conf.d)
-CONF_FILE="${NGINX_ENVSUBST_OUTPUT_DIR:-/etc/nginx/conf.d}/default.conf"
+# nginx-main.conf includes /tmp/nginx/*.conf; keep resolver injection aligned with that output dir.
+CONF_DIR="${NGINX_ENVSUBST_OUTPUT_DIR:-/tmp/nginx}"
+CONF_FILE="$CONF_DIR/default.conf"
+
+if [ ! -f "$CONF_FILE" ]; then
+  echo "25-set-resolver.sh: expected rendered config at $CONF_FILE but it does not exist" >&2
+  exit 1
+fi
+
 sed -i "s/__RESOLVERS__/$RESOLVERS/g" "$CONF_FILE"
 echo "25-set-resolver.sh: resolver set to: $RESOLVERS (in $CONF_FILE)"
