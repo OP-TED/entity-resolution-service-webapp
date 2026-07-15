@@ -7,6 +7,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 
+## [1.1.0-rc.6] - 2026-07-16
+
+### Removed
+* SonarCloud integration, as it depended on contractor-specific configuration (TEDSWS-528).
+
+### Changed
+* Updated nginx configuration to enable running the WebApp container with a read-only root filesystem
+
+
+## [1.1.0-rc.5] - 2026-07-06
+
+### Changed
+* Upload the API schema file for offline use
+
+
+## [1.0.0-rc.2] - 2026-06-30
+
+### Added
+* Sorting of resolution decisions by cluster size (TEDSWS-524)
+* Filtering by decision status (TEDSWS-524)
+* Curator review indicators in the decision list and decision details view (TEDSWS-522)
+* Original request metadata in the entity panes (TEDSWS-514)
+
+### Changed
+* ERSys installation instructions and related documentation improved (TEDSWS-520)
+* Contractor-specific references removed from the source code repositories (TEDSWS-528)
+* Display of long text values in the entity panes improved (TEDSWS-517)
+* Descriptive messages for similarity and confidence score combinations improved (TEDSWS-518)
+* "Delete user" button renamed to "Deactivate user" (TEDSWS-523)
+* UI updated to prevent inactive or unverified users from logging in and to display an appropriate message (TEDSWS-527)
+
+### Fixed
+* Decision status persistence after browser refresh (TEDSWS-512)
+* Inconsistent display of similarity and confidence scores (TEDSWS-515)
+
+
 ## [1.1.0-rc.4] - 2026-06-30
 
 ### Changed
