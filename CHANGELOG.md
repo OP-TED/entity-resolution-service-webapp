@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Removed
 * SonarCloud integration, as it depended on contractor-specific configuration (TEDSWS-528).
 
+### Changed
+* Updated nginx configuration to enable running the WebApp container with a read-only root filesystem
+
 
 ## [1.1.0-rc.5] - 2026-07-06
 
