@@ -1,8 +1,9 @@
+import { loadAppConfig } from '@utils/appConfig'
 import { getReviewExplanation, getScoreBand } from '@utils/reviewExplanation'
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it, vi } from 'vitest'
 
 describe('getScoreBand', () => {
-  it('classifies scores on the 0.4 / 0.7 scale', () => {
+  it('classifies scores on the default 0.4 / 0.7 scale', () => {
     expect(getScoreBand(0)).toBe('low')
     expect(getScoreBand(0.39)).toBe('low')
     expect(getScoreBand(0.4)).toBe('medium')
@@ -95,5 +96,44 @@ describe('getReviewExplanation (TEDSWS-518)', () => {
     const result = getReviewExplanation({})
     expect(result.header).toBe('Why review needed')
     expect(result.message).toBe('Low similarity and low confidence.')
+  })
+})
+
+// The boundaries are module state loaded once at startup, so this suite runs last
+// and restores the defaults for anything that follows.
+describe('getScoreBand with configured boundaries', () => {
+  const load = async (scoreLevels: Record<string, number> | undefined) => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, json: async () => ({ scoreLevels }) })
+    )
+    await loadAppConfig()
+  }
+
+  afterAll(async () => {
+    await load(undefined)
+    vi.unstubAllGlobals()
+  })
+
+  it('bands scores against the configured boundaries', async () => {
+    await load({ lowMax: 0.25, mediumMax: 0.9 })
+
+    expect(getScoreBand(0.2)).toBe('low')
+    expect(getScoreBand(0.25)).toBe('medium')
+    expect(getScoreBand(0.89)).toBe('medium')
+    expect(getScoreBand(0.9)).toBe('high')
+  })
+
+  it('drives the banner copy from those bands', async () => {
+    await load({ lowMax: 0.25, mediumMax: 0.9 })
+
+    // 0.95/0.92 is high/high only because the configured high band starts at 0.9.
+    expect(
+      getReviewExplanation({ similarity: 0.95, confidence: 0.92, clusterSize: 3 })
+    ).toEqual({
+      header: 'Review advisable',
+      message: 'High similarity and high confidence.',
+      tone: 'success'
+    })
   })
 })

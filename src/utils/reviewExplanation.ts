@@ -5,12 +5,15 @@
  * descriptive similarity/confidence bands plus a few cluster conditions.
  */
 
+import { getScoreThresholds } from './appConfig'
+
 export type ScoreBand = 'low' | 'medium' | 'high'
 
-// Established scale: 0.0-0.4 low, 0.4-0.7 medium, 0.7-1.0 high.
+// One shared scale, with boundaries from the runtime config (defaults 0.4 / 0.7).
 export const getScoreBand = (score: number): ScoreBand => {
-  if (score < 0.4) return 'low'
-  if (score < 0.7) return 'medium'
+  const { lowMax, mediumMax } = getScoreThresholds()
+  if (score < lowMax) return 'low'
+  if (score < mediumMax) return 'medium'
   return 'high'
 }
 

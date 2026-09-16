@@ -1,11 +1,13 @@
+import { loadAppConfig } from '@utils/appConfig'
 import {
   formatScore,
   getConfidenceStatus,
   getScoreLabel,
   getScoreLevelMapping,
+  getScoreRangeOptions,
   getSimilarityStatus
 } from '@utils/confidence'
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it, vi } from 'vitest'
 
 
 describe('getConfidenceStatus', () => {
@@ -81,5 +83,47 @@ describe('getScoreLevelMapping', () => {
     expect(getScoreLevelMapping(0.2)).toBe('Low (0.20)')
     expect(getScoreLevelMapping(0.5)).toBe('Medium (0.50)')
     expect(getScoreLevelMapping(0.91)).toBe('High (0.91)')
+  })
+})
+
+describe('getScoreRangeOptions', () => {
+  it('offers the three ranges with the default boundaries', () => {
+    expect(getScoreRangeOptions()).toEqual([
+      { label: 'Low (0.0-0.4)', value: 'Low (0.0-0.4)', min: 0, max: 0.4 },
+      { label: 'Medium (0.4-0.7)', value: 'Medium (0.4-0.7)', min: 0.4, max: 0.7 },
+      { label: 'High (0.7-1.0)', value: 'High (0.7-1.0)', min: 0.7, max: 1 }
+    ])
+  })
+})
+
+describe('configured boundaries', () => {
+  const load = async (scoreLevels: Record<string, number> | undefined) => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, json: async () => ({ scoreLevels }) })
+    )
+    await loadAppConfig()
+  }
+
+  afterAll(async () => {
+    await load(undefined)
+    vi.unstubAllGlobals()
+  })
+
+  it('classifies and labels scores against the configured boundaries', async () => {
+    await load({ lowMax: 0.25, mediumMax: 0.9 })
+
+    expect(getScoreLabel(0.2)).toBe('Low')
+    expect(getScoreLabel(0.3)).toBe('Medium')
+    expect(getScoreLabel(0.95)).toBe('High')
+    expect(getConfidenceStatus(0.3)).toBe('warning')
+    expect(getSimilarityStatus(0.95)).toBe('success')
+    expect(getScoreLevelMapping(0.3)).toBe('Medium (0.30)')
+    expect(getScoreRangeOptions()[0]).toEqual({
+      label: 'Low (0.0-0.25)',
+      value: 'Low (0.0-0.25)',
+      min: 0,
+      max: 0.25
+    })
   })
 })

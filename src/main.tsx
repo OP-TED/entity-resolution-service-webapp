@@ -10,7 +10,7 @@ import { BrowserRouter } from 'react-router-dom'
 
 import { Router } from './router'
 import { antdTheme } from './styles/theme'
-import { showApiErrors } from './utils'
+import { loadAppConfig, showApiErrors } from './utils'
 
 // Surface query failures (network down, 5xx, etc.) globally. Mutations already
 // route through showApiErrors via their own onError; queries previously failed
@@ -48,20 +48,22 @@ const queryClient = new QueryClient({
   }
 })
 
-createRoot(document.getElementById('root')!).render(
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <ConfigProvider theme={antdTheme}>
-        <App>
-          <AuthProvider>
-            <ConfirmationPreferenceProvider>
-              <BulkSelectionProvider>
-                <Router />
-              </BulkSelectionProvider>
-            </ConfirmationPreferenceProvider>
-          </AuthProvider>
-        </App>
-      </ConfigProvider>
-    </QueryClientProvider>
-  </BrowserRouter>
-)
+loadAppConfig().then(() => {
+  createRoot(document.getElementById('root')!).render(
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <ConfigProvider theme={antdTheme}>
+          <App>
+            <AuthProvider>
+              <ConfirmationPreferenceProvider>
+                <BulkSelectionProvider>
+                  <Router />
+                </BulkSelectionProvider>
+              </ConfirmationPreferenceProvider>
+            </AuthProvider>
+          </App>
+        </ConfigProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
+  )
+})

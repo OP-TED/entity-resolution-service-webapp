@@ -99,7 +99,7 @@ describe('FilterBar', () => {
     render(<FilterBar />)
     await userEvent.selectOptions(
       screen.getByLabelText('Select Similarity'),
-      'High (0.7-1)'
+      'High (0.7-1.0)'
     )
     expect(mockUpdateQuery).toHaveBeenCalledWith({
       similarity_min: 0.7,

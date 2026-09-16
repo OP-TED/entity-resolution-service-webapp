@@ -49,6 +49,7 @@ COPY --from=builder /usr/app/dist /usr/share/nginx/html
 COPY --chmod=644 src/infra/nginx-main.conf /etc/nginx/nginx.conf
 COPY --chmod=644 src/infra/nginx.conf /etc/nginx/templates/default.conf.template
 COPY --chmod=755 src/infra/15-create-tmpfs-dirs.sh /docker-entrypoint.d/15-create-tmpfs-dirs.sh
+COPY --chmod=755 src/infra/16-render-app-config.sh /docker-entrypoint.d/16-render-app-config.sh
 COPY --chmod=755 src/infra/25-set-resolver.sh /docker-entrypoint.d/25-set-resolver.sh
 
 # Read-only rootfs support: redirect config output to writable /tmp

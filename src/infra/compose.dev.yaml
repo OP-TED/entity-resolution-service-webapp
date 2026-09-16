@@ -12,6 +12,8 @@ services:
       - ersys-local
     environment:
       - API_BACKEND_URL=${API_BACKEND_URL}
+      - SCORE_LEVEL_LOW_MAX=${SCORE_LEVEL_LOW_MAX:-0.4}
+      - SCORE_LEVEL_MEDIUM_MAX=${SCORE_LEVEL_MEDIUM_MAX:-0.7}
     healthcheck:
       test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:8080/']
       interval: 10s

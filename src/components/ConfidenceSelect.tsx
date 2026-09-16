@@ -1,5 +1,13 @@
+import { getScoreRangeOptions } from '@utils/confidence'
 import { Select } from 'antd'
 import { useMemo } from 'react'
+
+type Option = {
+  label: string
+  value: string
+  min?: number
+  max?: number
+}
 
 type Props = {
   confidenceMin?: number
@@ -15,22 +23,10 @@ export const ConfidenceSelect = ({
   confidenceMax,
   onChange
 }: Props) => {
-  const options = useMemo(
+  const options = useMemo<Option[]>(
     () => [
-      {
-        label: 'All Confidence',
-        value: 'All Confidence',
-        min: undefined,
-        max: undefined
-      },
-      { label: 'Low (0.0-0.4)', value: 'Low (0.0-0.4)', min: 0, max: 0.4 },
-      {
-        label: 'Medium (0.4-0.7)',
-        value: 'Medium (0.4-0.7)',
-        min: 0.4,
-        max: 0.7
-      },
-      { label: 'High (0.7-1.0)', value: 'High (0.7-1.0)', min: 0.7, max: 1 }
+      { label: 'All Confidence', value: 'All Confidence' },
+      ...getScoreRangeOptions()
     ],
     []
   )

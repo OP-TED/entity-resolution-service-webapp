@@ -4,6 +4,7 @@
 
 - [Local Development](#local-development)
 - [Configuring the API URL](#configuring-the-api-url)
+- [Configuring the Score Levels](#configuring-the-score-levels)
 - [Regenerating the API Client](#regenerating-the-api-client)
 - [Running with Docker](#running-with-docker)
 - [Running Tests](#running-tests)
@@ -51,6 +52,34 @@ VITE_APP_MAIN_API=https://your-api-host/
 > `.env.example` is git-ignored and takes precedence over `.env` in Vite.
 
 The variable is prefixed with `VITE_` so Vite injects it into the client bundle at build time.
+
+---
+
+## Configuring the Score Levels
+
+Confidence and similarity share one three-level scale (Low / Medium / High). The three
+levels, their labels and their colours are fixed in the code; the two boundaries between
+them are configurable:
+
+```env
+SCORE_LEVEL_LOW_MAX=0.4      # Low is 0..LOW_MAX
+SCORE_LEVEL_MEDIUM_MAX=0.7   # Medium is LOW_MAX..MEDIUM_MAX, High is MEDIUM_MAX..1.0
+```
+
+Unlike `VITE_APP_MAIN_API`, these are **not** baked into the bundle. The container
+entrypoint `src/infra/16-render-app-config.sh` renders them into `/config.json` on every
+start, nginx serves that file with `Cache-Control: no-store`, and `main.tsx` fetches it
+once before the first render. A change therefore needs a new container (`make up` locally,
+a new deployment in AWS) but no rebuild — note that `docker restart` keeps the old
+environment. Missing or unreadable values fall back to the defaults shown above.
+
+Set them in `src/infra/.env` for the Docker flow. `npm run dev` runs no container, so the
+dev server serves the checked-in `src/public/config.json` instead — edit that file to try
+other boundaries locally.
+
+One `getScoreThresholds()` in `src/utils/appConfig.ts` backs every consumer: the score
+classifiers in `utils/confidence.ts`, the review banner in `utils/reviewExplanation.ts`,
+and the confidence/similarity filter dropdowns.
 
 ---
 

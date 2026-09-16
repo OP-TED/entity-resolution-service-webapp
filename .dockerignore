@@ -41,9 +41,13 @@ sonar-project.properties
 .idea
 .DS_Store
 
+# Local dev only: the container renders its own /config.json at start-up
+src/public/config.json
+
 # Infra (re-include only what the Dockerfile needs at runtime)
 src/infra
 !src/infra/nginx.conf
 !src/infra/nginx-main.conf
 !src/infra/15-create-tmpfs-dirs.sh
+!src/infra/16-render-app-config.sh
 !src/infra/25-set-resolver.sh

@@ -41,7 +41,7 @@ describe('SimilaritySelect', () => {
     expect(screen.getByRole('combobox')).toHaveValue('All Similarity')
   })
 
-  it('shows "Low (0-0.4)" label when min=0 and max=0.4', () => {
+  it('shows "Low (0.0-0.4)" label when min=0 and max=0.4', () => {
     render(
       <SimilaritySelect
         onChange={vi.fn()}
@@ -49,7 +49,7 @@ describe('SimilaritySelect', () => {
         similarityMax={0.4}
       />
     )
-    expect(screen.getByRole('combobox')).toHaveValue('Low (0-0.4)')
+    expect(screen.getByRole('combobox')).toHaveValue('Low (0.0-0.4)')
   })
 
   it('shows "Medium (0.4-0.7)" label when min=0.4 and max=0.7', () => {
@@ -63,7 +63,7 @@ describe('SimilaritySelect', () => {
     expect(screen.getByRole('combobox')).toHaveValue('Medium (0.4-0.7)')
   })
 
-  it('shows "High (0.7-1)" label when min=0.7 and max=1', () => {
+  it('shows "High (0.7-1.0)" label when min=0.7 and max=1', () => {
     render(
       <SimilaritySelect
         onChange={vi.fn()}
@@ -71,14 +71,14 @@ describe('SimilaritySelect', () => {
         similarityMax={1}
       />
     )
-    expect(screen.getByRole('combobox')).toHaveValue('High (0.7-1)')
+    expect(screen.getByRole('combobox')).toHaveValue('High (0.7-1.0)')
   })
 
   it('calls onChange with correct min/max when Low option is selected', async () => {
     const onChange = vi.fn()
     render(<SimilaritySelect onChange={onChange} />)
 
-    await userEvent.selectOptions(screen.getByRole('combobox'), 'Low (0-0.4)')
+    await userEvent.selectOptions(screen.getByRole('combobox'), 'Low (0.0-0.4)')
 
     expect(onChange).toHaveBeenCalledWith({ similarity_min: 0, similarity_max: 0.4 })
   })
@@ -96,7 +96,7 @@ describe('SimilaritySelect', () => {
     const onChange = vi.fn()
     render(<SimilaritySelect onChange={onChange} />)
 
-    await userEvent.selectOptions(screen.getByRole('combobox'), 'High (0.7-1)')
+    await userEvent.selectOptions(screen.getByRole('combobox'), 'High (0.7-1.0)')
 
     expect(onChange).toHaveBeenCalledWith({ similarity_min: 0.7, similarity_max: 1 })
   })
@@ -123,12 +123,12 @@ describe('SimilaritySelect', () => {
     const { rerender } = render(
       <SimilaritySelect onChange={vi.fn()} similarityMin={0} similarityMax={0.4} />
     )
-    expect(screen.getByRole('combobox')).toHaveValue('Low (0-0.4)')
+    expect(screen.getByRole('combobox')).toHaveValue('Low (0.0-0.4)')
 
     rerender(
       <SimilaritySelect onChange={vi.fn()} similarityMin={0.7} similarityMax={1} />
     )
-    expect(screen.getByRole('combobox')).toHaveValue('High (0.7-1)')
+    expect(screen.getByRole('combobox')).toHaveValue('High (0.7-1.0)')
   })
 
   it('returns undefined for unrecognized min/max combination', () => {
@@ -144,9 +144,9 @@ describe('SimilaritySelect', () => {
     const options = screen.getAllByRole('option')
     expect(options).toHaveLength(4)
     expect(options[0]).toHaveTextContent('All Similarity')
-    expect(options[1]).toHaveTextContent('Low (0-0.4)')
+    expect(options[1]).toHaveTextContent('Low (0.0-0.4)')
     expect(options[2]).toHaveTextContent('Medium (0.4-0.7)')
-    expect(options[3]).toHaveTextContent('High (0.7-1)')
+    expect(options[3]).toHaveTextContent('High (0.7-1.0)')
   })
 
   it('does not call onChange when component mounts', () => {
