@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 
+## [1.1.0-rc.8] - 2026-09-29
+
+### Changed
+* Use backend hostname in Host header to prevent ALB routing loops in NGINX config.
+
 ## [1.1.0-rc.6] - 2026-07-16
 
 ### Removed
